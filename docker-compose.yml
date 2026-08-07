@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: scorestreamlive-bootstrap
+    ports:
+      - "8000:8000"
+    environment:
+      ENVIRONMENT: development
+      APP_VERSION: 0.0.1

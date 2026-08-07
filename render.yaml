@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: scorestreamlive-bootstrap
+    runtime: docker
+    plan: free
+    branch: main
+    dockerfilePath: Dockerfile
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: APP_VERSION
+        value: 0.0.1
+    healthCheckPath: /health
