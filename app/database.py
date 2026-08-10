@@ -1,11 +1,14 @@
 """Database connection layer."""
 
+import logging
 from urllib.parse import quote_plus
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.config import settings
+
+logger = logging.getLogger("app")
 
 
 def get_database_url() -> str:
@@ -42,5 +45,16 @@ async def check_database_connection() -> bool:
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
         return True
-    except Exception:
+    except Exception as exc:
+        logger.warning(
+            "Database connection failed: %s",
+            exc,
+            extra={
+                "event": "database.connection.failure",
+                "error_type": type(exc).__name__,
+                "db_host": settings.DB_HOST,
+                "db_port": settings.DB_PORT,
+                "db_name": settings.DB_NAME,
+            },
+        )
         return False

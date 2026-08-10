@@ -35,8 +35,8 @@ async def lifespan(app: FastAPI):
         )
     else:
         logger.warning(
-            "Database connection failed",
-            extra={"event": "database.connection.failure"},
+            "Database is not ready at startup; application will continue",
+            extra={"event": "database.startup.not_ready"},
         )
 
     yield
