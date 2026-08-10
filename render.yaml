@@ -6,8 +6,12 @@ services:
     branch: main
     dockerfilePath: Dockerfile
     envVars:
-      - key: ENVIRONMENT
+      - key: APP_NAME
+        value: ScoreStreamLive
+      - key: APP_ENV
         value: production
       - key: APP_VERSION
-        value: 0.0.1
-    healthCheckPath: /health
+        value: 0.1.0
+      - key: LOG_LEVEL
+        value: INFO
+    healthCheckPath: /health/live

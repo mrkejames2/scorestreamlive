@@ -2,7 +2,7 @@
 
 ## Overview
 
-ScoreStreamLive is a minimal, Dockerized FastAPI application designed to serve as the foundational deployment layer for all future ScoreStreamLive milestones.
+ScoreStreamLive Bootstrap is a minimal, Dockerized FastAPI application serving as the operational foundation for all future ScoreStreamLive milestones.
 
 ## Components
 
@@ -13,12 +13,15 @@ ScoreStreamLive is a minimal, Dockerized FastAPI application designed to serve a
 | **Docker** | Containerization ensuring identical behavior across environments. |
 | **Docker Compose** | Local orchestration for development and testing. |
 | **Render** | Cloud platform for production deployment. |
+| **python-dotenv** | Local `.env` file loading for development. |
 
 ## Design Decisions
 
-- **No root user:** The container runs as an unprivileged user (`appuser`) to reduce attack surface.
-- **Environment variables:** All environment-specific values (e.g., `ENVIRONMENT`, `APP_VERSION`) are injected via environment variables rather than hard-coded.
-- **Slim base image:** Uses `python:3.13-slim` to minimize image size and attack surface.
-- **No additional services:** Databases, caches, frontends, and reverse proxies are intentionally excluded from Milestone 0.
+- **Centralized configuration:** All settings are loaded once from environment variables into an immutable `Settings` object in `app/config.py`.
+- **No root user:** The container runs as an unprivileged user (`appuser`).
+- **Structured logging:** JSON-formatted logs via Python's standard library for observability without external services.
+- **Health separation:** Liveness (`/health/live`) and readiness (`/health/ready`) are distinct endpoints following cloud-native conventions.
+- **Slim base image:** `python:3.13-slim` minimizes size and attack surface.
+- **No additional services:** Databases, caches, frontends, and reverse proxies are excluded from Milestone 1.
 
 ## Request Flow

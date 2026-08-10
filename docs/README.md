@@ -1,16 +1,9 @@
-
----
-
-## `docs/README.md`
-
-**Purpose:** Project documentation covering setup, usage, and deployment instructions.
-
-```markdown
-# ScoreStreamLive
+# ScoreStreamLive Bootstrap
 
 ## Project Purpose
 
-This is the foundational Dockerized deployment platform for the ScoreStreamLive project. It is **not** the final application. It provides a minimal, production-ready FastAPI application that deploys identically across local development, Docker, and Render environments.
+Foundational Dockerized deployment platform for the ScoreStreamLive project.  
+This is **Milestone 1: Production Configuration & Observability**.
 
 ## Tech Stack
 
@@ -18,7 +11,7 @@ This is the foundational Dockerized deployment platform for the ScoreStreamLive 
 - FastAPI
 - Uvicorn
 - Docker & Docker Compose
-- Render (Cloud Deployment)
+- Render
 
 ## Local Setup
 
@@ -27,8 +20,8 @@ This is the foundational Dockerized deployment platform for the ScoreStreamLive 
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
 
-### Clone the Repository
+### Environment Variables
 
-```bash
-git clone <repository-url>
-cd scorestreamlive
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
