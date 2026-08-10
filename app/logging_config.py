@@ -17,17 +17,34 @@ class JSONFormatter(logging.Formatter):
             "message": record.getMessage(),
         }
 
-        for key in (
-            "event",
-            "environment",
-            "version",
-            "method",
-            "path",
-            "status_code",
-            "duration_ms",
-        ):
-            if hasattr(record, key):
-                log_data[key] = getattr(record, key)
+        # Capture ALL extra fields dynamically
+        standard_attrs = {
+            "name",
+            "msg",
+            "args",
+            "levelname",
+            "levelno",
+            "pathname",
+            "filename",
+            "module",
+            "exc_info",
+            "exc_text",
+            "stack_info",
+            "lineno",
+            "funcName",
+            "created",
+            "msecs",
+            "relativeCreated",
+            "thread",
+            "threadName",
+            "processName",
+            "process",
+            "message",
+            "asctime",
+        }
+        for key, value in record.__dict__.items():
+            if key not in standard_attrs and not key.startswith("_"):
+                log_data[key] = value
 
         if record.exc_info:
             log_data["exception"] = self.formatException(record.exc_info)

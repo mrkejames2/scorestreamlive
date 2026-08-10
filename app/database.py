@@ -32,8 +32,6 @@ def get_safe_database_url() -> str:
     )
 
 
-# Use a short connection timeout (10s) instead of asyncpg's default 60s
-# so failures are visible quickly in logs
 engine = create_async_engine(
     get_database_url(),
     echo=settings.APP_ENV == "development",
@@ -56,23 +54,21 @@ async def get_session() -> AsyncSession:
 
 async def check_database_connection() -> bool:
     """Execute a lightweight connectivity check against PostgreSQL."""
+    safe_url = get_safe_database_url()
     try:
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
+        logger.info("Database connection OK: %s", safe_url)
         return True
     except Exception as exc:
-        # Use repr() because some asyncpg exceptions have empty str()
+        # Put the safe URL in the message so it always appears
         logger.warning(
-            "Database connection failed: %s",
+            "Database connection FAILED for %s — error: %s",
+            safe_url,
             repr(exc),
             extra={
                 "event": "database.connection.failure",
                 "error_type": type(exc).__name__,
-                "db_host": settings.DB_HOST,
-                "db_port": settings.DB_PORT,
-                "db_name": settings.DB_NAME,
-                "db_user": settings.DB_USER,
-                "db_url": get_safe_database_url(),
             },
         )
         return False

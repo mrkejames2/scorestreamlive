@@ -19,23 +19,23 @@ async def lifespan(app: FastAPI):
     """Handle application startup and shutdown events."""
     logger = logging.getLogger("app")
 
-    # Diagnostic: verify every config value loaded correctly
+    # Diagnostic: log config values IN THE MESSAGE so they cannot be dropped
     logger.info(
-        "Configuration diagnostic",
-        extra={
-            "event": "config.diagnostic",
-            "app_env": settings.APP_ENV,
-            "db_host": settings.DB_HOST,
-            "db_port": settings.DB_PORT,
-            "db_name": settings.DB_NAME,
-            "db_user": settings.DB_USER,
-            "db_password_set": bool(settings.DB_PASSWORD and settings.DB_PASSWORD != "change-me"),
-            "db_url": get_safe_database_url(),
-        },
+        "CONFIG DIAGNOSTIC — env=%s host=%s port=%s name=%s user=%s password_set=%s url=%s",
+        settings.APP_ENV,
+        settings.DB_HOST,
+        settings.DB_PORT,
+        settings.DB_NAME,
+        settings.DB_USER,
+        bool(settings.DB_PASSWORD and settings.DB_PASSWORD != "change-me"),
+        get_safe_database_url(),
+        extra={"event": "config.diagnostic"},
     )
 
     logger.info(
-        "Application startup",
+        "Application startup — env=%s version=%s",
+        settings.APP_ENV,
+        settings.APP_VERSION,
         extra={
             "event": "application.startup",
             "environment": settings.APP_ENV,
@@ -92,7 +92,7 @@ async def log_requests(request: Request, call_next):
     return response
 
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 async def root():
     """Return application status."""
     return {
@@ -120,7 +120,7 @@ async def health_ready():
     )
 
 
-@app.get("/info")
+@app.api_route("/info", methods=["GET", "HEAD"])
 async def info():
     """Return application metadata from centralized configuration."""
     return {
