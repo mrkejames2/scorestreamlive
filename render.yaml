@@ -1,3 +1,9 @@
+databases:
+  - name: scorestreamlive-db
+    databaseName: scorestreamlive
+    user: scorestreamlive
+    plan: free
+
 services:
   - type: web
     name: scorestreamlive-bootstrap
@@ -11,7 +17,27 @@ services:
       - key: APP_ENV
         value: production
       - key: APP_VERSION
-        value: 0.1.0
+        value: 0.2.0
       - key: LOG_LEVEL
         value: INFO
+      - key: DB_HOST
+        fromDatabase:
+          name: scorestreamlive-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: scorestreamlive-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: scorestreamlive-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: scorestreamlive-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: scorestreamlive-db
+          property: password
     healthCheckPath: /health/live

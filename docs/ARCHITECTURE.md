@@ -25,3 +25,37 @@ ScoreStreamLive Bootstrap is a minimal, Dockerized FastAPI application serving a
 - **No additional services:** Databases, caches, frontends, and reverse proxies are excluded from Milestone 1.
 
 ## Request Flow
+
+# Architecture
+
+## Overview
+
+ScoreStreamLive is a Dockerized FastAPI application with a PostgreSQL persistence layer, serving as the operational and data foundation for all future milestones.
+
+## Components
+
+| Component | Responsibility |
+|-----------|--------------|
+| **FastAPI** | ASGI web framework exposing HTTP endpoints. |
+| **Uvicorn** | ASGI server running the FastAPI application. |
+| **PostgreSQL 16** | Persistent relational database. |
+| **SQLAlchemy 2.0 (Async)** | Database access layer with async support. |
+| **Alembic** | Database migration management. |
+| **asyncpg** | Async PostgreSQL driver. |
+| **Docker** | Containerization ensuring identical behavior across environments. |
+| **Docker Compose** | Local orchestration for development and testing. |
+| **Render** | Cloud platform for production deployment with managed PostgreSQL. |
+| **python-dotenv** | Local `.env` file loading for development. |
+
+## Design Decisions
+
+- **Centralized configuration:** All settings are loaded once from environment variables into an immutable `Settings` object in `app/config.py`.
+- **Async database layer:** SQLAlchemy 2.0 with `asyncpg` provides async database access compatible with FastAPI's async model.
+- **Database URL construction:** The connection string is built programmatically from individual settings to avoid parsing secrets from a single URL.
+- **No root user:** The container runs as an unprivileged user (`appuser`).
+- **Structured logging:** JSON-formatted logs via Python's standard library.
+- **Health separation:** Liveness (`/health/live`) is process-only; readiness (`/health/ready`) validates PostgreSQL connectivity.
+- **Migration strategy:** Alembic manages schema migrations. Async configuration reads the database URL from the centralized settings layer.
+- **Slim base image:** `python:3.13-slim` minimizes size and attack surface.
+
+## Request Flow

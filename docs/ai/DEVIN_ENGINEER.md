@@ -63,3 +63,31 @@ Apply implementation locally, build, validate, commit, push, verify deployment.
 - [ ] `docker compose down`
 - [ ] Commit and push to GitHub
 - [ ] Verify Render deployment and logs
+
+
+# Devin — Implementation Engineer
+
+## Role
+Apply implementation locally, build, validate, commit, push, verify deployment.
+
+## Milestone 2 Validation Checklist
+- [ ] Copy `.env.example` to `.env` and set a secure password
+- [ ] `docker compose up --build`
+- [ ] Verify PostgreSQL container starts and passes health check
+- [ ] Verify FastAPI container starts after PostgreSQL is healthy
+- [ ] `curl http://localhost:8000/`
+- [ ] `curl http://localhost:8000/health/live`
+- [ ] `curl http://localhost:8000/health/ready` (should show ready)
+- [ ] `curl http://localhost:8000/info`
+- [ ] Verify JSON logs show `database.connection.success`
+- [ ] Stop containers: `docker compose down`
+- [ ] Restart containers: `docker compose up`
+- [ ] Verify `/health/ready` still shows ready (persistence test)
+- [ ] Stop PostgreSQL container only
+- [ ] Verify `/health/live` still returns ok
+- [ ] Verify `/health/ready` returns 503 / not ready
+- [ ] Restart PostgreSQL container
+- [ ] Verify `/health/ready` returns to ready
+- [ ] `docker compose down`
+- [ ] Commit and push to GitHub
+- [ ] Verify Render deployment and production database connectivity

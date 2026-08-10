@@ -19,3 +19,11 @@ Establish operational foundation: centralized configuration, structured logging,
 ## Milestone 2 — Database Foundation
 **Status:** Planned  
 Introduce PostgreSQL connection and integrate database health into `/health/ready`.
+
+# Deployment
+
+## Local Development
+
+1. Copy environment variables:
+   ```bash
+   cp .env.example .env

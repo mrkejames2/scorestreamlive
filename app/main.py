@@ -1,12 +1,14 @@
-"""ScoreStreamLive Bootstrap — Milestone 1."""
+"""ScoreStreamLive — Milestone 2."""
 
 import logging
 import time
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 from app.config import settings
+from app.database import check_database_connection, engine
 from app.logging_config import configure_logging
 
 configure_logging(settings.LOG_LEVEL)
@@ -24,7 +26,22 @@ async def lifespan(app: FastAPI):
             "version": settings.APP_VERSION,
         },
     )
+
+    db_ready = await check_database_connection()
+    if db_ready:
+        logger.info(
+            "Database connection established",
+            extra={"event": "database.connection.success"},
+        )
+    else:
+        logger.warning(
+            "Database connection failed",
+            extra={"event": "database.connection.failure"},
+        )
+
     yield
+
+    await engine.dispose()
     logger.info(
         "Application shutdown",
         extra={"event": "application.shutdown"},
@@ -77,8 +94,14 @@ async def health_live():
 
 @app.get("/health/ready")
 async def health_ready():
-    """Readiness probe. Confirms the application can accept traffic."""
-    return {"status": "ready"}
+    """Readiness probe. Confirms the application and PostgreSQL are operational."""
+    db_ready = await check_database_connection()
+    if db_ready:
+        return {"status": "ready"}
+    return JSONResponse(
+        status_code=503,
+        content={"status": "not ready"},
+    )
 
 
 @app.get("/info")

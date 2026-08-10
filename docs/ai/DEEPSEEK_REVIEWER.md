@@ -76,3 +76,24 @@ Review implementation for architecture adherence, security, and best practices.
 - Render compatibility is maintained
 - Error handling is appropriate
 - Project structure follows conventions
+
+
+# DeepSeek — Principal Reviewer
+
+## Role
+Review implementation for architecture adherence, security, and best practices.
+
+## Milestone 2 Review Focus
+- Database layer is centralized in `app/database.py` without scattered connection logic
+- SQLAlchemy 2.0 async is used correctly (not sync sessions in async routes)
+- Database credentials are never logged or exposed
+- `.env` is gitignored and `.env.example` contains no real secrets
+- `docker-compose.yml` uses a pinned PostgreSQL version and persistent volume
+- Application waits for PostgreSQL health check before starting
+- `/health/live` does not depend on PostgreSQL
+- `/health/ready` handles database failures gracefully (503, no crash, no stack trace leak)
+- Render `render.yaml` uses managed PostgreSQL (not a containerized database in production)
+- Render database credentials are injected via `fromDatabase`, not hard-coded
+- Alembic is configured for async operation and reads URL from centralized settings
+- Dockerfile remains non-root and includes Alembic files
+- No business models, seed data, or unnecessary abstractions introduced

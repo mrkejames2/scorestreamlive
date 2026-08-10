@@ -54,3 +54,26 @@ Define architecture, requirements, acceptance criteria, and identify risks.
 - Standard library logging with custom JSON formatter (no external logging service)
 - `/health/live` for process liveness, `/health/ready` for traffic readiness
 - `python-dotenv` as the only new dependency (justified for local `.env` loading)
+
+
+# GPT-5.5 — Architect
+
+## Role
+Define architecture, requirements, acceptance criteria, and identify risks.
+
+## Milestone 2 Scope
+- PostgreSQL 16 as the persistent data layer
+- SQLAlchemy 2.0 async with asyncpg for database access
+- Alembic for migration management
+- Centralized database configuration extending Milestone 1 settings
+- Docker Compose PostgreSQL service with persistent volume
+- Render managed PostgreSQL integration
+- Readiness health check validates PostgreSQL connectivity
+- Graceful database connection failure handling
+
+## Key Decisions
+- PostgreSQL 16 explicitly pinned
+- SQLAlchemy 2.0 async (not sync) to match FastAPI's async model
+- Async Alembic configuration reading from centralized settings
+- `DB_PASSWORD` and other credentials via environment variables only
+- No business models or seed data in Milestone 2

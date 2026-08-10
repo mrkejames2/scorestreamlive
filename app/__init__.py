@@ -1,1 +1,1 @@
-"""ScoreStreamLive Bootstrap application package."""
+"""ScoreStreamLive application package."""
