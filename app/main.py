@@ -18,24 +18,28 @@ configure_logging(settings.LOG_LEVEL)
 async def lifespan(app: FastAPI):
     """Handle application startup and shutdown events."""
     logger = logging.getLogger("app")
+
+    # Diagnostic: verify every config value loaded correctly
+    logger.info(
+        "Configuration diagnostic",
+        extra={
+            "event": "config.diagnostic",
+            "app_env": settings.APP_ENV,
+            "db_host": settings.DB_HOST,
+            "db_port": settings.DB_PORT,
+            "db_name": settings.DB_NAME,
+            "db_user": settings.DB_USER,
+            "db_password_set": bool(settings.DB_PASSWORD and settings.DB_PASSWORD != "change-me"),
+            "db_url": get_safe_database_url(),
+        },
+    )
+
     logger.info(
         "Application startup",
         extra={
             "event": "application.startup",
             "environment": settings.APP_ENV,
             "version": settings.APP_VERSION,
-        },
-    )
-
-    logger.info(
-        "Database configuration loaded",
-        extra={
-            "event": "database.config",
-            "db_host": settings.DB_HOST,
-            "db_port": settings.DB_PORT,
-            "db_name": settings.DB_NAME,
-            "db_user": settings.DB_USER,
-            "db_url": get_safe_database_url(),
         },
     )
 
@@ -98,13 +102,13 @@ async def root():
     }
 
 
-@app.get("/health/live")
+@app.api_route("/health/live", methods=["GET", "HEAD"])
 async def health_live():
     """Liveness probe. Confirms the application process is alive."""
     return {"status": "ok"}
 
 
-@app.get("/health/ready")
+@app.api_route("/health/ready", methods=["GET", "HEAD"])
 async def health_ready():
     """Readiness probe. Confirms the application and PostgreSQL are operational."""
     db_ready = await check_database_connection()

@@ -14,10 +14,14 @@ logger = logging.getLogger("app")
 def get_database_url() -> str:
     """Construct the async PostgreSQL connection URL."""
     password = quote_plus(settings.DB_PASSWORD)
-    return (
+    url = (
         f"postgresql+asyncpg://{settings.DB_USER}:{password}"
         f"@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
     )
+    # Render PostgreSQL requires SSL
+    if settings.APP_ENV == "production":
+        url += "?ssl=require"
+    return url
 
 
 def get_safe_database_url() -> str:
@@ -28,10 +32,13 @@ def get_safe_database_url() -> str:
     )
 
 
+# Use a short connection timeout (10s) instead of asyncpg's default 60s
+# so failures are visible quickly in logs
 engine = create_async_engine(
     get_database_url(),
     echo=settings.APP_ENV == "development",
     future=True,
+    connect_args={"timeout": 10},
 )
 
 AsyncSessionLocal = async_sessionmaker(
@@ -54,9 +61,10 @@ async def check_database_connection() -> bool:
             await conn.execute(text("SELECT 1"))
         return True
     except Exception as exc:
+        # Use repr() because some asyncpg exceptions have empty str()
         logger.warning(
             "Database connection failed: %s",
-            exc,
+            repr(exc),
             extra={
                 "event": "database.connection.failure",
                 "error_type": type(exc).__name__,
