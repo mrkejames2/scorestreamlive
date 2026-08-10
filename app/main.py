@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from app.config import settings
-from app.database import check_database_connection, engine
+from app.database import check_database_connection, engine, get_safe_database_url
 from app.logging_config import configure_logging
 
 configure_logging(settings.LOG_LEVEL)
@@ -24,6 +24,18 @@ async def lifespan(app: FastAPI):
             "event": "application.startup",
             "environment": settings.APP_ENV,
             "version": settings.APP_VERSION,
+        },
+    )
+
+    logger.info(
+        "Database configuration loaded",
+        extra={
+            "event": "database.config",
+            "db_host": settings.DB_HOST,
+            "db_port": settings.DB_PORT,
+            "db_name": settings.DB_NAME,
+            "db_user": settings.DB_USER,
+            "db_url": get_safe_database_url(),
         },
     )
 

@@ -20,6 +20,14 @@ def get_database_url() -> str:
     )
 
 
+def get_safe_database_url() -> str:
+    """Return the database URL with the password masked for safe logging."""
+    return (
+        f"postgresql+asyncpg://{settings.DB_USER}:****"
+        f"@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
+    )
+
+
 engine = create_async_engine(
     get_database_url(),
     echo=settings.APP_ENV == "development",
@@ -55,6 +63,8 @@ async def check_database_connection() -> bool:
                 "db_host": settings.DB_HOST,
                 "db_port": settings.DB_PORT,
                 "db_name": settings.DB_NAME,
+                "db_user": settings.DB_USER,
+                "db_url": get_safe_database_url(),
             },
         )
         return False
