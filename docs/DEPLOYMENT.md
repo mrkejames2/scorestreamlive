@@ -38,3 +38,11 @@ Introduce PostgreSQL connection and integrate database health into `/health/read
    - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
    - `APP_NAME`, `APP_ENV=production`, `APP_VERSION`, `LOG_LEVEL`
 6. Deploy the web service.
+
+# Deployment
+
+## Local Development
+
+1. Copy environment variables:
+   ```bash
+   cp .env.example .env

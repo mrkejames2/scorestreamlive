@@ -23,3 +23,25 @@ Introduced PostgreSQL as the persistent data layer: SQLAlchemy 2.0 async, asyncp
 ## Milestone 3 — Real-Time Communication Foundation
 **Status:** Planned  
 Introduce Socket.IO for real-time client-server communication.
+
+# Milestones
+
+## Milestone 0 — Golden Path Validation
+**Status:** Complete  
+Validated the AI-assisted development pipeline.
+
+## Milestone 1 — Production Configuration & Observability
+**Status:** Complete  
+Centralized configuration, structured logging, health endpoints, metadata.
+
+## Milestone 2 — PostgreSQL Foundation
+**Status:** Complete  
+PostgreSQL connectivity, SQLAlchemy async, Alembic, Render managed database.
+
+## Milestone 3 — Socket.IO Real-Time Communication Foundation
+**Status:** In Progress  
+Socket.IO server/client, connection lifecycle, ping/pong, broadcast, reconnection, CORS, validation client.
+
+## Milestone 4 — Game / Match Foundation
+**Status:** Planned  
+Introduce the first ScoreStreamLive domain concept: Game/Match entity.

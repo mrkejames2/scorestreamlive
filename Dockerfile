@@ -28,12 +28,12 @@ USER appuser
 # Expose the Uvicorn port
 EXPOSE 8000
 
-# Container health check using only the standard library
+# Container health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live')"
 
 # Enable graceful shutdown on SIGTERM
 STOPSIGNAL SIGTERM
 
-# Start the ASGI server
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start the combined ASGI server (FastAPI + Socket.IO)
+CMD ["uvicorn", "app.main:socket_app", "--host", "0.0.0.0", "--port", "8000"]

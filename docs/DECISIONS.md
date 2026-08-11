@@ -68,3 +68,46 @@
 **Date:** 2026-08-09  
 **Decision:** Store database connection components as individual settings (`DB_HOST`, `DB_PORT`, etc.) and construct the URL programmatically.  
 **Rationale:** Aligns with Render's environment variable injection pattern. Avoids parsing a connection string to extract components for logging or other uses. Password is safely URL-encoded during construction.
+
+
+---
+
+## `docs/DECISIONS.md`
+
+**Purpose:** Added ADR for Socket.IO.
+
+```markdown
+# Architecture Decision Records
+
+## ADR-001: Centralized Configuration via python-dotenv
+**Date:** 2026-08-08  
+**Decision:** Use `python-dotenv` with an immutable dataclass for settings.
+
+## ADR-002: Standard Library JSON Logging
+**Date:** 2026-08-08  
+**Decision:** Implement structured logging using Python's standard `logging` module.
+
+## ADR-003: Separate Live vs Ready Health Endpoints
+**Date:** 2026-08-08  
+**Decision:** Split health into `/health/live` and `/health/ready`.
+
+## ADR-004: PostgreSQL 16
+**Date:** 2026-08-09  
+**Decision:** Use PostgreSQL 16 for both local development and production.
+
+## ADR-005: SQLAlchemy 2.0 with Async Support
+**Date:** 2026-08-09  
+**Decision:** Use SQLAlchemy 2.0 with `asyncpg`.
+
+## ADR-006: Alembic for Migrations
+**Date:** 2026-08-09  
+**Decision:** Use Alembic for database schema migrations.
+
+## ADR-007: Individual Database Settings vs. Single URL
+**Date:** 2026-08-09  
+**Decision:** Store database connection components as individual settings.
+
+## ADR-008: Socket.IO with python-socketio ASGI
+**Date:** 2026-08-11  
+**Decision:** Use `python-socketio` with `async_mode='asgi'` integrated into the existing FastAPI application via `socketio.ASGIApp`.  
+**Rationale:** Single container serves both REST and real-time communication. No additional services or reverse proxies required. Native async support aligns with FastAPI. The JS validation client uses the official Socket.IO CDN client — no build step.

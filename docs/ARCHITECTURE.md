@@ -59,3 +59,35 @@ ScoreStreamLive is a Dockerized FastAPI application with a PostgreSQL persistenc
 - **Slim base image:** `python:3.13-slim` minimizes size and attack surface.
 
 ## Request Flow
+
+# Architecture
+
+## Overview
+
+ScoreStreamLive is a Dockerized FastAPI application with PostgreSQL persistence and Socket.IO real-time communication.
+
+## Components
+
+| Component | Responsibility |
+|-----------|--------------|
+| **FastAPI** | ASGI web framework exposing HTTP endpoints. |
+| **Uvicorn** | ASGI server running the combined FastAPI + Socket.IO application. |
+| **Socket.IO** | Real-time bidirectional event communication. |
+| **PostgreSQL 16** | Persistent relational database. |
+| **SQLAlchemy 2.0 (Async)** | Database access layer. |
+| **asyncpg** | Async PostgreSQL driver. |
+| **Alembic** | Database migration management. |
+| **Docker** | Containerization ensuring identical behavior across environments. |
+| **Docker Compose** | Local orchestration for development and testing. |
+| **Render** | Cloud platform for production deployment. |
+
+## Design Decisions
+
+- **Centralized configuration:** All settings loaded once from environment variables.
+- **Async database layer:** SQLAlchemy 2.0 with `asyncpg`.
+- **Socket.IO integration:** `python-socketio` with `async_mode='asgi'` mounted alongside FastAPI via `ASGIApp`. Single container serves both REST and Socket.IO.
+- **No Redis:** Single-instance architecture proven before horizontal scaling.
+- **No root user:** Container runs as `appuser`.
+- **Structured logging:** JSON-formatted logs via Python standard library.
+
+## Request Flow

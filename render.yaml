@@ -11,9 +11,11 @@ services:
       - key: APP_ENV
         value: production
       - key: APP_VERSION
-        value: 0.2.0
+        value: 0.3.0
       - key: LOG_LEVEL
         value: INFO
+      - key: SOCKET_CORS_ORIGINS
+        value: https://scorestreamlive.onrender.com
       # Database credentials must be set manually in the Render dashboard
       # after creating a managed PostgreSQL database.
       # Required: DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
