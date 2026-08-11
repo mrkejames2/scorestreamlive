@@ -9,15 +9,18 @@ from app.config import settings
 
 logger = logging.getLogger("app")
 
-# Parse CORS origins from comma-separated env var
-_raw_origins = settings.SOCKET_CORS_ORIGINS
-if _raw_origins and _raw_origins != "*":
-    cors_origins = [o.strip() for o in _raw_origins.split(",") if o.strip()]
-else:
+# Environment-aware CORS: empty string defaults to same-origin only
+_raw = settings.SOCKET_CORS_ORIGINS
+if _raw == "*":
     cors_origins = "*"
+elif _raw:
+    cors_origins = [o.strip() for o in _raw.split(",") if o.strip()]
+else:
+    cors_origins = []  # same-origin only
 
 sio = socketio.AsyncServer(
     async_mode="asgi",
+    path="/socket.io",
     cors_allowed_origins=cors_origins,
     logger=False,
     engineio_logger=False,
@@ -68,7 +71,6 @@ async def handle_client_ping(sid, data):
         },
     )
 
-    # Payload validation
     if not isinstance(data, dict):
         logger.warning(
             "Invalid ping payload from sid=%s: expected dict, got %s",
@@ -84,7 +86,6 @@ async def handle_client_ping(sid, data):
 
     client_ts = data.get("timestamp")
 
-    # Emit pong back to the client
     await sio.emit(
         "server:pong",
         {
@@ -94,10 +95,9 @@ async def handle_client_ping(sid, data):
         room=sid,
     )
 
-    # Return acknowledgement
     return {
-        "status": "ok",
-        "received_at": datetime.now(timezone.utc).isoformat(),
+        "status": "acknowledged",
+        "server_timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
 
@@ -114,7 +114,6 @@ async def handle_test_broadcast(sid, data):
         },
     )
 
-    # Payload validation
     if not isinstance(data, dict):
         logger.warning(
             "Invalid broadcast payload from sid=%s",
@@ -129,7 +128,6 @@ async def handle_test_broadcast(sid, data):
 
     message = data.get("message", "No message")
 
-    # Broadcast to all connected clients (including sender)
     await sio.emit(
         "test:broadcast",
         {

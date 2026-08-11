@@ -91,3 +91,45 @@ ScoreStreamLive is a Dockerized FastAPI application with PostgreSQL persistence 
 - **Structured logging:** JSON-formatted logs via Python standard library.
 
 ## Request Flow
+
+
+---
+
+## `docs/ARCHITECTURE.md`
+
+**Purpose:** Updated to reflect the static files and explicit Socket.IO path.
+
+```markdown
+# Architecture
+
+## Overview
+
+ScoreStreamLive is a Dockerized FastAPI application with PostgreSQL persistence and Socket.IO real-time communication.
+
+## Components
+
+| Component | Responsibility |
+|-----------|--------------|
+| **FastAPI** | ASGI web framework exposing HTTP endpoints. |
+| **Uvicorn** | ASGI server running the combined FastAPI + Socket.IO application. |
+| **Socket.IO** | Real-time bidirectional event communication. |
+| **PostgreSQL 16** | Persistent relational database. |
+| **SQLAlchemy 2.0 (Async)** | Database access layer. |
+| **asyncpg** | Async PostgreSQL driver. |
+| **Alembic** | Database migration management. |
+| **Docker** | Containerization ensuring identical behavior across environments. |
+| **Docker Compose** | Local orchestration for development and testing. |
+| **Render** | Cloud platform for production deployment. |
+
+## Design Decisions
+
+- **Centralized configuration:** All settings loaded once from environment variables.
+- **Async database layer:** SQLAlchemy 2.0 with `asyncpg`.
+- **Socket.IO integration:** `python-socketio` with `async_mode='asgi'` mounted alongside FastAPI via `socketio.ASGIApp`. Single container serves both REST and real-time communication.
+- **Explicit Socket.IO path:** `/socket.io` is configured explicitly on both server and client.
+- **Environment-aware CORS:** `SOCKET_CORS_ORIGINS` drives CORS behavior; production uses the service origin, local dev uses `*`.
+- **No Redis:** Single-instance architecture proven before horizontal scaling.
+- **No root user:** Container runs as `appuser`.
+- **Structured logging:** JSON-formatted logs via Python standard library.
+
+## Request Flow

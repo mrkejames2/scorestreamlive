@@ -65,3 +65,11 @@ Server detects disconnect, logs it. Normal disconnects are not treated as failur
 - Invalid payload types return `{"status": "error", "reason": "invalid payload type"}` via acknowledgement.
 - No stack traces, credentials, or internal details are exposed.
 - Server logs contain `socket.error` events with safe metadata.
+
+# Socket.IO Event Contract
+
+## Overview
+
+ScoreStreamLive uses Socket.IO for real-time bidirectional communication between browser clients and the FastAPI application. The Socket.IO server runs inside the same application container as the REST API.
+
+## Architecture

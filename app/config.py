@@ -29,7 +29,7 @@ class Settings:
     DB_NAME: str = os.getenv("DB_NAME", "scorestreamlive")
     DB_USER: str = os.getenv("DB_USER", "scorestreamlive")
     DB_PASSWORD: str = os.getenv("DB_PASSWORD", "change-me")
-    SOCKET_CORS_ORIGINS: str = os.getenv("SOCKET_CORS_ORIGINS", "*")
+    SOCKET_CORS_ORIGINS: str = os.getenv("SOCKET_CORS_ORIGINS", "")
 
 
 settings = Settings()

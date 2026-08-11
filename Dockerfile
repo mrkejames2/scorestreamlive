@@ -17,10 +17,11 @@ COPY --chown=appuser:appuser requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy application code and Alembic configuration
+# Copy application code, Alembic configuration, and static assets
 COPY --chown=appuser:appuser app/ ./app/
 COPY --chown=appuser:appuser alembic/ ./alembic/
 COPY --chown=appuser:appuser alembic.ini .
+COPY --chown=appuser:appuser static/ ./static/
 
 # Switch to non-root user for runtime security
 USER appuser
