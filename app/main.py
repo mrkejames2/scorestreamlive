@@ -120,8 +120,11 @@ CLIENT_HTML = """<!DOCTYPE html>
 
         document.getElementById('btn-disconnect').addEventListener('click', () => {
             socket.disconnect();
-            log('Forced disconnect (auto-reconnect in 1s)');
-        });
+            log('Forced disconnect — reconnecting in 2s...');
+        setTimeout(() => {
+        socket.connect();
+    }, 2000);
+});
     </script>
 </body>
 </html>"""
