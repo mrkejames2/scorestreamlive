@@ -1,0 +1,49 @@
+"""Game Pydantic schemas."""
+
+from datetime import datetime
+from enum import Enum
+from typing import Optional
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class GameStatus(str, Enum):
+    """Allowed game lifecycle states."""
+
+    SCHEDULED = "scheduled"
+    LIVE = "live"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+
+
+class GameBase(BaseModel):
+    """Shared Game fields."""
+
+    name: str = Field(..., min_length=1, max_length=255)
+    status: GameStatus = GameStatus.SCHEDULED
+    scheduled_at: Optional[datetime] = None
+
+
+class GameCreate(GameBase):
+    """Fields required to create a Game."""
+
+    pass
+
+
+class GameUpdate(BaseModel):
+    """Fields allowed when updating a Game."""
+
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
+    status: Optional[GameStatus] = None
+    scheduled_at: Optional[datetime] = None
+
+
+class GameResponse(GameBase):
+    """Full Game representation returned by the API."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    created_at: datetime
+    updated_at: datetime

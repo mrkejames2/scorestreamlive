@@ -133,3 +133,32 @@ ScoreStreamLive is a Dockerized FastAPI application with PostgreSQL persistence 
 - **Structured logging:** JSON-formatted logs via Python standard library.
 
 ## Request Flow
+
+# Architecture
+
+## Overview
+
+ScoreStreamLive is a Dockerized FastAPI application with PostgreSQL persistence, Socket.IO real-time communication, and a Game domain layer.
+
+## Components
+
+| Component | Responsibility |
+|-----------|--------------|
+| **FastAPI** | ASGI web framework exposing HTTP endpoints. |
+| **Uvicorn** | ASGI server running FastAPI + Socket.IO. |
+| **Socket.IO** | Real-time bidirectional event communication. |
+| **PostgreSQL 16** | Persistent relational database. |
+| **SQLAlchemy 2.0** | Async ORM and database access. |
+| **Alembic** | Database schema migrations. |
+| **Pydantic** | Request/response validation and serialization. |
+| **Game Service** | Domain logic for Game lifecycle and Socket.IO notification. |
+
+## Design Decisions
+
+- **Domain layer:** Game operations are separated into `app/services/game_service.py`. REST routes do not contain business logic.
+- **PostgreSQL as source of truth:** All Game state is persisted before Socket.IO events are emitted.
+- **Socket.IO as notification:** The Socket.IO layer never writes to the database. It only broadcasts already-persisted state.
+- **No rooms:** Game events are broadcast to all connected clients. Rooms will be introduced in a future milestone.
+- **UUID identifiers:** Games use UUID primary keys for stability across REST and Socket.IO contexts.
+
+## Data Flow

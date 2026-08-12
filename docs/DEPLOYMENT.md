@@ -46,3 +46,12 @@ Introduce PostgreSQL connection and integrate database health into `/health/read
 1. Copy environment variables:
    ```bash
    cp .env.example .env
+
+
+# Deployment
+
+## Local Development
+
+1. Copy environment variables:
+   ```bash
+   cp .env.example .env

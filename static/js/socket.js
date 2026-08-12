@@ -1,4 +1,6 @@
 const logEl = document.getElementById('log');
+const gamesLogEl = document.getElementById('games-log');
+const gamesListEl = document.getElementById('games-list');
 
 const log = (msg) => {
     const entry = document.createElement('div');
@@ -7,11 +9,35 @@ const log = (msg) => {
     logEl.prepend(entry);
 };
 
+const logGame = (msg) => {
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+    gamesLogEl.prepend(entry);
+};
+
 const updateStatus = (state, socketId) => {
     const status = document.getElementById('connection-status');
     status.textContent = state.charAt(0).toUpperCase() + state.slice(1);
     status.className = 'status ' + state;
     document.getElementById('socket-id').textContent = socketId || '-';
+};
+
+const renderGameCard = (game) => {
+    const div = document.createElement('div');
+    div.className = 'game-card';
+    div.id = 'game-' + game.id;
+    div.innerHTML = '<strong>' + game.name + '</strong> (' + game.status + ')<br><small>' + game.id + '</small>';
+    return div;
+};
+
+const updateGamesList = (game) => {
+    const existing = document.getElementById('game-' + game.id);
+    if (existing) {
+        existing.replaceWith(renderGameCard(game));
+    } else {
+        gamesListEl.prepend(renderGameCard(game));
+    }
 };
 
 // Connect to current application origin with explicit path
@@ -48,6 +74,16 @@ socket.on('server:pong', (data) => {
 
 socket.on('test:broadcast', (data) => {
     log('Event: test:broadcast — ' + JSON.stringify(data));
+});
+
+socket.on('game:created', (data) => {
+    logGame('Event: game:created — ' + data.name + ' (' + data.status + ')');
+    updateGamesList(data);
+});
+
+socket.on('game:updated', (data) => {
+    logGame('Event: game:updated — ' + data.name + ' (' + data.status + ')');
+    updateGamesList(data);
 });
 
 socket.on('error', (err) => {

@@ -5,10 +5,16 @@ from urllib.parse import quote_plus
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import DeclarativeBase
 
 from app.config import settings
 
 logger = logging.getLogger("app")
+
+
+class Base(DeclarativeBase):
+    """Base class for all SQLAlchemy models."""
+    pass
 
 
 def get_database_url() -> str:
@@ -18,7 +24,6 @@ def get_database_url() -> str:
         f"postgresql+asyncpg://{settings.DB_USER}:{password}"
         f"@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
     )
-    # Render PostgreSQL requires SSL
     if settings.APP_ENV == "production":
         url += "?ssl=require"
     return url
@@ -61,7 +66,6 @@ async def check_database_connection() -> bool:
         logger.info("Database connection OK: %s", safe_url)
         return True
     except Exception as exc:
-        # Put the safe URL in the message so it always appears
         logger.warning(
             "Database connection FAILED for %s — error: %s",
             safe_url,

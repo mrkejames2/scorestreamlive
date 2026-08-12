@@ -1,4 +1,4 @@
-"""ScoreStreamLive — Milestone 3."""
+"""ScoreStreamLive — Milestone 4."""
 
 import logging
 import time
@@ -9,6 +9,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.api.games import router as games_router
 from app.config import settings
 from app.database import check_database_connection, engine, get_safe_database_url
 from app.logging_config import configure_logging
@@ -72,8 +73,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Serve static files (JS client, etc.)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.include_router(games_router)
 
 
 @app.middleware("http")
@@ -141,5 +142,4 @@ async def info():
     }
 
 
-# Combine Socket.IO with FastAPI into a single ASGI application
 socket_app = socketio.ASGIApp(sio, other_asgi_app=app)
