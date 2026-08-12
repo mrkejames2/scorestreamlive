@@ -17,11 +17,15 @@ COPY --chown=appuser:appuser requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy application code, Alembic configuration, and static assets
+# Copy application code, Alembic configuration, static assets, and entrypoint
 COPY --chown=appuser:appuser app/ ./app/
 COPY --chown=appuser:appuser alembic/ ./alembic/
 COPY --chown=appuser:appuser alembic.ini .
 COPY --chown=appuser:appuser static/ ./static/
+COPY --chown=appuser:appuser entrypoint.sh .
+
+# Make entrypoint executable
+RUN chmod +x entrypoint.sh
 
 # Switch to non-root user for runtime security
 USER appuser
@@ -36,5 +40,5 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
 # Enable graceful shutdown on SIGTERM
 STOPSIGNAL SIGTERM
 
-# Start the combined ASGI server (FastAPI + Socket.IO)
-CMD ["uvicorn", "app.main:socket_app", "--host", "0.0.0.0", "--port", "8000"]
+# Start via entrypoint script (migrations + server)
+CMD ["./entrypoint.sh"]
