@@ -1,200 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ScoreStreamLive — Socket.IO Validation Client</title>
-  <script src="/socket.io/socket.io.js"></script>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
-      margin: 0;
-      padding: 20px;
-      background: #f5f5f5;
-      color: #333;
-    }
-    h1 { margin-top: 0; font-size: 1.4rem; }
-    .panel {
-      background: #fff;
-      border-radius: 6px;
-      padding: 16px;
-      margin-bottom: 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    #status {
-      display: inline-block;
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-    .connected { background: #d4edda; color: #155724; }
-    .disconnected { background: #f8d7da; color: #721c24; }
-    .info-row { margin: 6px 0; font-size: 0.9rem; }
-    button {
-      margin: 4px 4px 4px 0;
-      padding: 8px 14px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      background: #fff;
-      cursor: pointer;
-      font-size: 0.85rem;
-    }
-    button:hover { background: #f0f0f0; }
-    #log {
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      height: 420px;
-      overflow-y: auto;
-      padding: 10px;
-      background: #fafafa;
-      font-size: 0.8rem;
-    }
-    .event {
-      margin: 3px 0;
-      padding: 6px 8px;
-      border-left: 3px solid #888;
-      background: #fff;
-      border-radius: 0 4px 4px 0;
-    }
-    .event-system { border-left-color: #6c757d; }
-    .event-game { border-left-color: #17a2b8; }
-    .event-team { border-left-color: #6f42c1; }
-    .event-player { border-left-color: #28a745; }
-    .event-roster { border-left-color: #fd7e14; }
-    .event-ack { border-left-color: #20c997; }
-    .event-time {
-      color: #888;
-      font-size: 0.75rem;
-    }
-    .event-name {
-      font-weight: 600;
-      font-size: 0.8rem;
-    }
-    .event-payload {
-      margin-top: 2px;
-      white-space: pre-wrap;
-      word-break: break-word;
-      color: #555;
-    }
-  </style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ScoreStreamLive — Socket.IO Validation</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        .status { padding: 12px; border-radius: 6px; margin: 12px 0; font-weight: 600; }
+        .connected { background: #d4edda; color: #155724; }
+        .disconnected { background: #f8d7da; color: #721c24; }
+        .reconnecting { background: #fff3cd; color: #856404; }
+        button { padding: 10px 18px; margin: 6px 4px; cursor: pointer; font-size: 14px; }
+        #log, #games-log, #teams-log { border: 1px solid #ccc; padding: 12px; height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px; background: #fafafa; }
+        .log-entry { margin: 3px 0; padding: 3px 0; border-bottom: 1px solid #e0e0e0; }
+        .section { margin: 24px 0; }
+        h1 { font-size: 22px; }
+        h2 { font-size: 16px; margin-top: 24px; }
+        .game-card, .team-card { background: #fff; border: 1px solid #ddd; padding: 10px; margin: 6px 0; border-radius: 4px; }
+        .game-card strong, .team-card strong { color: #333; }
+    </style>
 </head>
 <body>
-  <h1>ScoreStreamLive — Socket.IO Validation Client</h1>
+    <h1>ScoreStreamLive — Socket.IO Validation Client</h1>
 
-  <div class="panel">
-    <div class="info-row">
-      Status: <span id="status" class="disconnected">Disconnected</span>
+    <div id="connection-status" class="status disconnected">Disconnected</div>
+    <div>Socket ID: <span id="socket-id">-</span></div>
+
+    <div class="section">
+        <h2>Controls</h2>
+        <button id="btn-ping">Send Ping</button>
+        <button id="btn-broadcast">Send Broadcast</button>
+        <button id="btn-disconnect">Force Disconnect</button>
     </div>
-    <div class="info-row">Socket ID: <span id="socket-id">—</span></div>
-  </div>
 
-  <div class="panel">
-    <button onclick="sendPing()">Send Ping</button>
-    <button onclick="sendBroadcast()">Test Broadcast</button>
-    <button onclick="clearLog()">Clear Log</button>
-  </div>
+    <div class="section">
+        <h2>Event Log</h2>
+        <div id="log"></div>
+    </div>
 
-  <div class="panel">
-    <h2 style="margin-top:0;font-size:1rem;">Event Log</h2>
-    <div id="log"></div>
-  </div>
+    <div class="section">
+        <h2>Teams (via Socket.IO)</h2>
+        <div id="teams-list"></div>
+        <h3>Team Events</h3>
+        <div id="teams-log"></div>
+    </div>
 
-  <script>
-    const logEl = document.getElementById('log');
-    const statusEl = document.getElementById('status');
-    const socketIdEl = document.getElementById('socket-id');
+    <div class="section">
+        <h2>Games (via Socket.IO)</h2>
+        <div id="games-list"></div>
+        <h3>Game Events</h3>
+        <div id="games-log"></div>
+    </div>
 
-    function addEvent(name, data, cssClass) {
-      const div = document.createElement('div');
-      div.className = 'event ' + (cssClass || 'event-system');
-      const time = new Date().toISOString().split('T')[1].split('.')[0];
-      div.innerHTML =
-        '<div class="event-time">[' + time + ']</div>' +
-        '<div class="event-name">' + escapeHtml(name) + '</div>' +
-        '<div class="event-payload">' + escapeHtml(JSON.stringify(data, null, 2)) + '</div>';
-      logEl.appendChild(div);
-      logEl.scrollTop = logEl.scrollHeight;
-    }
-
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-
-    const socket = io();
-
-    socket.on('connect', () => {
-      statusEl.textContent = 'Connected';
-      statusEl.className = 'connected';
-      addEvent('connect', { socket_id: socket.id }, 'event-system');
-    });
-
-    socket.on('disconnect', (reason) => {
-      statusEl.textContent = 'Disconnected';
-      statusEl.className = 'disconnected';
-      socketIdEl.textContent = '—';
-      addEvent('disconnect', { reason: reason }, 'event-system');
-    });
-
-    socket.on('connection:ready', (data) => {
-      socketIdEl.textContent = data.socket_id;
-      addEvent('connection:ready', data, 'event-system');
-    });
-
-    socket.on('server:pong', (data) => {
-      addEvent('server:pong', data, 'event-system');
-    });
-
-    socket.on('test:broadcast', (data) => {
-      addEvent('test:broadcast', data, 'event-system');
-    });
-
-    socket.on('game:created', (data) => {
-      addEvent('game:created', data, 'event-game');
-    });
-
-    socket.on('game:updated', (data) => {
-      addEvent('game:updated', data, 'event-game');
-    });
-
-    socket.on('team:created', (data) => {
-      addEvent('team:created', data, 'event-team');
-    });
-
-    socket.on('team:updated', (data) => {
-      addEvent('team:updated', data, 'event-team');
-    });
-
-    socket.on('player:created', (data) => {
-      addEvent('player:created', data, 'event-player');
-    });
-
-    socket.on('player:updated', (data) => {
-      addEvent('player:updated', data, 'event-player');
-    });
-
-    socket.on('roster:updated', (data) => {
-      addEvent('roster:updated', data, 'event-roster');
-    });
-
-    function sendPing() {
-      socket.emit('client:ping', { timestamp: Date.now() }, (ack) => {
-        addEvent('client:ping ack', ack, 'event-ack');
-      });
-    }
-
-    function sendBroadcast() {
-      socket.emit('test:broadcast', { message: 'Hello from validation client' }, (ack) => {
-        addEvent('test:broadcast ack', ack, 'event-ack');
-      });
-    }
-
-    function clearLog() {
-      logEl.innerHTML = '';
-    }
-  </script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="/static/js/socket.js"></script>
 </body>
 </html>

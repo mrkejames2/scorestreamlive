@@ -10,7 +10,6 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api.games import router as games_router
-from app.api.players import router as players_router
 from app.api.teams import router as teams_router
 from app.config import settings
 from app.database import check_database_connection, engine, get_safe_database_url
@@ -77,7 +76,6 @@ app = FastAPI(
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(games_router)
-app.include_router(players_router)
 app.include_router(teams_router)
 
 
