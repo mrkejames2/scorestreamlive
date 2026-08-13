@@ -1,75 +1,92 @@
-# Socket.IO Event Contract
+## Socket.IO Events
 
-## Transport
+### Server → Client Events
 
-| Setting | Value |
-|---------|-------|
-| **Polling** | Enabled |
-| **WebSocket** | Enabled |
-| **Path** | `/socket.io/` (default) |
+#### `connection:ready`
+Emitted when a client successfully connects.
+**Payload:**
+```json
+{
+  "status": "connected",
+  "socket_id": "<socket-id>"
+}
+```
 
-## Connection Lifecycle
+#### `server:pong`
+Response to a `client:ping` event.
+**Payload:**
+```json
+{
+  "status": "pong",
+  "timestamp": "<iso-timestamp>"
+}
+```
 
-### `connect` (built-in)
-Server accepts the connection, logs it, and emits `connection:ready` to the connecting client.
+#### `test:broadcast`
+Echoes a test message to all connected clients.
+**Payload:**
+```json
+{
+  "message": "<echoed-message>"
+}
+```
 
-### `disconnect` (built-in)
-Server detects disconnect, logs it. Normal disconnects are not treated as failures.
+#### `game:created`
+Emitted after a new Game is successfully persisted.
+**Payload:** The public Game representation (includes embedded Team objects).
 
-## Events
+#### `game:updated`
+Emitted after an existing Game is successfully updated.
+**Payload:** The updated public Game representation.
 
-### `connection:ready`
+#### `team:created`
+Emitted after a new Team is successfully persisted.
+**Payload:** The public Team representation.
 
-| Attribute | Value |
-|-----------|-------|
-| **Direction** | Server → Client |
-| **Purpose** | Notify client that the Socket.IO connection is established |
-| **Payload** | `{"socket_id": "abc123"}` |
+#### `team:updated`
+Emitted after an existing Team is successfully updated.
+**Payload:** The updated public Team representation.
 
----
+#### `player:created`
+Emitted after a new Player is successfully persisted.
+**Payload:** The public Player representation.
 
-### `client:ping`
+#### `player:updated`
+Emitted after an existing Player is successfully updated.
+**Payload:** The updated public Player representation.
 
-| Attribute | Value |
-|-----------|-------|
-| **Direction** | Client → Server |
-| **Purpose** | Validate bidirectional communication |
-| **Payload** | `{"timestamp": "2026-08-10T18:00:00Z"}` |
-| **Validation** | Payload must be a dict. `timestamp` is optional but expected. |
-| **Response** | Emits `server:pong` to the sender + acknowledgement callback |
+#### `roster:updated` (Invalidation Notification)
+**Purpose:** Notifies all connected clients that a Team's roster has changed. This is an **invalidation-only** event. Clients must retrieve the authoritative roster state via REST.
 
----
+**Trigger:** Emitted after a successful `player:created` or `player:updated` event for any Player associated with the Team.
 
-### `server:pong`
+**Payload:**
+```json
+{
+  "team_id": "<team-uuid>"
+}
+```
 
-| Attribute | Value |
-|-----------|-------|
-| **Direction** | Server → Client |
-| **Purpose** | Verify server-to-client communication |
-| **Payload** | `{"timestamp": "...", "server_time": "..."}` |
+**Client Behavior:**
+Upon receiving this event, clients should fetch the updated roster from:
+```
+GET /api/teams/{team_id}/players
+```
 
----
+**Rationale:**
+- PostgreSQL remains the single source of truth.
+- The event is small and efficient.
+- Avoids sending potentially large roster payloads over Socket.IO.
+- Ensures clients always have the most current data.
 
-### `test:broadcast`
+### Client → Server Events
 
-| Attribute | Value |
-|-----------|-------|
-| **Direction** | Client → Server → All Clients |
-| **Purpose** | Prove broadcast capability |
-| **Payload** | `{"message": "Hello from Socket.IO"}` |
-| **Validation** | Payload must be a dict. |
-| **Broadcast scope** | All connected clients, **including** the sender. |
-
-## Error Handling
-
-- Invalid payload types return `{"status": "error", "reason": "invalid payload type"}` via acknowledgement.
-- No stack traces, credentials, or internal details are exposed.
-- Server logs contain `socket.error` events with safe metadata.
-
-# Socket.IO Event Contract
-
-## Overview
-
-ScoreStreamLive uses Socket.IO for real-time bidirectional communication between browser clients and the FastAPI application. The Socket.IO server runs inside the same application container as the REST API.
-
-## Architecture
+#### `client:ping`
+Client-initiated keepalive ping.
+**Payload:**
+```json
+{
+  "timestamp": "<iso-timestamp>"
+}
+```
+**Server Response:** `server:pong`
