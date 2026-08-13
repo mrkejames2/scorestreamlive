@@ -22,7 +22,7 @@ class Settings:
 
     APP_NAME: str = os.getenv("APP_NAME", "ScoreStreamLive")
     APP_ENV: str = os.getenv("APP_ENV", "development")
-    APP_VERSION: str = os.getenv("APP_VERSION", "0.3.0")
+    APP_VERSION: str = os.getenv("APP_VERSION", "0.5.0")
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
     DB_HOST: str = os.getenv("DB_HOST", "postgres")
     DB_PORT: int = _get_db_port()

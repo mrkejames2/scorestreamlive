@@ -162,3 +162,37 @@ ScoreStreamLive is a Dockerized FastAPI application with PostgreSQL persistence,
 - **UUID identifiers:** Games use UUID primary keys for stability across REST and Socket.IO contexts.
 
 ## Data Flow
+
+
+# Architecture
+
+## Overview
+
+ScoreStreamLive is a Dockerized FastAPI application with PostgreSQL persistence, Socket.IO real-time communication, and Team/Game domain layers.
+
+## Components
+
+| Component | Responsibility |
+|-----------|--------------|
+| **FastAPI** | ASGI web framework exposing HTTP endpoints. |
+| **Uvicorn** | ASGI server running FastAPI + Socket.IO. |
+| **Socket.IO** | Real-time bidirectional event communication. |
+| **PostgreSQL 16** | Persistent relational database. |
+| **SQLAlchemy 2.0** | Async ORM and database access. |
+| **Alembic** | Database schema migrations. |
+| **Pydantic** | Request/response validation and serialization. |
+| **Team Service** | Team lifecycle and Socket.IO notification. |
+| **Game Service** | Game lifecycle, Team validation, Socket.IO notification. |
+
+## Design Decisions
+
+- **Domain layer:** Team and Game operations are separated into service modules. REST routes contain no business logic.
+- **PostgreSQL as source of truth:** All state is persisted before Socket.IO events are emitted.
+- **Socket.IO as notification:** Never writes to the database. Only broadcasts already-persisted state.
+- **Team independence:** Teams are standalone entities. Games reference them via foreign keys.
+- **Nullable Team references:** Existing Games without Teams remain valid. New Games may omit Teams.
+- **Embedded Team representation:** Game API responses include brief Team objects for client convenience.
+- **No rooms:** Domain events broadcast to all connected clients. Rooms deferred.
+- **UUID identifiers:** Stable across REST and Socket.IO contexts.
+
+## Data Flow

@@ -45,3 +45,27 @@ Socket.IO server/client, connection lifecycle, ping/pong, broadcast, reconnectio
 ## Milestone 4 — Game / Match Foundation
 **Status:** Planned  
 Introduce the first ScoreStreamLive domain concept: Game/Match entity.
+
+# Milestones
+
+## Milestone 0 — Golden Path Validation
+**Status:** Complete
+
+## Milestone 1 — Production Configuration & Observability
+**Status:** Complete
+
+## Milestone 2 — PostgreSQL Foundation
+**Status:** Complete
+
+## Milestone 3 — Socket.IO Real-Time Communication Foundation
+**Status:** Complete
+
+## Milestone 4 — Game / Match Foundation
+**Status:** Complete
+
+## Milestone 5 — Team Foundation and Game-Team Relationships
+**Status:** In Progress  
+Team entity, REST API, Game-Team relationships, Socket.IO domain events, validation.
+
+## Milestone 6 — Players / Rosters
+**Status:** Planned

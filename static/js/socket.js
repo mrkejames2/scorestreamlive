@@ -1,6 +1,8 @@
 const logEl = document.getElementById('log');
 const gamesLogEl = document.getElementById('games-log');
 const gamesListEl = document.getElementById('games-list');
+const teamsLogEl = document.getElementById('teams-log');
+const teamsListEl = document.getElementById('teams-list');
 
 const log = (msg) => {
     const entry = document.createElement('div');
@@ -16,6 +18,13 @@ const logGame = (msg) => {
     gamesLogEl.prepend(entry);
 };
 
+const logTeam = (msg) => {
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+    teamsLogEl.prepend(entry);
+};
+
 const updateStatus = (state, socketId) => {
     const status = document.getElementById('connection-status');
     status.textContent = state.charAt(0).toUpperCase() + state.slice(1);
@@ -23,11 +32,31 @@ const updateStatus = (state, socketId) => {
     document.getElementById('socket-id').textContent = socketId || '-';
 };
 
+const renderTeamCard = (team) => {
+    const div = document.createElement('div');
+    div.className = 'team-card';
+    div.id = 'team-' + team.id;
+    div.innerHTML = '<strong>' + team.name + '</strong>' + (team.short_name ? ' (' + team.short_name + ')' : '') + '<br><small>' + team.id + '</small>';
+    return div;
+};
+
+const updateTeamsList = (team) => {
+    const existing = document.getElementById('team-' + team.id);
+    if (existing) {
+        existing.replaceWith(renderTeamCard(team));
+    } else {
+        teamsListEl.prepend(renderTeamCard(team));
+    }
+};
+
 const renderGameCard = (game) => {
     const div = document.createElement('div');
     div.className = 'game-card';
     div.id = 'game-' + game.id;
-    div.innerHTML = '<strong>' + game.name + '</strong> (' + game.status + ')<br><small>' + game.id + '</small>';
+    const home = game.home_team ? game.home_team.name : (game.home_team_id ? 'TBD' : 'None');
+    const away = game.away_team ? game.away_team.name : (game.away_team_id ? 'TBD' : 'None');
+    div.innerHTML = '<strong>' + game.name + '</strong> (' + game.status + ')<br>' +
+        home + ' vs ' + away + '<br><small>' + game.id + '</small>';
     return div;
 };
 
@@ -74,6 +103,16 @@ socket.on('server:pong', (data) => {
 
 socket.on('test:broadcast', (data) => {
     log('Event: test:broadcast — ' + JSON.stringify(data));
+});
+
+socket.on('team:created', (data) => {
+    logTeam('Event: team:created — ' + data.name);
+    updateTeamsList(data);
+});
+
+socket.on('team:updated', (data) => {
+    logTeam('Event: team:updated — ' + data.name);
+    updateTeamsList(data);
 });
 
 socket.on('game:created', (data) => {

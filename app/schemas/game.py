@@ -7,6 +7,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.schemas.team import TeamBrief
+
 
 class GameStatus(str, Enum):
     """Allowed game lifecycle states."""
@@ -23,6 +25,8 @@ class GameBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     status: GameStatus = GameStatus.SCHEDULED
     scheduled_at: Optional[datetime] = None
+    home_team_id: Optional[UUID] = None
+    away_team_id: Optional[UUID] = None
 
 
 class GameCreate(GameBase):
@@ -37,6 +41,8 @@ class GameUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     status: Optional[GameStatus] = None
     scheduled_at: Optional[datetime] = None
+    home_team_id: Optional[UUID] = None
+    away_team_id: Optional[UUID] = None
 
 
 class GameResponse(GameBase):
@@ -47,3 +53,5 @@ class GameResponse(GameBase):
     id: UUID
     created_at: datetime
     updated_at: datetime
+    home_team: Optional[TeamBrief] = None
+    away_team: Optional[TeamBrief] = None

@@ -18,7 +18,10 @@ async def create(
     db: AsyncSession = Depends(get_session),
 ):
     """Create a new Game."""
-    return await create_game(db, data)
+    try:
+        return await create_game(db, data)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
 
 
 @router.get("", response_model=list[GameResponse])
@@ -48,7 +51,10 @@ async def update(
     db: AsyncSession = Depends(get_session),
 ):
     """Update an existing Game."""
-    game = await update_game(db, game_id, data)
+    try:
+        game = await update_game(db, game_id, data)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
     if not game:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Game not found")
     return game
