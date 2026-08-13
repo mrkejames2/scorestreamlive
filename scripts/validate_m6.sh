@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_URL="${BASE_URL:-http://localhost:8000}"
+#BASE_URL="${BASE_URL:-http://192.168.12.133:8000}"
+BASE_URL="${BASE_URL:-https://scorestreamlive.onrender.com}"
 TS=$(date +%s)
 PREFIX="M6-VALIDATION-${TS}"
 
@@ -256,7 +257,7 @@ import urllib.request
 import json
 import time
 
-BASE_URL = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8000"
+BASE_URL = sys.argv[1] if len(sys.argv) > 1 else "https://scorestreamlive.onrender.com"
 
 events_received = []
 sio = socketio.Client()
