@@ -3,6 +3,8 @@ const gamesLogEl = document.getElementById('games-log');
 const gamesListEl = document.getElementById('games-list');
 const teamsLogEl = document.getElementById('teams-log');
 const teamsListEl = document.getElementById('teams-list');
+const playersLogEl = document.getElementById('players-log');
+const playersListEl = document.getElementById('players-list');
 
 const log = (msg) => {
     const entry = document.createElement('div');
@@ -23,6 +25,20 @@ const logTeam = (msg) => {
     entry.className = 'log-entry';
     entry.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
     teamsLogEl.prepend(entry);
+};
+
+const logPlayer = (msg) => {
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+    playersLogEl.prepend(entry);
+};
+
+const logRoster = (msg) => {
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+    playersLogEl.prepend(entry);
 };
 
 const updateStatus = (state, socketId) => {
@@ -66,6 +82,27 @@ const updateGamesList = (game) => {
         existing.replaceWith(renderGameCard(game));
     } else {
         gamesListEl.prepend(renderGameCard(game));
+    }
+};
+
+const renderPlayerCard = (player) => {
+    const div = document.createElement('div');
+    div.className = 'player-card';
+    div.id = 'player-' + player.id;
+    const jersey = player.jersey_number !== null && player.jersey_number !== undefined
+        ? ' #' + player.jersey_number
+        : '';
+    div.innerHTML = '<strong>' + player.first_name + ' ' + player.last_name + jersey + '</strong><br>' +
+        '<small>Team: ' + player.team_id + ' | Player: ' + player.id + '</small>';
+    return div;
+};
+
+const updatePlayersList = (player) => {
+    const existing = document.getElementById('player-' + player.id);
+    if (existing) {
+        existing.replaceWith(renderPlayerCard(player));
+    } else {
+        playersListEl.prepend(renderPlayerCard(player));
     }
 };
 
@@ -125,6 +162,26 @@ socket.on('game:updated', (data) => {
     updateGamesList(data);
 });
 
+socket.on('player:created', (data) => {
+    const jersey = data.jersey_number !== null && data.jersey_number !== undefined
+        ? ' #' + data.jersey_number
+        : '';
+    logPlayer('Event: player:created — ' + data.first_name + ' ' + data.last_name + jersey + ' (Team: ' + data.team_id + ')');
+    updatePlayersList(data);
+});
+
+socket.on('player:updated', (data) => {
+    const jersey = data.jersey_number !== null && data.jersey_number !== undefined
+        ? ' #' + data.jersey_number
+        : '';
+    logPlayer('Event: player:updated — ' + data.first_name + ' ' + data.last_name + jersey + ' (Team: ' + data.team_id + ')');
+    updatePlayersList(data);
+});
+
+socket.on('roster:updated', (data) => {
+    logRoster('Event: roster:updated — Team ' + data.team_id + ' (Roster invalidated — retrieve via GET /api/teams/' + data.team_id + '/players)');
+});
+
 socket.on('error', (err) => {
     log('Socket error — ' + JSON.stringify(err));
 });
@@ -147,5 +204,5 @@ document.getElementById('btn-disconnect').addEventListener('click', () => {
     log('Forced disconnect — reconnecting in 2s...');
     setTimeout(() => {
         socket.connect();
-    }, 2000);
+    }, 2002);
 });
