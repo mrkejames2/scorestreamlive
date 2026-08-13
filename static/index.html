@@ -31,6 +31,8 @@
     }
     .connected { background: #d4edda; color: #155724; }
     .disconnected { background: #f8d7da; color: #721c24; }
+    .connecting { background: #fff3cd; color: #856404; }
+    .error { background: #f8d7da; color: #721c24; }
     .info-row { margin: 6px 0; font-size: 0.9rem; }
     button {
       margin: 4px 4px 4px 0;
@@ -64,6 +66,7 @@
     .event-player { border-left-color: #28a745; }
     .event-roster { border-left-color: #fd7e14; }
     .event-ack { border-left-color: #20c997; }
+    .event-error { border-left-color: #dc3545; }
     .event-time {
       color: #888;
       font-size: 0.75rem;
@@ -88,6 +91,7 @@
       Status: <span id="status" class="disconnected">Disconnected</span>
     </div>
     <div class="info-row">Socket ID: <span id="socket-id">—</span></div>
+    <div class="info-row">Transport: <span id="transport">—</span></div>
   </div>
 
   <div class="panel">
@@ -105,6 +109,7 @@
     const logEl = document.getElementById('log');
     const statusEl = document.getElementById('status');
     const socketIdEl = document.getElementById('socket-id');
+    const transportEl = document.getElementById('transport');
 
     function addEvent(name, data, cssClass) {
       const div = document.createElement('div');
@@ -124,19 +129,49 @@
       return div.innerHTML;
     }
 
-    const socket = io();
+    function setStatus(state, text) {
+      statusEl.className = state;
+      statusEl.textContent = text;
+    }
+
+    // Connection options for Render compatibility
+    const socket = io({
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000,
+    });
 
     socket.on('connect', () => {
-      statusEl.textContent = 'Connected';
-      statusEl.className = 'connected';
-      addEvent('connect', { socket_id: socket.id }, 'event-system');
+      setStatus('connected', 'Connected');
+      socketIdEl.textContent = socket.id;
+      transportEl.textContent = socket.io.engine.transport.name;
+      addEvent('connect', { socket_id: socket.id, transport: socket.io.engine.transport.name }, 'event-system');
     });
 
     socket.on('disconnect', (reason) => {
-      statusEl.textContent = 'Disconnected';
-      statusEl.className = 'disconnected';
+      setStatus('disconnected', 'Disconnected');
       socketIdEl.textContent = '—';
+      transportEl.textContent = '—';
       addEvent('disconnect', { reason: reason }, 'event-system');
+    });
+
+    socket.on('connect_error', (err) => {
+      setStatus('error', 'Error: ' + err.message);
+      addEvent('connect_error', { message: err.message, type: err.type }, 'event-error');
+      console.error('Socket.IO connect_error:', err);
+    });
+
+    socket.on('reconnect_attempt', (attempt) => {
+      setStatus('connecting', 'Reconnecting... (' + attempt + ')');
+      addEvent('reconnect_attempt', { attempt: attempt }, 'event-system');
+    });
+
+    socket.on('reconnect', (attempt) => {
+      setStatus('connected', 'Connected');
+      addEvent('reconnect', { attempt: attempt }, 'event-system');
     });
 
     socket.on('connection:ready', (data) => {
@@ -181,12 +216,20 @@
     });
 
     function sendPing() {
+      if (!socket.connected) {
+        addEvent('client:ping', { error: 'Not connected' }, 'event-error');
+        return;
+      }
       socket.emit('client:ping', { timestamp: Date.now() }, (ack) => {
         addEvent('client:ping ack', ack, 'event-ack');
       });
     }
 
     function sendBroadcast() {
+      if (!socket.connected) {
+        addEvent('test:broadcast', { error: 'Not connected' }, 'event-error');
+        return;
+      }
       socket.emit('test:broadcast', { message: 'Hello from validation client' }, (ack) => {
         addEvent('test:broadcast ack', ack, 'event-ack');
       });
