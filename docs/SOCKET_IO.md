@@ -73,3 +73,27 @@ Server detects disconnect, logs it. Normal disconnects are not treated as failur
 ScoreStreamLive uses Socket.IO for real-time bidirectional communication between browser clients and the FastAPI application. The Socket.IO server runs inside the same application container as the REST API.
 
 ## Architecture
+
+## Player Events
+
+### `player:created`
+
+Emitted after a Player is successfully created and committed.
+
+Payload: public Player representation (same as REST response).
+
+### `player:updated`
+
+Emitted after a Player is successfully updated and committed.
+
+Payload: public Player representation (same as REST response).
+
+## Roster Events
+
+### `roster:updated`
+
+Invalidation notification emitted after a Player creation or update affects a Team's roster.
+
+Payload:
+```json
+{ "team_id": "uuid" }
