@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-#BASE_URL="${BASE_URL:-http://192.168.12.133:8000}"
-BASE_URL="${BASE_URL:-https://scorestreamlive.onrender.com}"
+BASE_URL="${BASE_URL:-http://localhost:8000}"
 TS=$(date +%s)
 PREFIX="M6-VALIDATION-${TS}"
 
@@ -10,13 +9,13 @@ PASS=0
 FAIL=0
 
 pass() {
-    echo "[PASS] $1"
-    PASS=$((PASS + 1))
+ echo "[PASS] $1"
+ PASS=$((PASS + 1))
 }
 
 fail() {
-    echo "[FAIL] $1"
-    FAIL=$((FAIL + 1))
+ echo "[FAIL] $1"
+ FAIL=$((FAIL + 1))
 }
 
 check_http() {
@@ -45,7 +44,7 @@ check_http "/info" "200" "info"
 # 2. Create Team A
 TEAM_A_PAYLOAD="{\"name\":\"${PREFIX}-TEAM-A\",\"short_name\":\"TA\"}"
 TEAM_A_RESPONSE=$(curl -s -X POST "${BASE_URL}/api/teams" -H "Content-Type: application/json" -d "$TEAM_A_PAYLOAD")
-TEAM_A_ID=$(echo "$TEAM_A_RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+TEAM_A_ID=$(echo "$TEAM_A_RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])" 2>/dev/null || true)
 if [ -n "$TEAM_A_ID" ]; then
     pass "Team A creation"
 else
@@ -66,7 +65,7 @@ check_http "/api/teams" "200" "Team list"
 # 6. Create Team B
 TEAM_B_PAYLOAD="{\"name\":\"${PREFIX}-TEAM-B\",\"short_name\":\"TB\"}"
 TEAM_B_RESPONSE=$(curl -s -X POST "${BASE_URL}/api/teams" -H "Content-Type: application/json" -d "$TEAM_B_PAYLOAD")
-TEAM_B_ID=$(echo "$TEAM_B_RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+TEAM_B_ID=$(echo "$TEAM_B_RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])" 2>/dev/null || true)
 if [ -n "$TEAM_B_ID" ]; then
     pass "Team B creation"
 else
@@ -77,7 +76,7 @@ fi
 # 7. Create Game
 GAME_PAYLOAD="{\"name\":\"${PREFIX}-GAME\",\"home_team_id\":\"${TEAM_A_ID}\",\"away_team_id\":\"${TEAM_B_ID}\"}"
 GAME_RESPONSE=$(curl -s -X POST "${BASE_URL}/api/games" -H "Content-Type: application/json" -d "$GAME_PAYLOAD")
-GAME_ID=$(echo "$GAME_RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+GAME_ID=$(echo "$GAME_RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])" 2>/dev/null || true)
 if [ -n "$GAME_ID" ]; then
     pass "Game creation"
 else
@@ -98,7 +97,7 @@ check_http "/api/games" "200" "Game list"
 # 11. Create Player on Team A
 PLAYER_PAYLOAD="{\"team_id\":\"${TEAM_A_ID}\",\"first_name\":\"Validation\",\"last_name\":\"Player\",\"jersey_number\":10}"
 PLAYER_RESPONSE=$(curl -s -X POST "${BASE_URL}/api/players" -H "Content-Type: application/json" -d "$PLAYER_PAYLOAD")
-PLAYER_ID=$(echo "$PLAYER_RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+PLAYER_ID=$(echo "$PLAYER_RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])" 2>/dev/null || true)
 if [ -n "$PLAYER_ID" ]; then
     pass "Player creation"
 else
@@ -140,7 +139,7 @@ ROSTER_A_COUNT=$(echo "$ROSTER_A" | python3 -c "import sys,json; print(len(json.
 # 16. Create Player on Team B
 PLAYER_B_PAYLOAD="{\"team_id\":\"${TEAM_B_ID}\",\"first_name\":\"Other\",\"last_name\":\"Player\",\"jersey_number\":99}"
 PLAYER_B_RESPONSE=$(curl -s -X POST "${BASE_URL}/api/players" -H "Content-Type: application/json" -d "$PLAYER_B_PAYLOAD")
-PLAYER_B_ID=$(echo "$PLAYER_B_RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+PLAYER_B_ID=$(echo "$PLAYER_B_RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])" 2>/dev/null || true)
 if [ -n "$PLAYER_B_ID" ]; then
     pass "Player B creation"
 else
@@ -164,29 +163,29 @@ else
     pass "Team isolation B"
 fi
 
-# 18. Missing Team roster → 404
+# 18. Missing Team roster -> 404
 NONEXISTENT_TEAM="00000000-0000-0000-0000-000000000000"
 ROSTER_404=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/api/teams/${NONEXISTENT_TEAM}/players")
 [ "$ROSTER_404" = "404" ] && pass "Missing Team roster 404" || fail "Missing Team roster 404 (got $ROSTER_404)"
 
-# 19. Invalid Team for Player creation → 422
+# 19. Invalid Team for Player creation -> 422
 INVALID_PLAYER_PAYLOAD="{\"team_id\":\"${NONEXISTENT_TEAM}\",\"first_name\":\"X\",\"last_name\":\"Y\"}"
 INVALID_PLAYER_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${BASE_URL}/api/players" -H "Content-Type: application/json" -d "$INVALID_PLAYER_PAYLOAD")
 [ "$INVALID_PLAYER_CODE" = "422" ] && pass "Invalid Team rejected" || fail "Invalid Team rejected (got $INVALID_PLAYER_CODE)"
 
-# 20. Missing Player → 404
+# 20. Missing Player -> 404
 MISSING_PLAYER="00000000-0000-0000-0000-000000000000"
 MP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/api/players/${MISSING_PLAYER}")
 [ "$MP_CODE" = "404" ] && pass "Missing Player 404" || fail "Missing Player 404 (got $MP_CODE)"
 
 # 21. Validation errors
 # Blank first_name
-BLANK_FN="{\"team_id\":\"${TEAM_A_ID}\",\"first_name\":\"   \",\"last_name\":\"Valid\"}"
+BLANK_FN="{\"team_id\":\"${TEAM_A_ID}\",\"first_name\":\" \",\"last_name\":\"Valid\"}"
 BLANK_FN_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${BASE_URL}/api/players" -H "Content-Type: application/json" -d "$BLANK_FN")
 [ "$BLANK_FN_CODE" = "422" ] && pass "Blank first_name rejected" || fail "Blank first_name rejected (got $BLANK_FN_CODE)"
 
 # Blank last_name
-BLANK_LN="{\"team_id\":\"${TEAM_A_ID}\",\"first_name\":\"Valid\",\"last_name\":\"   \"}"
+BLANK_LN="{\"team_id\":\"${TEAM_A_ID}\",\"first_name\":\"Valid\",\"last_name\":\" \"}"
 BLANK_LN_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${BASE_URL}/api/players" -H "Content-Type: application/json" -d "$BLANK_LN")
 [ "$BLANK_LN_CODE" = "422" ] && pass "Blank last_name rejected" || fail "Blank last_name rejected (got $BLANK_LN_CODE)"
 
@@ -204,7 +203,7 @@ BIG_JERSEY_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${BASE_URL}/ap
 # Create multiple players on a dedicated ordering test team
 ORDER_TEAM_PAYLOAD="{\"name\":\"${PREFIX}-ORDER-TEAM\",\"short_name\":\"ORD\"}"
 ORDER_TEAM_RESPONSE=$(curl -s -X POST "${BASE_URL}/api/teams" -H "Content-Type: application/json" -d "$ORDER_TEAM_PAYLOAD")
-ORDER_TEAM_ID=$(echo "$ORDER_TEAM_RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+ORDER_TEAM_ID=$(echo "$ORDER_TEAM_RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])" 2>/dev/null || true)
 if [ -z "$ORDER_TEAM_ID" ]; then
     fail "Order test team creation"
     exit 1
@@ -218,11 +217,11 @@ pass "Order test team creation"
 # P4: jersey=5, last=Beta, first=C
 # P5: jersey=null, last=Apple, first=D
 
-P1=$(curl -s -X POST "${BASE_URL}/api/players" -H "Content-Type: application/json" -d "{\"team_id\":\"${ORDER_TEAM_ID}\",\"first_name\":\"A\",\"last_name\":\"Zebra\"}")
-P2=$(curl -s -X POST "${BASE_URL}/api/players" -H "Content-Type: application/json" -d "{\"team_id\":\"${ORDER_TEAM_ID}\",\"first_name\":\"B\",\"last_name\":\"Alpha\",\"jersey_number\":10}")
-P3=$(curl -s -X POST "${BASE_URL}/api/players" -H "Content-Type: application/json" -d "{\"team_id\":\"${ORDER_TEAM_ID}\",\"first_name\":\"A\",\"last_name\":\"Alpha\",\"jersey_number\":10}")
-P4=$(curl -s -X POST "${BASE_URL}/api/players" -H "Content-Type: application/json" -d "{\"team_id\":\"${ORDER_TEAM_ID}\",\"first_name\":\"C\",\"last_name\":\"Beta\",\"jersey_number\":5}")
-P5=$(curl -s -X POST "${BASE_URL}/api/players" -H "Content-Type: application/json" -d "{\"team_id\":\"${ORDER_TEAM_ID}\",\"first_name\":\"D\",\"last_name\":\"Apple\"}")
+curl -s -o /dev/null -X POST "${BASE_URL}/api/players" -H "Content-Type: application/json" -d "{\"team_id\":\"${ORDER_TEAM_ID}\",\"first_name\":\"A\",\"last_name\":\"Zebra\"}"
+curl -s -o /dev/null -X POST "${BASE_URL}/api/players" -H "Content-Type: application/json" -d "{\"team_id\":\"${ORDER_TEAM_ID}\",\"first_name\":\"B\",\"last_name\":\"Alpha\",\"jersey_number\":10}"
+curl -s -o /dev/null -X POST "${BASE_URL}/api/players" -H "Content-Type: application/json" -d "{\"team_id\":\"${ORDER_TEAM_ID}\",\"first_name\":\"A\",\"last_name\":\"Alpha\",\"jersey_number\":10}"
+curl -s -o /dev/null -X POST "${BASE_URL}/api/players" -H "Content-Type: application/json" -d "{\"team_id\":\"${ORDER_TEAM_ID}\",\"first_name\":\"C\",\"last_name\":\"Beta\",\"jersey_number\":5}"
+curl -s -o /dev/null -X POST "${BASE_URL}/api/players" -H "Content-Type: application/json" -d "{\"team_id\":\"${ORDER_TEAM_ID}\",\"first_name\":\"D\",\"last_name\":\"Apple\"}"
 
 # Fetch roster and verify order
 ROSTER_ORDER=$(curl -s "${BASE_URL}/api/teams/${ORDER_TEAM_ID}/players")
@@ -374,7 +373,7 @@ try:
         print("[FAIL] server:pong event not received")
         sys.exit(1)
 
-    # Create Team → team:created
+    # Create Team -> team:created
     team = rest_post("/api/teams", {"name": "SIO-Test-Team", "short_name": "STT"})
     if wait_for_event("team:created"):
         print("[PASS] team:created received")
@@ -382,7 +381,7 @@ try:
         print("[FAIL] team:created not received")
         sys.exit(1)
 
-    # Update Team → team:updated
+    # Update Team -> team:updated
     rest_patch(f"/api/teams/{team['id']}", {"name": "SIO-Test-Team-Updated"})
     if wait_for_event("team:updated"):
         print("[PASS] team:updated received")
@@ -390,7 +389,7 @@ try:
         print("[FAIL] team:updated not received")
         sys.exit(1)
 
-    # Create Game → game:created
+    # Create Game -> game:created
     team_b = rest_post("/api/teams", {"name": "SIO-Test-Team-B", "short_name": "STB"})
     game = rest_post("/api/games", {"name": "SIO-Test-Game", "home_team_id": team["id"], "away_team_id": team_b["id"]})
     if wait_for_event("game:created"):
@@ -399,7 +398,7 @@ try:
         print("[FAIL] game:created not received")
         sys.exit(1)
 
-    # Update Game → game:updated
+    # Update Game -> game:updated
     rest_patch(f"/api/games/{game['id']}", {"name": "SIO-Test-Game-Updated"})
     if wait_for_event("game:updated"):
         print("[PASS] game:updated received")
@@ -456,7 +455,7 @@ try:
         print("[FAIL] player:created before roster:updated ordering violated")
         sys.exit(1)
 
-    # Update Player → player:updated + roster:updated
+    # Update Player -> player:updated + roster:updated
     events_received.clear()
     rest_patch(f"/api/players/{player['id']}", {"jersey_number": 99})
 
@@ -488,7 +487,7 @@ try:
         print("[FAIL] player:updated before roster:updated ordering violated")
         sys.exit(1)
 
-    # Failed Player creation → NO player/roster events
+    # Failed Player creation -> NO player/roster events
     events_received.clear()
     try:
         req = urllib.request.Request(
@@ -538,12 +537,12 @@ PYEOF
 echo "========================================"
 if [ $FAIL -eq 0 ]; then
     echo "M6 REST + SOCKET.IO VALIDATION PASSED"
-    echo "Passed: $PASS  Failed: $FAIL"
+    echo "Passed: $PASS Failed: $FAIL"
     echo "========================================"
     exit 0
 else
     echo "M6 REST + SOCKET.IO VALIDATION FAILED"
-    echo "Passed: $PASS  Failed: $FAIL"
+    echo "Passed: $PASS Failed: $FAIL"
     echo "========================================"
     exit 1
 fi

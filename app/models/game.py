@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import String, DateTime, ForeignKey
+from sqlalchemy import Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -27,3 +27,6 @@ class Game(Base):
 
     home_team: Mapped[Optional["Team"]] = relationship("Team", foreign_keys=[home_team_id])
     away_team: Mapped[Optional["Team"]] = relationship("Team", foreign_keys=[away_team_id])
+
+    home_score: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    away_score: Mapped[int] = mapped_column(Integer, nullable=False, default=0)

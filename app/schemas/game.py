@@ -55,3 +55,5 @@ class GameResponse(GameBase):
     updated_at: datetime
     home_team: Optional[TeamBrief] = None
     away_team: Optional[TeamBrief] = None
+    home_score: int
+    away_score: int
