@@ -5,41 +5,21 @@ const teamsLogEl = document.getElementById('teams-log');
 const teamsListEl = document.getElementById('teams-list');
 const playersLogEl = document.getElementById('players-log');
 const playersListEl = document.getElementById('players-list');
+const scoringLogEl = document.getElementById('scoring-log');
 
-const log = (msg) => {
+const makeLogEntry = (container, msg) => {
     const entry = document.createElement('div');
     entry.className = 'log-entry';
     entry.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
-    logEl.prepend(entry);
+    container.prepend(entry);
 };
 
-const logGame = (msg) => {
-    const entry = document.createElement('div');
-    entry.className = 'log-entry';
-    entry.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
-    gamesLogEl.prepend(entry);
-};
-
-const logTeam = (msg) => {
-    const entry = document.createElement('div');
-    entry.className = 'log-entry';
-    entry.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
-    teamsLogEl.prepend(entry);
-};
-
-const logPlayer = (msg) => {
-    const entry = document.createElement('div');
-    entry.className = 'log-entry';
-    entry.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
-    playersLogEl.prepend(entry);
-};
-
-const logRoster = (msg) => {
-    const entry = document.createElement('div');
-    entry.className = 'log-entry';
-    entry.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
-    playersLogEl.prepend(entry);
-};
+const log = (msg) => makeLogEntry(logEl, msg);
+const logGame = (msg) => makeLogEntry(gamesLogEl, msg);
+const logTeam = (msg) => makeLogEntry(teamsLogEl, msg);
+const logPlayer = (msg) => makeLogEntry(playersLogEl, msg);
+const logRoster = (msg) => makeLogEntry(playersLogEl, msg);
+const logScoring = (msg) => makeLogEntry(scoringLogEl, msg);
 
 const updateStatus = (state, socketId) => {
     const status = document.getElementById('connection-status');
@@ -52,7 +32,10 @@ const renderTeamCard = (team) => {
     const div = document.createElement('div');
     div.className = 'team-card';
     div.id = 'team-' + team.id;
-    div.innerHTML = '<strong>' + team.name + '</strong>' + (team.short_name ? ' (' + team.short_name + ')' : '') + '<br><small>' + team.id + '</small>';
+    div.innerHTML =
+        '<strong>' + team.name + '</strong>' +
+        (team.short_name ? ' (' + team.short_name + ')' : '') +
+        '<br><small>' + team.id + '</small>';
     return div;
 };
 
@@ -69,10 +52,26 @@ const renderGameCard = (game) => {
     const div = document.createElement('div');
     div.className = 'game-card';
     div.id = 'game-' + game.id;
-    const home = game.home_team ? game.home_team.name : (game.home_team_id ? 'TBD' : 'None');
-    const away = game.away_team ? game.away_team.name : (game.away_team_id ? 'TBD' : 'None');
-    div.innerHTML = '<strong>' + game.name + '</strong> (' + game.status + ')<br>' +
-        home + ' vs ' + away + '<br><small>' + game.id + '</small>';
+
+    const home = game.home_team
+        ? game.home_team.name
+        : (game.home_team_id ? 'TBD' : 'None');
+
+    const away = game.away_team
+        ? game.away_team.name
+        : (game.away_team_id ? 'TBD' : 'None');
+
+    const score =
+        Number.isInteger(game.home_score) && Number.isInteger(game.away_score)
+            ? '<br><strong>Score: ' + game.home_score + ' - ' + game.away_score + '</strong>'
+            : '';
+
+    div.innerHTML =
+        '<strong>' + game.name + '</strong> (' + game.status + ')<br>' +
+        home + ' vs ' + away +
+        score +
+        '<br><small>' + game.id + '</small>';
+
     return div;
 };
 
@@ -89,11 +88,25 @@ const renderPlayerCard = (player) => {
     const div = document.createElement('div');
     div.className = 'player-card';
     div.id = 'player-' + player.id;
-    const jersey = player.jersey_number !== null && player.jersey_number !== undefined
-        ? ' #' + player.jersey_number
-        : '';
-    div.innerHTML = '<strong>' + player.first_name + ' ' + player.last_name + jersey + '</strong><br>' +
-        '<small>Team: ' + player.team_id + ' | Player: ' + player.id + '</small>';
+
+    const jersey =
+        player.jersey_number !== null && player.jersey_number !== undefined
+            ? ' #' + player.jersey_number
+            : '';
+
+    div.innerHTML =
+        '<strong>' +
+        player.first_name +
+        ' ' +
+        player.last_name +
+        jersey +
+        '</strong><br>' +
+        '<small>Team: ' +
+        player.team_id +
+        ' | Player: ' +
+        player.id +
+        '</small>';
+
     return div;
 };
 
@@ -106,7 +119,7 @@ const updatePlayersList = (player) => {
     }
 };
 
-// Connect to current application origin with explicit path
+// Connect to current application origin with explicit path.
 const socket = io({
     path: '/socket.io',
     transports: ['websocket', 'polling'],
@@ -153,33 +166,122 @@ socket.on('team:updated', (data) => {
 });
 
 socket.on('game:created', (data) => {
-    logGame('Event: game:created — ' + data.name + ' (' + data.status + ')');
+    logGame(
+        'Event: game:created — ' +
+        data.name +
+        ' (' +
+        data.status +
+        ') | Score: ' +
+        data.home_score +
+        ' - ' +
+        data.away_score
+    );
     updateGamesList(data);
 });
 
 socket.on('game:updated', (data) => {
-    logGame('Event: game:updated — ' + data.name + ' (' + data.status + ')');
+    logGame(
+        'Event: game:updated — ' +
+        data.name +
+        ' (' +
+        data.status +
+        ') | Score: ' +
+        data.home_score +
+        ' - ' +
+        data.away_score
+    );
     updateGamesList(data);
 });
 
 socket.on('player:created', (data) => {
-    const jersey = data.jersey_number !== null && data.jersey_number !== undefined
-        ? ' #' + data.jersey_number
-        : '';
-    logPlayer('Event: player:created — ' + data.first_name + ' ' + data.last_name + jersey + ' (Team: ' + data.team_id + ')');
+    const jersey =
+        data.jersey_number !== null && data.jersey_number !== undefined
+            ? ' #' + data.jersey_number
+            : '';
+
+    logPlayer(
+        'Event: player:created — ' +
+        data.first_name +
+        ' ' +
+        data.last_name +
+        jersey +
+        ' (Team: ' +
+        data.team_id +
+        ')'
+    );
+
     updatePlayersList(data);
 });
 
 socket.on('player:updated', (data) => {
-    const jersey = data.jersey_number !== null && data.jersey_number !== undefined
-        ? ' #' + data.jersey_number
-        : '';
-    logPlayer('Event: player:updated — ' + data.first_name + ' ' + data.last_name + jersey + ' (Team: ' + data.team_id + ')');
+    const jersey =
+        data.jersey_number !== null && data.jersey_number !== undefined
+            ? ' #' + data.jersey_number
+            : '';
+
+    logPlayer(
+        'Event: player:updated — ' +
+        data.first_name +
+        ' ' +
+        data.last_name +
+        jersey +
+        ' (Team: ' +
+        data.team_id +
+        ')'
+    );
+
     updatePlayersList(data);
 });
 
 socket.on('roster:updated', (data) => {
-    logRoster('Event: roster:updated — Team ' + data.team_id + ' (Roster invalidated — retrieve via GET /api/teams/' + data.team_id + '/players)');
+    logRoster(
+        'Event: roster:updated — Team ' +
+        data.team_id +
+        ' (Roster invalidated — retrieve via GET /api/teams/' +
+        data.team_id +
+        '/players)'
+    );
+});
+
+socket.on('scoring_event:created', (data) => {
+    const playerId = data.player_id || 'unknown / not supplied';
+
+    logScoring(
+        'Event: scoring_event:created — ' +
+        'Event ' +
+        data.id +
+        ' | Game ' +
+        data.game_id +
+        ' | Team ' +
+        data.team_id +
+        ' | Player ' +
+        playerId +
+        ' | Type ' +
+        data.event_type +
+        ' | Created ' +
+        data.created_at
+    );
+});
+
+socket.on('game:score_updated', (data) => {
+    logScoring(
+        'Event: game:score_updated — ' +
+        'Game ' +
+        data.game_id +
+        ' | Score: ' +
+        data.home_score +
+        ' - ' +
+        data.away_score
+    );
+
+    logGame(
+        'Event: game:score_updated — Game ' +
+        data.game_id +
+        ' | Score: ' +
+        data.home_score +
+        ' - ' +
+        data.away_score
+    );
 });
 
 socket.on('error', (err) => {
@@ -188,21 +290,34 @@ socket.on('error', (err) => {
 
 document.getElementById('btn-ping').addEventListener('click', () => {
     const ts = new Date().toISOString();
-    socket.emit('client:ping', { timestamp: ts }, (ack) => {
-        log('Ack: client:ping — ' + JSON.stringify(ack));
-    });
+
+    socket.emit(
+        'client:ping',
+        { timestamp: ts },
+        (ack) => {
+            log('Ack: client:ping — ' + JSON.stringify(ack));
+        }
+    );
+
     log('Sent: client:ping — ' + ts);
 });
 
 document.getElementById('btn-broadcast').addEventListener('click', () => {
-    socket.emit('test:broadcast', { message: 'Hello from ' + (socket.id || 'unknown') });
+    socket.emit(
+        'test:broadcast',
+        {
+            message: 'Hello from ' + (socket.id || 'unknown'),
+        }
+    );
+
     log('Sent: test:broadcast');
 });
 
 document.getElementById('btn-disconnect').addEventListener('click', () => {
     socket.disconnect();
     log('Forced disconnect — reconnecting in 2s...');
+
     setTimeout(() => {
         socket.connect();
-    }, 2002);
+    }, 2000);
 });

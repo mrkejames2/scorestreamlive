@@ -89,8 +89,14 @@ async def create_scoring_event(
     await db.refresh(game)
 
     # 8. Emit Socket.IO domain events
-    sio.emit("scoring_event:created", _serialize_scoring_event(scoring_event))
-    sio.emit("game:score_updated", _serialize_game_score(game))
+    await sio.emit(
+        "scoring_event:created",
+        _serialize_scoring_event(scoring_event),
+    )
+    await sio.emit(
+        "game:score_updated",
+        _serialize_game_score(game),
+    )
 
     return scoring_event
 
