@@ -1,34 +1,22 @@
-# ScoreStreamLive — IMPLEMENTATION MAP
+# ScoreStreamLive --- IMPLEMENTATION MAP
 
-**Purpose:** Describe the actual currently deployed architecture  
-**Current Production Milestone:** 6  
-**Current Domain:** Game → Team → Player  
-**Next Planned Milestone:** 7 — Game State / Scoring Foundation
+**Purpose:** Describe the actual current implementation state\
+**Production Baseline:** Milestone 6\
+**Local Candidate:** Milestone 7 implemented and locally validated\
+**Current Domain:** Game → Team → Player + Game Score + ScoringEvent\
+**Next Planned Milestone:** M8 --- Game Clock / Timer Foundation, not
+yet authorized
 
----
+> This map distinguishes the production-validated M6 baseline from the
+> locally validated M7 candidate. Do not call M7 production-complete
+> until Render validation passes.
 
-# 1. Purpose
+------------------------------------------------------------------------
 
-This file describes what exists now and how it works.
+# 1. Runtime Stack
 
-A milestone specification describes what we intend to build. This file describes the deployed implementation.
-
-Fresh AI sessions should read this file together with:
-
-```text
-AI_HANDOFF.md
-Current MILESTONE_X.md
-Repository
-```
-
----
-
-# 2. Runtime Stack
-
-Current stack:
-
-```text
-Python 3.13
+``` text
+Python
 FastAPI
 SQLAlchemy 2.x async
 asyncpg
@@ -45,39 +33,39 @@ Render
 
 The repository is authoritative for exact versions.
 
----
+------------------------------------------------------------------------
 
-# 3. Runtime Architecture
+# 2. Runtime Architecture
 
-```text
-                       Browser / API Client
-                              │
-                ┌─────────────┴─────────────┐
-                │                           │
-              REST                      Socket.IO
-                │                           │
-                ▼                           ▼
-             FastAPI                python-socketio
-                │                           │
-                └─────────────┬─────────────┘
-                              ▼
-                        Application
-                              │
-                              ▼
-                           Services
-                              │
-                              ▼
-                       SQLAlchemy Async
-                              │
-                              ▼
-                          PostgreSQL
+``` text
+                        Browser / API Client
+                               │
+                 ┌─────────────┴─────────────┐
+                 │                           │
+               REST                      Socket.IO
+                 │                           │
+                 ▼                           ▼
+              FastAPI                python-socketio
+                 │                           │
+                 └─────────────┬─────────────┘
+                               ▼
+                         Application
+                               │
+                               ▼
+                            Services
+                               │
+                               ▼
+                        SQLAlchemy Async
+                               │
+                               ▼
+                           PostgreSQL
 ```
 
----
+------------------------------------------------------------------------
 
-# 4. Startup Flow
+# 3. Startup Flow
 
-```text
+``` text
 Docker / Render
       ↓
 PostgreSQL available
@@ -89,107 +77,136 @@ Uvicorn
 FastAPI + Socket.IO ASGI app
 ```
 
-Migrations run before serving traffic.
+------------------------------------------------------------------------
 
----
+# 4. Persistence / Mutation Pattern
 
-# 5. Persistence Pattern
+Normal domain mutation:
 
-```text
-FastAPI route
+``` text
+REST route
     ↓
-AsyncSession dependency
+AsyncSession
     ↓
 Service
     ↓
-SQLAlchemy
+Validation
     ↓
-PostgreSQL
-```
-
-Commits happen in services.
-
-Mutation pattern:
-
-```text
-Validate
- ↓
-Create / modify ORM entity
- ↓
-db.commit()
- ↓
+SQLAlchemy / PostgreSQL
+    ↓
+COMMIT
+    ↓
 refresh / reload
- ↓
-Socket.IO domain event
- ↓
-response
+    ↓
+Socket.IO committed-state notification
+    ↓
+REST response
 ```
 
----
+M7 scoring uses a specialized concurrency-safe variant:
 
-# 6. Domain Model
+``` text
+POST /api/scoring-events
+    ↓
+Scoring Service
+    ↓
+Validate Game / Team / optional Player
+    ↓
+Create ScoringEvent
+    +
+Atomic SQL Game score increment
+    ↓
+ONE COMMIT
+    ↓
+Reload committed state
+    ↓
+scoring_event:created
+    ↓
+game:score_updated
+```
 
-Current production domain:
+------------------------------------------------------------------------
 
-```text
+# 5. Current Domain Model
+
+``` text
                          GAME
                           │
-          ┌───────────────┴───────────────┐
-          ▼                               ▼
-      HOME TEAM                       AWAY TEAM
-          │                               │
-          ▼                               ▼
-       PLAYERS                          PLAYERS
+        ┌─────────────────┼─────────────────┐
+        ▼                 ▼                 ▼
+    HOME TEAM         AWAY TEAM           SCORE
+        │                 │          home_score
+        ▼                 ▼          away_score
+     PLAYERS           PLAYERS              │
+                                              ▼
+                                      SCORING EVENTS
 ```
 
 Implemented:
-- Game
-- Team
-- Player
 
-Not yet implemented:
-- Game State
-- Score
-- Goal / scoring event
-- Clock
-- Scoreboard
-- Authentication
-- Organization
-- Season
+``` text
+Game
+Team
+Player
+Derived Team roster
+Game score
+ScoringEvent
+```
 
----
+Not implemented:
 
-# 7. Game
+``` text
+Game clock
+Timer
+Periods / halves
+Score correction / undo
+Scoreboard projection
+OBS
+Authentication
+Authorization
+Organizations
+Seasons
+```
 
-Conceptually:
+------------------------------------------------------------------------
 
-```text
+# 6. Game
+
+Conceptual fields now include:
+
+``` text
 id
 name
 status
 scheduled_at
 home_team_id
 away_team_id
+home_score
+away_score
 created_at
 updated_at
 ```
 
-Current API:
+Game API remains:
 
-```text
+``` text
 POST   /api/games
 GET    /api/games
 GET    /api/games/{game_id}
 PATCH  /api/games/{game_id}
 ```
 
----
+`GET /api/games/{game_id}` exposes authoritative score.
 
-# 8. Team
+Normal Game PATCH is not the M7 score-mutation path.
 
-Conceptually:
+------------------------------------------------------------------------
 
-```text
+# 7. Team
+
+Conceptual fields:
+
+``` text
 id
 name
 short_name
@@ -197,9 +214,9 @@ created_at
 updated_at
 ```
 
-Current API:
+API:
 
-```text
+``` text
 POST   /api/teams
 GET    /api/teams
 GET    /api/teams/{team_id}
@@ -207,15 +224,15 @@ PATCH  /api/teams/{team_id}
 GET    /api/teams/{team_id}/players
 ```
 
-Games reference Teams.
+Games reference Teams as Home and Away Teams.
 
----
+------------------------------------------------------------------------
 
-# 9. Player
+# 8. Player
 
-Conceptually:
+Conceptual fields:
 
-```text
+``` text
 id
 team_id
 first_name
@@ -225,12 +242,12 @@ created_at
 updated_at
 ```
 
-Rules:
+Established rules:
 
-```text
+``` text
 team_id
     required
-    immutable in M6
+    immutable in current Player architecture
     FK → teams.id
     ON DELETE RESTRICT
 
@@ -242,357 +259,431 @@ first_name / last_name
 jersey_number
     nullable integer
     0–999
-    not unique
+    duplicates allowed
 ```
 
-Current API:
+API:
 
-```text
+``` text
 POST   /api/players
 GET    /api/players/{player_id}
 PATCH  /api/players/{player_id}
 ```
 
-No Player DELETE endpoint. No Player transfer system.
+No Player DELETE endpoint or transfer system.
 
----
+------------------------------------------------------------------------
 
-# 10. Roster
+# 9. Roster
 
-No separate Roster table exists.
+No Roster table exists.
 
 Roster is derived from:
 
-```text
+``` text
 Players WHERE team_id = requested Team
 ```
 
 Endpoint:
 
-```text
+``` text
 GET /api/teams/{team_id}/players
-```
-
-Behavior:
-
-```text
-Missing Team → 404
-Existing Team, no Players → []
-Existing Team, Players → ordered list
 ```
 
 Ordering:
 
-```text
+``` text
 jersey_number ASC NULLS LAST
 last_name ASC
 first_name ASC
 id ASC
 ```
 
----
+`roster:updated` is an invalidation event, not a full roster payload.
 
-# 11. Socket.IO Foundation
+------------------------------------------------------------------------
 
-Technical events from M3 include:
+# 10. Game Score
 
-```text
+Persistent authoritative fields:
+
+``` text
+games.home_score
+games.away_score
+```
+
+Properties:
+
+``` text
+INTEGER
+NOT NULL
+default 0
+```
+
+Current score is read from Game state.
+
+Clients do not replay ScoringEvents to derive current score.
+
+------------------------------------------------------------------------
+
+# 11. ScoringEvent
+
+Conceptual schema:
+
+``` text
+scoring_events
+├── id UUID PK
+├── game_id UUID NOT NULL FK games.id ON DELETE RESTRICT
+├── team_id UUID NOT NULL FK teams.id ON DELETE RESTRICT
+├── player_id UUID NULL FK players.id ON DELETE RESTRICT
+├── event_type VARCHAR(50) NOT NULL
+└── created_at TIMESTAMPTZ NOT NULL
+```
+
+Index:
+
+``` text
+ix_scoring_events_game_id
+```
+
+M7 event type:
+
+``` text
+goal
+```
+
+`player_id` is nullable.
+
+------------------------------------------------------------------------
+
+# 12. Scoring REST API
+
+``` text
+POST /api/scoring-events
+GET  /api/games/{game_id}/scoring-events
+```
+
+POST success:
+
+``` text
+201 Created
+```
+
+Scoring validation:
+
+``` text
+Game must exist
+Team must participate in Game
+Player, if supplied, must exist
+Player, if supplied, must belong to scoring Team
+event_type must be goal
+```
+
+History ordering:
+
+``` text
+created_at ASC
+id ASC
+```
+
+------------------------------------------------------------------------
+
+# 13. M7 Atomicity / Concurrency
+
+ScoringEvent persistence and Game score increment use one transaction.
+
+Score increment is an atomic PostgreSQL update rather than a naïve ORM
+read/increment/write cycle.
+
+Local concurrency validation:
+
+``` text
+Requests:                       10
+Successful:                     10
+Score delta:                    10
+ScoringEvent DB delta:          10
+scoring_event:created received: 10
+game:score_updated received:    10
+Lost increments:                 0
+Lost M7 events:                  0
+```
+
+------------------------------------------------------------------------
+
+# 14. Socket.IO Foundation
+
+Technical events:
+
+``` text
 connection:ready
 client:ping
 server:pong
 test:broadcast
 ```
 
-Connect/disconnect/reconnect behavior remains part of regression validation.
+Existing domain events:
 
----
-
-# 12. Domain Events
-
-Game:
-
-```text
+``` text
 game:created
 game:updated
-```
-
-Team:
-
-```text
 team:created
 team:updated
-```
-
-Player:
-
-```text
 player:created
 player:updated
 roster:updated
 ```
 
-All domain mutation events are emitted after successful commit.
+M7 adds:
 
----
+``` text
+scoring_event:created
+game:score_updated
+```
 
-# 13. Player Event Payload
+All successful domain mutation events represent committed state.
 
-```json
+------------------------------------------------------------------------
+
+# 15. M7 Socket.IO Payloads
+
+## scoring_event:created
+
+``` json
 {
-  "id": "<player UUID>",
+  "id": "<event UUID>",
+  "game_id": "<game UUID>",
   "team_id": "<team UUID>",
-  "first_name": "...",
-  "last_name": "...",
-  "jersey_number": 13,
-  "created_at": "...",
-  "updated_at": "..."
+  "player_id": "<player UUID or null>",
+  "event_type": "goal",
+  "created_at": "<ISO timestamp>"
 }
 ```
 
----
+## game:score_updated
 
-# 14. Player Event Ordering
-
-Creation:
-
-```text
-COMMIT
- ↓
-REFRESH
- ↓
-player:created
- ↓
-roster:updated
-```
-
-Update:
-
-```text
-COMMIT
- ↓
-REFRESH
- ↓
-player:updated
- ↓
-roster:updated
-```
-
-Failed mutations do not emit successful-state events.
-
----
-
-# 15. roster:updated
-
-Invalidation-only event:
-
-```json
+``` json
 {
-  "team_id": "<team UUID>"
+  "game_id": "<game UUID>",
+  "home_score": 1,
+  "away_score": 0
 }
 ```
 
-Authoritative roster is retrieved through:
+Single-request order:
 
-```text
-GET /api/teams/{team_id}/players
+``` text
+COMMIT
+ ↓
+reload
+ ↓
+scoring_event:created
+ ↓
+game:score_updated
 ```
 
-This is an intentional architecture decision.
+Failed scoring requests emit neither event.
 
----
+------------------------------------------------------------------------
 
 # 16. Database Migration State
 
-Current Player migration:
+M6:
 
-```text
-alembic/versions/20260813_0003_create_players_table.py
-```
-
-Revision:
-
-```text
+``` text
 20260813_0003
 ```
 
-Schema conceptually:
+M7:
 
-```text
-players
-├── id UUID PK
-├── team_id UUID NOT NULL FK teams.id ON DELETE RESTRICT
-├── first_name VARCHAR(255) NOT NULL
-├── last_name VARCHAR(255) NOT NULL
-├── jersey_number INTEGER NULL
-├── created_at TIMESTAMPTZ NOT NULL
-└── updated_at TIMESTAMPTZ NOT NULL
+``` text
+20260813_0004
 ```
 
-Index:
+Current local Alembic:
 
-```text
-ix_players_team_id
+``` text
+20260813_0004 (head)
 ```
 
-No jersey uniqueness constraint.
+M7 migration adds Game score fields and creates `scoring_events`.
 
----
+Do not rewrite existing migration history.
 
-# 17. Validation Harness
+------------------------------------------------------------------------
 
-Current reusable regression harness:
+# 17. Validation Harnesses
 
-```text
+Preserved:
+
+``` text
 scripts/validate_m6.sh
+scripts/validate_m7a.sh
+scripts/validate_m7b.sh
+scripts/validate_m7c.sh
 ```
 
-Final M6 results:
+Current final M7 harness:
 
-```text
-LOCAL
-57 passed
-0 failed
-
-RENDER PRODUCTION
-57 passed
-0 failed
+``` text
+scripts/validate_m7.sh
 ```
 
-Coverage includes:
+Latest local result:
 
-- health
-- Game
-- Team
-- Player
-- roster
-- ordering
-- Team isolation
-- validation errors
-- Socket.IO
-- payloads
-- event ordering
-- failed mutation suppression
-- reconnect
+``` text
+M7 VALIDATION PASSED
+Passed: 127
+Failed: 0
+```
 
-Preserve and extend this pattern in future milestones.
+Within that validation:
 
----
+``` text
+M7-C final behavior: 68/68 PASS
+M6 regression:        57/57 PASS
+```
+
+Current local Alembic:
+
+``` text
+20260813_0004 (head)
+```
+
+------------------------------------------------------------------------
 
 # 18. Static Validation Client
 
-The browser validation client is a technical development tool.
+`/client` is a technical development/diagnostic tool.
 
 It demonstrates:
-- connection status
-- Socket ID
-- ping / ack
-- Game events
-- Team events
-- Player events
-- roster invalidation
-- disconnect/reconnect
+
+``` text
+connection state
+Socket ID
+ping / acknowledgement
+Team events
+Game events
+Player events
+roster invalidation
+scoring_event:created
+game:score_updated
+disconnect / reconnect
+```
 
 It is not the production scoreboard UI.
 
----
+------------------------------------------------------------------------
 
 # 19. Configuration Rules
 
 Configuration remains centralized.
 
 Do not hardcode:
-- Render URL
-- Database URL
-- secrets
-- production CORS values
 
----
+``` text
+Render URL
+Database URL
+secrets
+production CORS values
+```
+
+`BASE_URL` is configurable in validation harnesses.
+
+------------------------------------------------------------------------
 
 # 20. Docker
 
-Current local architecture remains intentionally small:
+Current local architecture remains:
 
-```text
+``` text
 Application
 PostgreSQL
 ```
 
-No extra infrastructure is currently required.
+No scoring container or new infrastructure was introduced.
 
-The Docker Compose obsolete `version` warning is non-blocking and deferred.
+The Docker Compose obsolete `version` warning is non-blocking and
+deferred.
 
----
+------------------------------------------------------------------------
 
-# 21. Render
+# 21. Render State
 
-Render hosts the application.
+Production baseline remains M6 until M7 is pushed and validated.
 
-Production currently supports:
-- REST
-- Socket.IO
-- PostgreSQL-backed domain state
+Known production baseline:
 
-M6 production validation succeeded.
+``` text
+M6
+57/57 PASS
+```
 
----
+M7 production validation is still pending.
+
+Do not state that M7 is deployed until the Render validation is actually
+completed.
+
+------------------------------------------------------------------------
 
 # 22. Error Handling
 
-Current established pattern:
+Established pattern remains:
 
-```text
+``` text
 Pydantic validation → 422
 Business validation → controlled route response
 Missing resource → 404
 Unexpected application/DB failure → existing 500 behavior
 ```
 
-Do not introduce a new error architecture inside an unrelated milestone.
+M7 scoring-specific controlled validation is implemented without
+introducing a new global error architecture.
 
----
+------------------------------------------------------------------------
 
 # 23. Protected Infrastructure
 
-Future milestones should avoid redesigning without explicit architecture approval:
+Avoid redesigning without explicit approval:
 
-```text
+``` text
 Dockerfile
 docker-compose.yml
-entrypoint/startup path
+entrypoint/startup
 Render configuration
 database.py
-Alembic configuration
+Alembic configuration/history
 Socket.IO initialization
 CORS architecture
 health endpoints
-Game API
-Team API
-Player API
-existing validation harness
+existing Game API
+existing Team API
+existing Player API
 ```
 
----
+------------------------------------------------------------------------
 
-# 24. Current Boundary
+# 24. Current Application Boundary
 
-Current application responsibility:
+Current locally validated application responsibility:
 
-```text
+``` text
 Game identity
 Team identity
 Player identity
 Roster derivation
-Persistent state
-Real-time domain notifications
+Persistent Game score
+Persistent ScoringEvent history
+Concurrency-safe score mutation
+Real-time committed-state notifications
 ```
 
-Not yet implemented:
+Still deferred:
 
-```text
-Live game state
-Score
-Scoring events
+``` text
 Clock
+Timer
+Periods
+Score correction
 Scoreboard projection
 OBS
 Authentication
@@ -601,80 +692,13 @@ Users
 Organizations
 ```
 
----
+------------------------------------------------------------------------
 
-# 25. Expected M7 Direction
+# 25. Checkpoint Model
 
-Directional only:
+The established safe implementation pattern is:
 
-```text
-Game
- ↓
-Game State
- ↓
-Score
- ↓
-Scoring Events
-```
-
-Possible future shape:
-
-```text
-                         GAME
-                          │
-        ┌─────────────────┼─────────────────┐
-        ▼                 ▼                 ▼
-    HOME TEAM         AWAY TEAM         GAME STATE
-        │                 │                 │
-        ▼                 ▼             ┌───┴───┐
-     PLAYERS           PLAYERS          ▼       ▼
-                                      SCORE   EVENTS
-```
-
-M7 architecture must be formally defined before implementation.
-
----
-
-# 26. Fresh AI Reconstruction Checklist
-
-Before coding, a fresh AI should inspect and explain:
-
-```text
-Application startup
-Database/session lifecycle
-Alembic chain
-Game model/schema/service/routes
-Team model/schema/service/routes
-Player model/schema/service/routes
-Roster endpoint
-Socket.IO initialization
-Domain event emissions
-Validation harness
-Docker startup
-Render deployment
-```
-
----
-
-# 27. Change Classification Rule
-
-Before implementing a milestone, classify proposed changes as:
-
-```text
-NEW FILES
-SMALL MODIFICATIONS
-PROTECTED / SHOULD NOT CHANGE
-```
-
-If a milestone unexpectedly requires broad changes to protected infrastructure, stop for architecture review.
-
----
-
-# 28. Checkpoint Rule
-
-Future milestones should use checkpoints:
-
-```text
+``` text
 A — Persistence
  ↓ validate
 
@@ -690,39 +714,107 @@ D — Client / Docs / Regression
 Independent Review
  ↓
 Production
+ ↓
+Documentation Refresh
 ```
 
-This checkpoint model was successfully used to complete M6 safely.
+M6 used this successfully. M7 has now passed A--D locally.
 
----
+------------------------------------------------------------------------
 
-# 29. Mandatory Documentation Refresh
+# 26. Current Completion State
 
-Before starting the next milestone:
+``` text
+M0–M6 PRODUCTION COMPLETE
 
-```text
-AI_HANDOFF.md
-IMPLEMENTATION_MAP.md
+M7-A PASS
+M7-B PASS
+M7-C PASS
+M7-D LOCAL PASS
+
+LOCAL M7
+127/127 PASS
+
+LOCAL ALEMBIC
+20260813_0004 (head)
+
+PENDING
+DeepSeek independent review
+GPT disposition
+GitHub push
+Render deployment
+Production M7 validation
+Final handoff/map confirmation
 ```
 
-must be updated to reflect the completed production state.
+M7 is therefore **locally complete but not yet production complete**.
 
-This is now a permanent project requirement.
+------------------------------------------------------------------------
 
----
+# 27. Next Direction
 
-# 30. Current Production Summary
+Planned:
 
-```text
-CURRENT MILESTONE
-6 COMPLETE
+``` text
+M8 — Game Clock / Timer Foundation
+```
+
+M8 is directional only and not authorized.
+
+Do not implement:
+
+``` text
+clock
+timer
+halves
+periods
+scoreboard UI
+OBS
+```
+
+until a dedicated M8 architecture specification is approved.
+
+------------------------------------------------------------------------
+
+# 28. Fresh AI Reconstruction Checklist
+
+Before changing future code, inspect and explain:
+
+``` text
+Application startup
+Database/session lifecycle
+Alembic chain
+Game model/schema/service/routes
+Team model/schema/service/routes
+Player model/schema/service/routes
+Roster endpoint
+ScoringEvent model/schema/service/routes
+Atomic score mutation
+Socket.IO initialization
+Domain event emissions
+Validation harnesses
+Docker startup
+Render deployment
+```
+
+------------------------------------------------------------------------
+
+# 29. Current Summary
+
+``` text
+PRODUCTION BASELINE
+M6
+
+LOCAL CANDIDATE
+M7
 
 DOMAIN
 Game
- ↓
-Team
- ↓
-Player
+ ├── Home Team → Players
+ ├── Away Team → Players
+ ├── home_score
+ ├── away_score
+ └── ScoringEvents
 
 DATABASE
 PostgreSQL
@@ -731,22 +823,24 @@ REST
 Game API
 Team API
 Player API
-Team roster endpoint
+Roster endpoint
+ScoringEvent create/history endpoints
 
 REAL-TIME
-Socket.IO
+Socket.IO committed-state events
 
-VALIDATION
-scripts/validate_m6.sh
+ALEMBIC LOCAL HEAD
+20260813_0004
 
-LOCAL
-57/57 PASS
+FINAL LOCAL HARNESS
+scripts/validate_m7.sh
 
-PRODUCTION
-57/57 PASS
+LOCAL RESULT
+127/127 PASS
 
-NEXT
-M7 Game State / Scoring Foundation
+NEXT GATE
+DeepSeek review → GPT decision → GitHub/Render → production validation
+
+NEXT MILESTONE
+M8 Game Clock / Timer — not yet authorized
 ```
-
-This implementation map must describe actual deployed behavior, not future wishes.

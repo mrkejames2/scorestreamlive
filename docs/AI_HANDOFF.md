@@ -1,72 +1,71 @@
-# ScoreStreamLive — AI HANDOFF
+# ScoreStreamLive --- AI HANDOFF
 
-**Project:** ScoreStreamLive  
-**Purpose:** Persistent project context for AI-assisted development  
-**Current Completed Milestones:** 0–6  
-**Current Milestone:** Milestone 6 — COMPLETE  
-**Next Planned Milestone:** Milestone 7 — Game State / Scoring Foundation  
-**Production Status:** Milestone 6 validated locally and on Render production
+**Project:** ScoreStreamLive\
+**Purpose:** Persistent project context for AI-assisted development\
+**Production Baseline:** Milestones 0--6 complete and Render validated\
+**Current Milestone:** Milestone 7 --- implementation and local
+validation complete; independent review / production validation pending\
+**Next Planned Milestone:** Milestone 8 --- Game Clock / Timer
+Foundation\
+**Rule:** Do not begin M8 until M7 is production validated and this
+handoff is finalized.
 
----
+------------------------------------------------------------------------
 
 # 1. Purpose
 
 AI chat history is not the project's source of truth.
 
-At the start of a new AI session, provide:
+At the start of a new AI session provide:
 
-- `AI_HANDOFF.md`
-- `IMPLEMENTATION_MAP.md`
-- the current `MILESTONE_X.md`
-- the current repository
+``` text
+AI_HANDOFF.md
+IMPLEMENTATION_MAP.md
+Current MILESTONE_X.md
+Current repository
+```
 
-The repository and committed project documentation are authoritative.
+The repository, committed migrations, approved architecture decisions,
+and current project documentation are authoritative.
 
-This file explains what ScoreStreamLive is, what is complete, the AI workflow, core architectural guardrails, current production state, and the next milestone direction.
-
----
+------------------------------------------------------------------------
 
 # 2. Project Overview
 
-ScoreStreamLive is a sports-focused real-time game management and scoreboard platform.
+ScoreStreamLive is a sports-focused real-time game management and
+scoreboard platform.
 
-The initial implementation is soccer-focused while keeping the core architecture suitable for additional sports later.
+Current evolution:
 
-Expected product evolution:
-
-```text
+``` text
 Game Management
       ↓
 Teams
       ↓
 Players / Rosters
       ↓
-Game State
+Game Score / Scoring Events   ← M7
       ↓
-Scoring
-      ↓
-Game Clock
+Game Clock                    ← planned M8
       ↓
 Scoreboard Projection
       ↓
 Streaming / OBS
 ```
 
-The project is intentionally developed in small, validated milestones.
+The project is intentionally developed in small validated milestones.
 
----
+------------------------------------------------------------------------
 
 # 3. Development Philosophy
 
-ScoreStreamLive is being developed by a team of one with AI assistance.
+> Build the smallest reliable architectural layer required for the next
+> capability, validate it locally and in production, document the
+> resulting implementation, and only then move forward.
 
-> Build the smallest reliable architectural layer required for the next capability, validate it locally and in production, document the resulting implementation, and only then move forward.
+Every milestone must pass:
 
-Avoid premature complexity and future-feature implementation.
-
-Each milestone must complete:
-
-```text
+``` text
 Architecture
 Implementation
 Local Validation
@@ -77,13 +76,11 @@ Documentation Refresh
 
 before the next milestone begins.
 
----
+------------------------------------------------------------------------
 
-# 4. Mandatory Milestone Completion Gate
+# 4. Mandatory Completion Gate
 
-Before starting a new milestone:
-
-```text
+``` text
 Milestone implementation
         ↓
 Local Docker validation
@@ -104,16 +101,16 @@ UPDATE IMPLEMENTATION_MAP.md
         ↓
 Commit documentation
         ↓
-Begin next milestone architecture
+Begin next milestone
 ```
 
-This documentation refresh is mandatory.
-
----
+------------------------------------------------------------------------
 
 # 5. AI Workflow
 
-```text
+Normal workflow:
+
+``` text
 GPT
 Solution Architect
    ↓
@@ -123,12 +120,6 @@ Primary Developer
 Devin
 Environment / Git / Deployment
    ↓
-GitHub
-   ↓
-Render
-   ↓
-Production Validation
-   ↓
 DeepSeek
 Independent Reviewer
    ↓
@@ -136,414 +127,489 @@ GPT
 Final Architecture Decision
 ```
 
+During the end of M7, GPT temporarily performed the
+implementation-engineer role while Kimi was unavailable. This does not
+change the long-term role model.
+
 Rule:
 
-> DeepSeek recommends. GPT decides. Kimi implements. Devin validates and deploys.
+> DeepSeek recommends. GPT decides. Implementation follows approved
+> architecture. Devin validates and deploys.
 
----
+------------------------------------------------------------------------
 
-# 6. AI Responsibilities
-
-## GPT
-- Milestone architecture
-- Domain boundaries
-- API contracts
-- DB relationships
-- Socket.IO contracts
-- Architecture decisions
-- Acceptance criteria
-- DeepSeek review decisions
-- Scope control
-
-## Kimi K2
-- Read `AI_HANDOFF.md`
-- Read `IMPLEMENTATION_MAP.md`
-- Read active milestone spec
-- Inspect repository before coding
-- Implement approved architecture
-- Preserve working behavior
-- Work in checkpoints
-- Update docs
-- Avoid scope expansion
-
-## Devin
-- Local VM execution
-- Docker
-- Migrations
-- Validation scripts
-- Git
-- GitHub
-- Render
-- Production validation
-
-## DeepSeek
-- Independent code review
-- Architecture compliance
-- REST
-- PostgreSQL
-- Socket.IO
-- Validation
-- Error handling
-- Security
-- Regression risk
-- Documentation accuracy
-
-Findings should be classified as:
-`BLOCKER`, `REQUIRED FIX`, or `OPTIONAL IMPROVEMENT`.
-
----
-
-# 7. Infrastructure
+# 6. Infrastructure
 
 Local:
-- Ubuntu VM
-- Docker
-- Docker Compose
 
-Source control:
-- GitHub
-
-Production:
-- Render
-
-Database:
-- PostgreSQL
-
-Real-time:
-- Socket.IO
-
-Deployment flow:
-
-```text
-Local VM
-   ↓
-GitHub
-   ↓
-Render
-   ↓
-Production
+``` text
+Ubuntu VM
+Docker
+Docker Compose
 ```
 
----
+Application:
 
-# 8. Core Architecture Rules
-
-1. **PostgreSQL is the source of truth.**
-2. **REST is the mutation boundary.**
-3. **Socket.IO communicates committed state changes.**
-4. **Do not redesign working architecture without approval.**
-5. **Avoid premature microservices.**
-6. **Avoid Redis/Kafka/NATS/Kubernetes/CQRS/Event Sourcing until required.**
-7. **The current milestone specification is authoritative.**
-8. **The repository is the project memory.**
-
-Canonical mutation flow:
-
-```text
-REST Request
-     ↓
-Validation
-     ↓
-Service
-     ↓
+``` text
+Python
+FastAPI
+SQLAlchemy async
+asyncpg
 PostgreSQL
-     ↓
+Alembic
+Pydantic
+python-socketio
+Uvicorn
+```
+
+Source control:
+
+``` text
+GitHub
+```
+
+Production:
+
+``` text
+Render
+```
+
+Deployment:
+
+``` text
+Local VM → GitHub → Render → Production Validation
+```
+
+------------------------------------------------------------------------
+
+# 7. Core Architecture Rules
+
+1.  **PostgreSQL is authoritative.**
+2.  **REST is the persistent mutation boundary.**
+3.  **Socket.IO communicates committed state changes.**
+4.  **Never emit successful domain state before commit.**
+5.  **Do not redesign working architecture without architecture
+    approval.**
+6.  **Avoid premature Redis, Kafka, NATS, Kubernetes, CQRS, event
+    sourcing, or microservices.**
+7.  **Current milestone scope is authoritative.**
+8.  **The repository is project memory; AI conversation memory is not.**
+
+Canonical mutation pattern:
+
+``` text
+REST
+ ↓
+Validation
+ ↓
+Service
+ ↓
+PostgreSQL
+ ↓
 COMMIT
-     ↓
-REFRESH / Reload
-     ↓
-Socket.IO Event
-     ↓
+ ↓
+Reload committed state
+ ↓
+Socket.IO
+ ↓
 Connected Clients
 ```
 
----
+------------------------------------------------------------------------
 
-# 9. Completed Milestones
+# 8. Completed Production Milestones
 
-## M0 — Deployment Foundation
-Complete.
-
-## M1 — Application Foundation
-Complete.
-
-## M2 — PostgreSQL Foundation
-Complete.
-
-## M3 — Socket.IO Foundation
-Complete.
-
-## M4 — Game / Match Foundation
-Complete.
-
-## M5 — Team Foundation
-Complete.
-
-## M6 — Player / Roster Foundation
-**COMPLETE and production validated.**
-
-Current domain:
-
-```text
-                    GAME
-                     │
-          ┌──────────┴──────────┐
-          ▼                     ▼
-      HOME TEAM             AWAY TEAM
-          │                     │
-          ▼                     ▼
-       PLAYERS                PLAYERS
+``` text
+M0 Deployment Foundation        COMPLETE
+M1 Application Foundation       COMPLETE
+M2 PostgreSQL Foundation        COMPLETE
+M3 Socket.IO Foundation         COMPLETE
+M4 Game / Match Foundation      COMPLETE
+M5 Team Foundation              COMPLETE
+M6 Player / Roster Foundation   COMPLETE + PRODUCTION VALIDATED
 ```
 
----
+M6 production regression:
 
-# 10. M6 Player Architecture
+``` text
+scripts/validate_m6.sh
+57 passed
+0 failed
+```
 
-Player fields:
+------------------------------------------------------------------------
 
-```text
+# 9. Current M7 State
+
+Milestone 7 is **not yet formally closed**, because independent review
+and Render production validation remain.
+
+Completed locally:
+
+``` text
+M7-A Persistence          PASS
+M7-B REST / Service       PASS
+M7-C Socket.IO            PASS
+M7-D Client/Docs/Regression LOCAL PASS
+```
+
+Final local cumulative result:
+
+``` text
+scripts/validate_m7.sh
+127 passed
+0 failed
+```
+
+M6 regression remains:
+
+``` text
+57 passed
+0 failed
+```
+
+Current local Alembic head:
+
+``` text
+20260813_0004
+```
+
+------------------------------------------------------------------------
+
+# 10. Current Domain
+
+``` text
+                         GAME
+                          │
+        ┌─────────────────┼─────────────────┐
+        ▼                 ▼                 ▼
+    HOME TEAM         AWAY TEAM           SCORE
+        │                 │          home_score
+        ▼                 ▼          away_score
+     PLAYERS           PLAYERS              │
+                                              ▼
+                                      SCORING EVENTS
+```
+
+No separate `game_state` table exists.
+
+No separate Roster table exists.
+
+------------------------------------------------------------------------
+
+# 11. Game Score Architecture
+
+Authoritative current score:
+
+``` text
+Game.home_score
+Game.away_score
+```
+
+Both are persistent PostgreSQL integer fields and begin at zero.
+
+Clients retrieve current score from Game state, not by replaying
+ScoringEvents.
+
+Direct score correction is not implemented in M7.
+
+------------------------------------------------------------------------
+
+# 12. ScoringEvent Architecture
+
+Fields:
+
+``` text
 id
+game_id
 team_id
-first_name
-last_name
-jersey_number
+player_id       nullable
+event_type
 created_at
-updated_at
 ```
 
-Decisions:
+Relationships are represented by scalar foreign keys.
 
-```text
-id
-    UUID v4
+M7 supports only:
 
-team_id
-    required
-    immutable during M6
-    FK → teams.id
-    ON DELETE RESTRICT
-
-first_name
-    required
-    max 255
-    trim surrounding whitespace
-    preserve capitalization
-
-last_name
-    same rules
-
-jersey_number
-    nullable integer
-    0–999
-    duplicates allowed
+``` text
+event_type = goal
 ```
 
-No separate Roster table was introduced.
+`player_id` may be null.
 
----
+If supplied, Player must exist and belong to the scoring Team.
 
-# 11. M6 REST API
+------------------------------------------------------------------------
+
+# 13. M7 REST API
 
 Implemented:
 
-```text
-POST   /api/players
-GET    /api/players/{player_id}
-PATCH  /api/players/{player_id}
-
-GET    /api/teams/{team_id}/players
+``` text
+POST /api/scoring-events
+GET  /api/games/{game_id}/scoring-events
 ```
 
-Player deletion and transfers are deferred.
+Existing Game retrieval exposes:
 
-Roster ordering:
+``` text
+home_score
+away_score
+```
 
-```text
-jersey_number ASC NULLS LAST
-last_name ASC
-first_name ASC
+Scoring history ordering:
+
+``` text
+created_at ASC
 id ASC
 ```
 
----
+Validation:
 
-# 12. M6 Socket.IO
+``` text
+Team not participating → 422
+Player missing         → 422
+Player on wrong Team   → 422
+invalid event_type     → 422
+Missing Game history   → 404
+```
 
-Implemented:
+Failed mutations do not alter score or create ScoringEvents.
 
-```text
+------------------------------------------------------------------------
+
+# 14. M7 Transaction / Concurrency Architecture
+
+A valid goal uses one transaction:
+
+``` text
+Validate
+ ↓
+Create ScoringEvent
+ ↓
+Atomic PostgreSQL score increment
+ ↓
+ONE COMMIT
+ ↓
+Reload
+ ↓
+Socket.IO
+```
+
+Atomic SQL score increment prevents lost increments under concurrent
+accepted requests.
+
+Local concurrency proof:
+
+``` text
+10 simultaneous accepted requests
+10 successful responses
+score delta = 10
+ScoringEvent delta = 10
+scoring_event:created = 10
+game:score_updated = 10
+lost increments = 0
+lost M7 events = 0
+```
+
+------------------------------------------------------------------------
+
+# 15. M7 Socket.IO
+
+New events:
+
+``` text
+scoring_event:created
+game:score_updated
+```
+
+Canonical single-request order:
+
+``` text
+COMMIT
+ ↓
+reload
+ ↓
+scoring_event:created
+ ↓
+game:score_updated
+```
+
+Failed scoring mutations emit neither M7 event.
+
+Existing M3--M6 events remain operational:
+
+``` text
+connection:ready
+client:ping
+server:pong
+test:broadcast
+team:created
+team:updated
+game:created
+game:updated
 player:created
 player:updated
 roster:updated
 ```
 
-Creation order:
+`roster:updated` remains invalidation-only:
 
-```text
-COMMIT
- ↓
-REFRESH
- ↓
-player:created
- ↓
-roster:updated
-```
-
-Update order:
-
-```text
-COMMIT
- ↓
-REFRESH
- ↓
-player:updated
- ↓
-roster:updated
-```
-
-`roster:updated` is invalidation-only:
-
-```json
+``` json
 {
   "team_id": "<team UUID>"
 }
 ```
 
-Clients needing authoritative roster state call:
+------------------------------------------------------------------------
 
-```text
-GET /api/teams/{team_id}/players
-```
+# 16. Alembic State
 
----
+M6 Player revision:
 
-# 13. M6 Validation
-
-Regression harness:
-
-```text
-scripts/validate_m6.sh
-```
-
-Local result:
-
-```text
-57 passed
-0 failed
-```
-
-Render production result:
-
-```text
-57 passed
-0 failed
-```
-
-Coverage includes:
-- Health
-- Teams
-- Games
-- Players
-- Roster retrieval
-- Roster ordering
-- Team isolation
-- Validation errors
-- Socket.IO connect/ack/events
-- Event ordering
-- Failed-mutation event suppression
-- Disconnect/reconnect
-
-Preserve this script as a regression asset.
-
----
-
-# 14. Alembic State
-
-Player migration:
-
-```text
-alembic/versions/20260813_0003_create_players_table.py
-```
-
-Revision:
-
-```text
+``` text
 20260813_0003
 ```
 
-This migration was intentionally preserved during a rollback because PostgreSQL had already reached that revision. It was later verified to match the final M6 schema.
+M7 score/scoring-event revision:
 
-Do not remove or rewrite it casually.
-
----
-
-# 15. Current Production State
-
-M6 is deployed and validated on Render.
-
-Current production domain:
-
-```text
-Game
- ↓
-Team
- ↓
-Player
+``` text
+20260813_0004
 ```
 
-with REST, PostgreSQL, Socket.IO, Docker, GitHub, and Render working end-to-end.
+Current local result:
 
----
-
-# 16. Next Planned Milestone
-
-## M7 — Game State / Scoring Foundation
-
-Status:
-
-```text
-NOT YET ARCHITECTED
+``` text
+20260813_0004 (head)
 ```
 
-Expected high-level direction:
+Do not rewrite existing migrations casually.
 
-```text
-Game
- ↓
-Game State
- ↓
-Score
- ↓
-Scoring Events
+------------------------------------------------------------------------
+
+# 17. Validation Assets
+
+Preserve:
+
+``` text
+scripts/validate_m6.sh
+scripts/validate_m7a.sh
+scripts/validate_m7b.sh
+scripts/validate_m7c.sh
+scripts/validate_m7.sh
 ```
 
-Do not begin coding M7 until a dedicated `MILESTONE_7.md` is created and approved.
+Current final local M7 result:
 
----
+``` text
+M7 VALIDATION PASSED
+Passed: 127
+Failed: 0
+```
 
-# 17. Fresh AI Session Procedure
+The technical `/client` now displays M7 scoring events in addition to
+prior Socket.IO diagnostics.
+
+------------------------------------------------------------------------
+
+# 18. M7 Explicit Deferrals
+
+Do not introduce as part of M7:
+
+``` text
+Game clock
+Timer persistence
+Periods / halves
+Halftime
+Score correction
+Goal deletion
+Goal undo
+Assists
+Cards
+Substitutions
+Lineups
+Statistics
+Authentication
+Authorization
+Users
+Organizations
+Seasons
+Redis
+NATS
+Kafka
+Microservices
+Production scoreboard UI
+OBS overlay
+```
+
+------------------------------------------------------------------------
+
+# 19. Current Review / Deployment Gate
+
+Still required:
+
+``` text
+DeepSeek independent review
+ ↓
+GPT disposition of findings
+ ↓
+Git commit / push
+ ↓
+Render deployment
+ ↓
+Production validate_m7.sh
+ ↓
+Confirm production Alembic migration
+ ↓
+Final handoff/map production-state update
+ ↓
+Commit docs
+ ↓
+M7 COMPLETE
+```
+
+Until those steps finish, do not describe M7 as production complete.
+
+------------------------------------------------------------------------
+
+# 20. Next Planned Milestone
+
+``` text
+M8 — Game Clock / Timer Foundation
+```
+
+M8 has **not** been architected or authorized.
+
+Do not implement clock, timer, periods, or scoreboard behavior based
+only on this directional roadmap.
+
+------------------------------------------------------------------------
+
+# 21. Fresh AI Session Procedure
 
 At the beginning of a new AI conversation:
 
-1. Provide `AI_HANDOFF.md`.
-2. Provide `IMPLEMENTATION_MAP.md`.
-3. Provide current milestone spec.
-4. Provide repository access.
-5. Require repository reconstruction.
-6. Surface unresolved architecture decisions.
-7. Obtain GPT approval before coding.
-8. Implement in checkpoints.
-9. Run cumulative regression validation after every checkpoint.
+1.  Read `AI_HANDOFF.md`.
+2.  Read `IMPLEMENTATION_MAP.md`.
+3.  Read the active milestone specification.
+4.  Inspect the actual repository.
+5.  Inspect Alembic history.
+6.  Reconstruct current architecture before changing code.
+7.  Surface conflicts or unresolved architecture questions.
+8.  Do not redesign established behavior based on preference.
+9.  Work in A/B/C/D checkpoints.
+10. Run cumulative regression after each checkpoint.
 
----
+------------------------------------------------------------------------
 
-# 18. Source of Truth Hierarchy
+# 22. Source-of-Truth Hierarchy
 
 When information conflicts:
 
-```text
+``` text
 1. Approved architecture decisions
-2. Current MILESTONE_X.md
+2. Current milestone specification
 3. Actual repository
 4. Database migrations
 5. IMPLEMENTATION_MAP.md
@@ -552,48 +618,31 @@ When information conflicts:
 8. Prior AI chat history
 ```
 
----
+------------------------------------------------------------------------
 
-# 19. End-of-Milestone Documentation Procedure
+# 23. Current Handoff Summary
 
-After every milestone:
-
-```text
-1. Complete local validation
-2. Complete independent review
-3. Deploy production
-4. Complete production validation
-5. Update AI_HANDOFF.md
-6. Update IMPLEMENTATION_MAP.md
-7. Update relevant docs/
-8. Update validation scripts
-9. Commit documentation
-10. Only then architect the next milestone
-```
-
----
-
-# 20. Current Handoff Summary
-
-```text
+``` text
 PROJECT
 ScoreStreamLive
 
-COMPLETED
-M0 Deployment
-M1 Application Foundation
-M2 PostgreSQL
-M3 Socket.IO
-M4 Game
-M5 Team
-M6 Player / Roster
+PRODUCTION COMPLETE
+M0–M6
+
+M7 LOCAL STATE
+M7-A PASS
+M7-B PASS
+M7-C PASS
+M7-D LOCAL PASS
+127/127 cumulative local validation
 
 CURRENT DOMAIN
 Game
- ↓
-Team
- ↓
-Player
+ ├── Home Team → Players
+ ├── Away Team → Players
+ ├── home_score
+ ├── away_score
+ └── ScoringEvents
 
 SOURCE OF TRUTH
 PostgreSQL
@@ -602,28 +651,24 @@ MUTATION BOUNDARY
 REST
 
 REAL-TIME DELIVERY
-Socket.IO
+Socket.IO after commit
 
-LOCAL
-Ubuntu VM + Docker Compose
+ALEMBIC LOCAL HEAD
+20260813_0004
 
-SOURCE CONTROL
-GitHub
+M7 FINAL HARNESS
+scripts/validate_m7.sh
 
-PRODUCTION
-Render
+M6 REGRESSION
+57/57 PASS
 
-REGRESSION HARNESS
-scripts/validate_m6.sh
-
-LOCAL M6 VALIDATION
-57 / 57 PASS
-
-PRODUCTION M6 VALIDATION
-57 / 57 PASS
+PENDING
+DeepSeek review
+GitHub push
+Render deployment
+Production M7 validation
+Final documentation confirmation
 
 NEXT
-M7 Game State / Scoring Foundation
+M8 Game Clock / Timer Foundation — NOT AUTHORIZED YET
 ```
-
-This file must be updated before each new milestone begins.
