@@ -1,8 +1,12 @@
 # ScoreStreamLive — Game Domain
 
-## Current State
+## Status
 
-A Game owns:
+Production validated through Milestone 8.
+
+## Game
+
+Current Game state includes:
 
 ```text
 identity / metadata
@@ -12,7 +16,7 @@ home_score
 away_score
 ```
 
-and may have:
+A Game may also have:
 
 ```text
 ScoringEvents
@@ -21,7 +25,7 @@ one GameClock
 
 ## Score
 
-Current authoritative score remains on Game.
+Authoritative current score remains on Game.
 
 Scoring mutations use:
 
@@ -31,9 +35,9 @@ POST /api/scoring-events
 
 Clock mutations do not alter score.
 
-## Clock
+## GameClock
 
-GameClock is a separate persistence domain keyed by unique `game_id`.
+A Game has at most one GameClock.
 
 Clock operations:
 
@@ -48,15 +52,17 @@ POST /api/games/{game_id}/clock/resume
 POST /api/games/{game_id}/clock/reset
 ```
 
-Clock and Game lifecycle are intentionally separate.
+Clock and Game lifecycle remain separate concepts.
 
-M8 does not add:
+## Deferred
 
 ```text
+Pregame
 First Half
 Halftime
 Second Half
+Extra Time
 Final
 ```
 
-Those lifecycle concepts are deferred.
+These are expected to be addressed in a later lifecycle milestone.

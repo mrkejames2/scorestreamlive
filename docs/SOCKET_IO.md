@@ -1,38 +1,56 @@
-# ScoreStreamLive — Socket.IO Contracts
+# ScoreStreamLive — Socket.IO
 
 ## Rule
 
-Socket.IO communicates committed state. PostgreSQL remains authoritative.
+Socket.IO communicates committed state.
 
-## Existing Events
+PostgreSQL remains authoritative.
+
+## Technical Events
 
 ```text
 connection:ready
-client:ping / acknowledgement
+client:ping
 server:pong
 test:broadcast
+```
 
+## Team
+
+```text
 team:created
 team:updated
+```
 
+## Game
+
+```text
 game:created
 game:updated
 game:score_updated
+```
 
+## Player / Roster
+
+```text
 player:created
 player:updated
 roster:updated
+```
 
+## Scoring
+
+```text
 scoring_event:created
 ```
 
-## M8 Clock Event
+## Clock
 
 ```text
 clock:updated
 ```
 
-Payload:
+Conceptual payload:
 
 ```json
 {
@@ -63,7 +81,7 @@ resume
 reset
 ```
 
-Failed and stale requests emit no clock event.
+Failed and stale requests emit no clock update.
 
 ## No Tick Architecture
 
@@ -73,11 +91,11 @@ There is intentionally no:
 clock:tick
 ```
 
-event.
-
-A client renders locally from the authoritative anchor.
+Clients render locally.
 
 ## Version Handling
+
+Clients should prefer newer versions:
 
 ```text
 incoming > local → apply
@@ -85,6 +103,8 @@ incoming = local → duplicate/idempotent
 incoming < local → ignore stale
 ```
 
-`game_id` allows clients to isolate the Game they are displaying.
+## Multi-Game
 
-Socket.IO rooms are not required by M8.
+Every clock event contains `game_id`.
+
+M8 does not require Socket.IO rooms.

@@ -1,70 +1,112 @@
 # ScoreStreamLive — Architecture Decisions
 
-## Current M8 Decisions
+## Core Decisions
 
-### Clock truth
+### PostgreSQL Is Authoritative
 
-PostgreSQL stores the authoritative GameClock anchor/state.
+Persistent business state lives in PostgreSQL.
 
-### Clock rendering
+### REST Is the Persistent Mutation Boundary
 
-Clients render locally. The server does not broadcast one timer tick per second.
+Business mutations are performed through REST/service logic.
 
-### Modes
+### Socket.IO Is Committed-State Notification
 
-Generic modes are:
+Successful domain events are emitted after commit.
+
+### Roster Is Derived
+
+No Roster table exists.
+
+### Game Owns Current Score
+
+Game stores `home_score` / `away_score`.
+
+### ScoringEvent Stores Score History
+
+ScoringEvent insert and score increment occur in one transaction.
+
+## Milestone 8 Decisions
+
+### Dedicated GameClock Domain
+
+Use a dedicated `game_clocks` table with one GameClock maximum per Game.
+
+### Generic Clock Modes
 
 ```text
 count_up
 count_down
 ```
 
-### Persistence model
+### Generic Clock Status
 
-A dedicated `game_clocks` table is used, with one clock maximum per Game.
+```text
+stopped
+running
+paused
+```
 
-### Time storage
+### Store Elapsed Time
 
-Store elapsed integer seconds and UTC timestamp anchors, not formatted display strings.
+Persist elapsed integer seconds.
 
-### Count-down
+Count-down is derived from elapsed time rather than storing remaining time.
 
-Persist elapsed time; derive remaining display. Clamp displayed remaining time at zero.
+### UTC Timestamp Anchor
 
-### Soccer added time
+When running, `running_since` anchors elapsed-time reconstruction.
 
-Derive `+1`, `+2`, etc. from generic elapsed time after the configured regulation threshold.
+### No Per-Second Database Writes
 
-Do not persist soccer-specific stoppage-time state in the generic GameClock.
+Running clocks do not update PostgreSQL every second.
 
-### Concurrency
+### No Per-Second Socket.IO Tick
 
-Use optimistic integer `version` and PostgreSQL conditional updates.
+There is deliberately no `clock:tick`.
 
-Do not use process-local locks as the correctness mechanism.
+### No Per-Game Background Timer
 
-### Real-time contract
+No in-process timer loop is authoritative.
 
-Emit one canonical post-commit:
+### Optimistic Clock Concurrency
+
+Use integer `version` + `expected_version` and PostgreSQL conditional updates.
+
+### Canonical Clock Event
 
 ```text
 clock:updated
 ```
 
-Do not emit:
+is the single M8 committed clock-state event.
 
-```text
-clock:tick
-```
-
-### Reset safety
+### Reset Safety
 
 Reset while running is rejected. Pause first.
 
-### Lifecycle boundary
+### Soccer Added Time Is Presentation
 
-Game phases/halves are deferred to M9.
+Derive `+1`, `+2`, etc. from generic elapsed time after the configured regulation duration.
 
-### Infrastructure
+Do not persist soccer-specific stoppage-time fields in GameClock.
 
-No Redis, NATS, Kafka, message broker, Socket.IO room requirement, or per-Game background timer is introduced in M8.
+### Lifecycle Is Separate
+
+First Half / Halftime / Second Half / Final are not M8 clock-engine state.
+
+They are deferred to Game lifecycle architecture.
+
+### No Premature Distributed Infrastructure
+
+M8 does not introduce:
+
+```text
+Redis
+NATS
+Kafka
+RabbitMQ
+Kubernetes
+distributed timer service
+Socket.IO room requirement
+```

@@ -1,18 +1,13 @@
 # ScoreStreamLive Architecture
 
-## Current Candidate State
+## Current Production State
 
 ```text
-M0–M7 COMPLETE / PRODUCTION VALIDATED
-M8-A PASS
-M8-B PASS
-M8-C PASS
-M8-D IN PROGRESS
+M0–M8 COMPLETE
+M8 PRODUCTION VALIDATED
 ```
 
-M8 production validation is not yet complete.
-
-## Runtime
+## Runtime Architecture
 
 ```text
 Browser / API Client
@@ -34,18 +29,18 @@ Browser / API Client
 
 ## State Ownership
 
-PostgreSQL owns durable state:
+PostgreSQL is authoritative for:
 
 ```text
 Games
 Teams
 Players
-Scores
+Game score
 ScoringEvents
 GameClocks
 ```
 
-REST is the persistent mutation boundary.
+REST is the durable mutation boundary.
 
 Socket.IO distributes committed state.
 
@@ -57,8 +52,7 @@ Game
 │   └── Players
 ├── Away Team
 │   └── Players
-├── home_score
-├── away_score
+├── Score
 ├── ScoringEvents
 └── GameClock
 ```
@@ -67,58 +61,117 @@ Game
 
 ```text
 Validate
- ↓
-database mutation
- ↓
+↓
+Mutate
+↓
 COMMIT
- ↓
-reload
- ↓
-Socket.IO notification
+↓
+Reload
+↓
+Emit
 ```
 
-A successful event must never describe uncommitted state.
+Successful real-time events never describe uncommitted state.
+
+## Scoring Architecture
+
+Current score lives on Game.
+
+ScoringEvent stores history.
+
+ScoringEvent insert and Game score increment occur in one transaction.
 
 ## Clock Architecture
 
-The GameClock is `state + time`, not a background timer process.
+GameClock is represented as:
 
 ```text
-elapsed_seconds
+persistent state
 +
-running_since
-+
-server_time
-=
-current authoritative elapsed time
+UTC timestamp anchor
 ```
 
-Clients render the clock locally.
+not as an in-memory background timer.
 
-The server emits `clock:updated` only on committed state/configuration transitions.
+When running:
 
-There is no per-second `clock:tick`.
+```text
+current elapsed =
+    elapsed_seconds
+    +
+    floor(server_now - running_since)
+```
+
+Clients render locally from the same authoritative anchor.
+
+## Clock Scale Model
+
+A running clock requires:
+
+```text
+no per-second database write
+no per-second Socket.IO broadcast
+no timer task per Game
+```
+
+This allows many simultaneous running Games without one continuous server loop per Game.
 
 ## Concurrency
 
-GameClock commands use optimistic `version` control and conditional PostgreSQL updates.
+Clock state carries integer `version`.
 
-Two controllers using the same version cannot both overwrite state.
+Mutations provide `expected_version`.
 
-## Scale Boundary
+PostgreSQL conditional updates decide the winner.
 
-No timer task is created per Game.
-
-Many simultaneous running Games therefore do not require one continuous server loop or one database write every second.
-
-## Deferred
+## Real-Time Clock Contract
 
 ```text
-Game lifecycle/phases
-Production control UI
-Production scoreboard
-OBS
-Authentication
-Organizations
-Distributed messaging infrastructure
+clock:updated
 ```
+
+is emitted only after commit.
+
+There is deliberately no:
+
+```text
+clock:tick
+```
+
+## Restart Safety
+
+Persisted clock anchors allow current time to be reconstructed after application restart.
+
+This behavior is locally validated.
+
+## Soccer Presentation
+
+Generic GameClock persists no soccer-specific phase or stoppage-time columns.
+
+Soccer added-time minute is derived from generic elapsed time after the configured regulation duration.
+
+## Infrastructure Not Present
+
+```text
+Redis
+NATS
+Kafka
+RabbitMQ
+Kubernetes
+event sourcing
+CQRS
+distributed timer service
+per-Game timer workers
+```
+
+Adding these requires a demonstrated future need.
+
+## Next Architectural Layer
+
+Directional:
+
+```text
+M9 — Game Lifecycle / Phases
+```
+
+Not started.

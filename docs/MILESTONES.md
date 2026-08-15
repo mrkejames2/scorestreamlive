@@ -1,56 +1,119 @@
 # ScoreStreamLive — Milestones
 
-## Completed Production Milestones
+## Development Model
+
+Milestones use controlled checkpoints where appropriate:
 
 ```text
-M0 Deployment Foundation
-M1 Application Foundation
-M2 PostgreSQL Foundation
-M3 Socket.IO Foundation
-M4 Game Foundation
-M5 Team Foundation
-M6 Player / Roster Foundation
-M7 Score / ScoringEvent Foundation
+Persistence
+↓
+REST / Service
+↓
+Socket.IO
+↓
+Validation / Docs / Regression
+↓
+Independent Review
+↓
+Production
+↓
+Documentation Sync
 ```
 
-## Current Milestone
+## Completed
+
+### M0 — Deployment Foundation
+
+Complete.
+
+### M1 — Application Foundation
+
+Complete.
+
+### M2 — PostgreSQL Foundation
+
+Complete.
+
+### M3 — Socket.IO Foundation
+
+Complete.
+
+### M4 — Game Foundation
+
+Complete.
+
+### M5 — Team Foundation
+
+Complete.
+
+### M6 — Player / Roster Foundation
+
+Complete.
+
+### M7 — Score / ScoringEvent Foundation
+
+Complete — production validated.
 
 ### M8 — Game Clock / Timer Foundation
 
 ```text
-M8-A Persistence               PASS
-M8-B REST / Clock Engine       PASS
-M8-C Real-Time Synchronization PASS
-M8-D Finalization              IN PROGRESS
+COMPLETE — PRODUCTION VALIDATED
 ```
 
-M8 provides:
+Implemented:
 
 ```text
-count up
-count down
+GameClock persistence
+count_up
+count_down
 start
 pause
 resume
 reset
 configuration
-durable timestamp anchors
-restart/reconnect recovery
-optimistic concurrency
+UTC timestamp anchors
+application restart recovery
+disconnect/reconnect recovery
+optimistic version concurrency
 multi-client synchronization
+multi-Game isolation
+clock:updated
+no clock:tick
 soccer added-time derivation
-no tick broadcasting
+technical validation client
 ```
 
-M8 is not complete until independent review and production validation pass.
-
-## Directional Future
+Validation:
 
 ```text
-M9  Game Lifecycle / Phases
-M10 Game Control UI
-M11 Live Scoreboard
-M12 OBS / Stream Overlay
+Local M8:       83 / 83 PASS
+Production M8: 146 / 146 PASS
+Remote clock:   17 / 17 PASS
+M7 regression: 127 / 127 PASS
+M6 regression:  57 / 57 PASS
 ```
 
-These are directional roadmap items, not authorization to implement.
+Independent review:
+
+```text
+DeepSeek:
+APPROVE MILESTONE 8 FOR PRODUCTION DEPLOYMENT
+```
+
+## Next Direction
+
+### M9 — Game Lifecycle / Phases
+
+Not started.
+
+Likely directional concepts:
+
+```text
+Pregame
+First Half
+Halftime
+Second Half
+Final
+```
+
+This roadmap entry does not authorize implementation.

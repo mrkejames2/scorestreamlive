@@ -3,41 +3,70 @@
 ## Current
 
 ```text
-Milestone 8 — Game Clock / Timer Foundation
+MILESTONE 8 — COMPLETE
+PRODUCTION VALIDATED
 ```
 
-## Checkpoints
+## Completed Milestones
 
 ```text
-M8-A Persistence                  PASS
-M8-B REST / Clock Engine          PASS
-M8-C Socket.IO Synchronization    PASS
-M8-D Finalization                 IN PROGRESS
+M0 COMPLETE
+M1 COMPLETE
+M2 COMPLETE
+M3 COMPLETE
+M4 COMPLETE
+M5 COMPLETE
+M6 COMPLETE
+M7 COMPLETE
+M8 COMPLETE
 ```
 
-## Current Validation
+## Latest Production Validation
 
 ```text
-M8-A: 44 / 44 PASS
-M8-B: 79 / 79 PASS
-M8-C: 75 / 75 PASS
-Alembic: 20260814_0005
+M8 local:      83 / 83 PASS
+M8 production: 146 / 146 PASS
+M8 remote:      17 / 17 PASS
+
+M7 production regression:
+127 / 127 PASS
+
+M6 production regression:
+57 / 57 PASS
 ```
 
-M7 and M6 regressions remain green through the checkpoint chain.
-
-## M8-D Remaining Gates
+## Repository Checkpoint
 
 ```text
-technical clock validation client
-final validate_m8.sh
-application restart proof
-final local regression
-DeepSeek review
-GPT disposition
-GitHub / Render
-production validation
-final docs status update
+M8 implementation:
+ecbd6ab
+Implement Milestone 8: Game Clock System with REST API and real-time synchronization
+```
+
+## Alembic
+
+```text
+20260814_0005
+```
+
+## Independent Review
+
+```text
+DeepSeek:
+APPROVE MILESTONE 8 FOR PRODUCTION DEPLOYMENT
+```
+
+## Current Production Domain
+
+```text
+Game
+├── Home Team
+│   └── Players
+├── Away Team
+│   └── Players
+├── Score
+├── ScoringEvents
+└── GameClock
 ```
 
 ## Next
@@ -46,4 +75,10 @@ final docs status update
 M9 NOT STARTED
 ```
 
-Do not implement M9 yet.
+Directional focus:
+
+```text
+Game Lifecycle / Phases
+```
+
+No M9 implementation is authorized by this file.

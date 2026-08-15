@@ -1,20 +1,26 @@
 # ScoreStreamLive — Golden Rule
 
-## Primary Rule
-
-> Preserve working, validated architecture. Make the smallest approved change necessary for the current milestone, prove it works, and only then continue.
+> Preserve working, production-validated architecture. Make only the smallest approved change required by the active milestone, prove it works, then continue.
 
 ## Source of Truth
 
 ```text
-1. Approved architecture decision
-2. Current milestone specification
+1. Approved architecture
+2. Active milestone specification
 3. Actual repository
 4. Alembic migrations
-5. docs/IMPLEMENTATION_MAP.md
-6. Domain documentation
-7. docs/AI_HANDOFF.md
-8. Previous AI chat
+5. IMPLEMENTATION_MAP.md
+6. Domain docs
+7. AI_HANDOFF.md
+8. Prior AI conversation
+```
+
+## Current Checkpoint
+
+```text
+M0–M8 COMPLETE
+M8 PRODUCTION VALIDATED
+M9 NOT STARTED
 ```
 
 ## Technical Rules
@@ -27,41 +33,21 @@ Socket.IO  = committed-state notification
 
 Never emit successful state before commit.
 
-Never invent missing repository structure.
+Never invent repository state.
 
-Never rewrite working infrastructure because another design is preferred.
+Never expand milestone scope.
 
-Never expand the milestone sideways.
+Never begin M9 merely because it is next on the roadmap.
 
-## Checkpoint Rule
+## Milestone Closure Rule
 
-```text
-A Persistence
- ↓ validate
-B REST / Service
- ↓ validate
-C Socket.IO
- ↓ validate
-D Client / Docs / Regression
- ↓ validate
-Independent Review
- ↓
-Production
-```
-
-## Stop Conditions
-
-Stop and report rather than guessing when:
+A milestone is closed only after:
 
 ```text
-migration history differs from documentation
-regression harness fails
-Docker fails to start
-protected infrastructure appears to require redesign
-repository state cannot be inspected
-requirements conflict
+local validation
+independent review
+GitHub
+Render
+production validation
+documentation synchronization
 ```
-
-## Documentation Rule
-
-A milestone is not fully closed until production validation and documentation synchronization are complete.

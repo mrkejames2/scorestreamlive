@@ -2,17 +2,33 @@
 
 ## Status
 
-Milestone 8 implementation is locally validated through M8-C.
+```text
+MILESTONE 8 COMPLETE
+PRODUCTION VALIDATED
+```
 
-M8-D final validation, independent review, Render deployment, and production validation remain the completion gates.
+## Production Evidence
+
+```text
+Local M8:
+83 / 83 PASS
+
+Production M8:
+146 / 146 PASS
+
+Remote M8 clock:
+17 / 17 PASS
+
+M7 production regression:
+127 / 127 PASS
+
+M6 production regression:
+57 / 57 PASS
+```
 
 ## Core Rule
 
 > The server owns clock truth. Clients render the clock.
-
-ScoreStreamLive does not send one Socket.IO tick every second.
-
-A running clock is represented by persisted state plus an authoritative timestamp anchor.
 
 ## Persistence
 
@@ -33,7 +49,7 @@ updated_at
 
 One Game has at most one GameClock.
 
-Current migration:
+Alembic:
 
 ```text
 20260814_0005
@@ -46,7 +62,7 @@ count_up
 count_down
 ```
 
-Count-up may continue beyond the configured duration.
+Count-up may exceed configured duration.
 
 Count-down display clamps at zero.
 
@@ -58,15 +74,15 @@ running
 paused
 ```
 
-## Authoritative Elapsed Time
+## Authoritative Time
 
-When stopped/paused:
+Stopped/paused:
 
 ```text
 elapsed = elapsed_seconds
 ```
 
-When running:
+Running:
 
 ```text
 elapsed =
@@ -75,7 +91,7 @@ elapsed =
     floor(server_now - running_since)
 ```
 
-Clock arithmetic uses UTC-aware server timestamps.
+UTC-aware server timestamps are authoritative.
 
 ## REST
 
@@ -90,21 +106,19 @@ POST /api/games/{game_id}/clock/resume
 POST /api/games/{game_id}/clock/reset
 ```
 
-Mutations use `expected_version`.
-
-Stale controllers receive `409 Conflict`.
-
 ## Optimistic Concurrency
 
-Every successful mutation increments:
+Mutations include:
 
 ```text
-version += 1
+expected_version
 ```
 
-Same-version simultaneous commands cannot both commit.
+Every successful mutation increments `version`.
 
-PostgreSQL conditional updates provide correctness.
+Stale commands return `409`.
+
+Production validation proved same-version concurrent controllers produce one winner and one stale conflict.
 
 ## Socket.IO
 
@@ -114,9 +128,11 @@ Canonical event:
 clock:updated
 ```
 
-It is emitted only after successful commit and reload.
+It contains committed GameClock state and synchronization metadata.
 
-There is deliberately no:
+Failed/stale requests emit no clock update.
+
+There is no:
 
 ```text
 clock:tick
@@ -137,11 +153,29 @@ version
 
 to render locally.
 
-Incoming events older than local version should be ignored.
+## Restart Recovery
+
+A running clock survives application restart because:
+
+```text
+elapsed_seconds
+running_since
+status
+```
+
+are persisted.
+
+Local M8 final validation explicitly restarted the app while the clock was running and proved elapsed time included the restart interval.
+
+## Reconnect Recovery
+
+A reconnecting client fetches current authoritative clock state through REST and resumes local rendering.
+
+No missed tick replay is required.
 
 ## Soccer Added Time
 
-For a count-up clock with 45:00 target:
+For a 45:00 regulation duration:
 
 ```text
 44:59       normal
@@ -156,34 +190,22 @@ Derived:
 floor((elapsed - duration) / 60) + 1
 ```
 
-This is elapsed added-time presentation, not referee-announced stoppage time.
+This is elapsed added-time notation.
 
-## Restart Safety
+It is not referee-announced stoppage time.
 
-No in-memory timer loop is authoritative.
+## Out of Scope
 
-If the application restarts while a clock is running, persisted:
-
-```text
-elapsed_seconds
-running_since
-status
-```
-
-are sufficient to reconstruct current time.
-
-## Scope Boundary
-
-M8 does not implement:
+M8 intentionally does not implement:
 
 ```text
-first half
-halftime
-second half
-extra time lifecycle
-announced stoppage time
-production game controller
-scoreboard overlay
+Pregame
+First Half
+Halftime
+Second Half
+Extra Time lifecycle
+Final
+production Game Controller
+production scoreboard
+OBS overlay
 ```
-
-Those belong to later milestones.

@@ -1,10 +1,14 @@
 # ScoreStreamLive AI Development System
 
-These files define AI roles. They are guardrails, not application source code.
+## Current Production Checkpoint
 
-## Mandatory Startup
+```text
+M0–M8 COMPLETE
+M8 PRODUCTION VALIDATED
+M9 NOT STARTED
+```
 
-Every new AI session should first read:
+Every new AI session should read:
 
 ```text
 docs/AI_HANDOFF.md
@@ -13,25 +17,17 @@ docs/CURRENT_MILESTONE_STATUS.md
 docs/ai/GOLDEN_RULE.md
 ```
 
-Then inspect the actual repository.
+Then inspect the actual repository and Alembic chain.
 
 ## Roles
 
 ```text
-GPT            Architecture authority
-Kimi           Primary implementation engineer
-Devin          Environment / Git / deployment executor
-DeepSeek       Independent reviewer
+GPT       Architecture authority
+Kimi/GPT  Implementation role
+Devin     Environment / Git / deployment
+DeepSeek  Independent reviewer
 ```
-
-The exact model can change. The **role contract** should remain stable.
 
 ## Rule
 
-> DeepSeek recommends. GPT decides. Implementation follows approved architecture. Devin validates and deploys.
-
-## Important
-
-No AI should trust conversation memory over the repository.
-
-No AI should start a future milestone because it appears on the roadmap.
+> DeepSeek recommends. GPT decides. Implementation follows approved architecture. Deployment follows validated code.

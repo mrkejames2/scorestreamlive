@@ -1,71 +1,115 @@
 # ScoreStreamLive — Implementation Map
 
-## Production Baseline
+## Current Production Version
 
 ```text
-M0–M7 production complete
+M0–M8 COMPLETE
+M8 PRODUCTION VALIDATED
 ```
 
-## Local Candidate
+## Latest Checkpoint
 
 ```text
-M8-A PASS
-M8-B PASS
-M8-C PASS
-M8-D IN PROGRESS
+Implementation commit:
+ecbd6ab
+
+Alembic:
+20260814_0005
 ```
 
-## Stack
+## Runtime Stack
 
 ```text
+Python
 FastAPI
-python-socketio
-SQLAlchemy async
+Uvicorn
+SQLAlchemy 2.x async
 asyncpg
 PostgreSQL
 Alembic
 Pydantic
+python-socketio
+Docker
 Docker Compose
 GitHub
 Render
 ```
 
-## Domain
+## Runtime Architecture
 
 ```text
-Game
-├── home_team_id / away_team_id
-├── home_score / away_score
-├── ScoringEvents
-└── GameClock
-
-Team
-└── Players
-
-Roster
-└── derived from Players by team_id
+                       Browser / API Client
+                              │
+                ┌─────────────┴─────────────┐
+                │                           │
+              REST                      Socket.IO
+                │                           │
+                └─────────────┬─────────────┘
+                              ▼
+                          FastAPI
+                              │
+                           Services
+                              │
+                       SQLAlchemy Async
+                              │
+                          PostgreSQL
 ```
 
-## GameClock Persistence
+## Persistent Domains
+
+### Game
 
 ```text
-game_clocks
-├── id UUID
-├── game_id UUID UNIQUE FK games.id RESTRICT
-├── mode
-├── status
-├── duration_seconds
-├── elapsed_seconds
-├── running_since TIMESTAMPTZ NULL
-├── version
-├── created_at
-└── updated_at
+id
+name
+status
+scheduled_at
+home_team_id
+away_team_id
+home_score
+away_score
+created_at
+updated_at
 ```
 
-Alembic:
+### Team
+
+Games reference Teams through home/away IDs.
+
+### Player
+
+Players belong to Teams via `team_id`.
+
+### Roster
+
+No table.
+
+Derived by Team membership.
+
+### ScoringEvent
 
 ```text
-20260814_0005
+id
+game_id
+team_id
+player_id nullable
+event_type
+created_at
+```
+
+### GameClock
+
+```text
+id
+game_id UNIQUE
+mode
+status
+duration_seconds
+elapsed_seconds
+running_since
+version
+created_at
+updated_at
 ```
 
 ## GameClock REST
@@ -81,62 +125,152 @@ POST /api/games/{game_id}/clock/resume
 POST /api/games/{game_id}/clock/reset
 ```
 
-## Clock Concurrency
+## Clock Calculation
 
-Mutations include `expected_version`.
-
-Database update conditions include current version/state.
-
-Stale mutations return `409` and do not overwrite committed state.
-
-## Real-Time
+Running:
 
 ```text
+elapsed =
+    elapsed_seconds
+    +
+    floor(server_now - running_since)
+```
+
+Count up:
+
+```text
+display = elapsed
+```
+
+Count down:
+
+```text
+display =
+    max(duration_seconds - elapsed, 0)
+```
+
+## Concurrency
+
+Clock mutations require `expected_version`.
+
+PostgreSQL conditional updates ensure stale same-version commands cannot both commit.
+
+## Socket.IO
+
+Technical:
+
+```text
+connection:ready
+client:ping
+server:pong
+test:broadcast
+```
+
+Domain:
+
+```text
+team:created
+team:updated
+
+game:created
+game:updated
+game:score_updated
+
+player:created
+player:updated
+roster:updated
+
+scoring_event:created
+
 clock:updated
 ```
 
-contains a full committed snapshot and synchronization metadata.
-
-No per-second `clock:tick`.
-
-## Rendering
-
-Running clients calculate locally:
+There is no:
 
 ```text
-elapsed_seconds + (estimated_server_now - running_since)
+clock:tick
 ```
 
-Count-down derives:
+## Clock Event Model
+
+Successful clock mutation:
 
 ```text
-max(duration_seconds - authoritative_elapsed, 0)
+validate
+↓
+database mutation
+↓
+COMMIT
+↓
+reload committed clock
+↓
+clock:updated
 ```
 
-## Validation Assets
+## Restart Safety
+
+No background timer is authoritative.
+
+Persisted:
 
 ```text
-scripts/validate_m8a.sh
-scripts/validate_m8b.sh
-scripts/validate_m8c.sh
-scripts/validate_m8.sh
+elapsed_seconds
+running_since
+status
 ```
 
-Current checkpoint results:
+allow a running clock to survive application restart.
+
+## Validation
 
 ```text
-M8-A 44/44 PASS
-M8-B 79/79 PASS
-M8-C 75/75 PASS
+M8 local:      83 / 83 PASS
+M8 production: 146 / 146 PASS
+M8 remote:      17 / 17 PASS
+M7 production: 127 / 127 PASS
+M6 production:  57 / 57 PASS
 ```
 
-## Scope Not Yet Implemented
+## Technical Validation Client
+
+`/client` supports manual M8 diagnostics:
 
 ```text
-Game phases / halves
-production control UI
-public scoreboard UI
-OBS overlay
-authentication
-organizations
+clock creation
+mode/duration
+start
+pause
+resume
+reset
+version
+server_time
+running_since
+rendered time
+soccer added-time display
+clock:updated logging
+disconnect/reconnect
+```
+
+It is not the production game controller.
+
+## Deployment
+
+```text
+Ubuntu VM
+↓
+Docker validation
+↓
+GitHub
+↓
+Render
+↓
+Alembic
+↓
+production validation
+```
+
+## Next
+
+```text
+M9 NOT STARTED
 ```
