@@ -1,96 +1,64 @@
-## Socket.IO Events
+# ScoreStreamLive — Socket.IO
 
-Socket.IO is a notification layer for committed application state. PostgreSQL remains authoritative.
+## Purpose
 
-### Server → Client Events
+Socket.IO delivers real-time notifications for committed application state.
 
-#### `connection:ready`
+It is **not** the source of truth.
 
-Emitted when a client successfully connects.
+PostgreSQL remains authoritative.
 
-```json
-{
-  "status": "connected",
-  "socket_id": "<socket-id>"
-}
-```
+## Architecture
 
-#### `server:pong`
+The FastAPI application and Socket.IO server run in the same application service.
 
-Response to a `client:ping` event.
-
-```json
-{
-  "status": "pong",
-  "timestamp": "<iso-timestamp>"
-}
-```
-
-#### `test:broadcast`
-
-Echoes a test message to all connected clients.
-
-```json
-{
-  "message": "<echoed-message>"
-}
-```
-
-#### `game:created`
-
-Emitted after a new Game is successfully persisted.
-
-Payload: the public Game representation, including current `home_score` and `away_score`.
-
-#### `game:updated`
-
-Emitted after an existing Game is successfully updated.
-
-Payload: the updated public Game representation.
-
-#### `team:created`
-
-Emitted after a new Team is successfully persisted.
-
-Payload: the public Team representation.
-
-#### `team:updated`
-
-Emitted after an existing Team is successfully updated.
-
-Payload: the updated public Team representation.
-
-#### `player:created`
-
-Emitted after a new Player is successfully persisted.
-
-Payload: the public Player representation.
-
-#### `player:updated`
-
-Emitted after an existing Player is successfully updated.
-
-Payload: the updated public Player representation.
-
-#### `roster:updated` — invalidation notification
-
-Notifies clients that a Team roster changed.
-
-```json
-{
-  "team_id": "<team-uuid>"
-}
-```
-
-The full roster is intentionally not included. Clients retrieve authoritative roster state from:
+## Technical Events
 
 ```text
-GET /api/teams/{team_id}/players
+connection:ready
+client:ping
+server:pong
+test:broadcast
 ```
 
-#### `scoring_event:created`
+## Team Events
 
-Emitted after a scoring transaction successfully commits.
+```text
+team:created
+team:updated
+```
+
+## Game Events
+
+```text
+game:created
+game:updated
+game:score_updated
+```
+
+## Player / Roster Events
+
+```text
+player:created
+player:updated
+roster:updated
+```
+
+`roster:updated` is invalidation-only:
+
+```json
+{
+  "team_id": "<team UUID>"
+}
+```
+
+## Scoring Event
+
+```text
+scoring_event:created
+```
+
+Payload:
 
 ```json
 {
@@ -103,11 +71,13 @@ Emitted after a scoring transaction successfully commits.
 }
 ```
 
-The event represents durable ScoringEvent history.
+## Score Update
 
-#### `game:score_updated`
+```text
+game:score_updated
+```
 
-Emitted after the same successful scoring transaction commits and after `scoring_event:created`.
+Payload:
 
 ```json
 {
@@ -117,42 +87,55 @@ Emitted after the same successful scoring transaction commits and after `scoring
 }
 ```
 
-This is the authoritative committed score snapshot for the notification. Clients can retrieve current Game state through REST.
-
-### Milestone 7 Scoring Event Order
+## Scoring Event Ordering
 
 For one successful scoring mutation:
 
 ```text
 COMMIT
-  ↓
+ ↓
 reload committed state
-  ↓
+ ↓
 scoring_event:created
-  ↓
+ ↓
 game:score_updated
 ```
 
-Failed scoring requests emit neither M7 successful-state event.
+Both new events must be emitted using awaited async Socket.IO calls.
 
-Concurrent scoring requests are not required to produce globally monotonic intermediate Socket.IO score payloads. The guarantees are durable accepted events, no lost score increments, one M7 event pair per accepted mutation, and correct final authoritative Game state.
+## Failed Mutations
 
-### Client → Server Events
+Validation or persistence failures must emit neither:
 
-#### `client:ping`
-
-Client-initiated keepalive ping.
-
-```json
-{
-  "timestamp": "<iso-timestamp>"
-}
+```text
+scoring_event:created
+game:score_updated
 ```
 
-Server response: `server:pong`.
+## Concurrent Scoring
 
-### Validation Client
+Across simultaneous requests, final database state and event counts are guaranteed.
 
-The `/client` page is a technical diagnostic client. It displays connection lifecycle, Team/Game/Player/Roster events, `scoring_event:created`, and `game:score_updated`.
+Intermediate score-update messages are not required to arrive in globally monotonic order.
 
-It is not the production scoreboard UI.
+## Validation Client
+
+```text
+/client
+```
+
+is a technical diagnostic page showing:
+
+```text
+connection lifecycle
+ping / ack
+Team events
+Game events
+Player events
+Roster invalidation
+Scoring events
+Score updates
+disconnect / reconnect
+```
+
+It is not the production scoreboard.

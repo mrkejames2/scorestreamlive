@@ -1,8 +1,12 @@
 # ScoreStreamLive Architecture
 
-## Domain Model — Milestone 7 (Score / Scoring Events)
+## Architectural Goal
 
-Milestone 7 extends the production-validated Game → Team → Player model with persistent score state and durable scoring history.
+ScoreStreamLive is being built as a small, reliable real-time sports application appropriate for a one-person development team.
+
+The architecture intentionally avoids distributed complexity until actual requirements justify it.
+
+## Current Production Architecture
 
 ```text
                          GAME
@@ -17,145 +21,161 @@ Milestone 7 extends the production-validated Game → Team → Player model with
                                       SCORING EVENTS
 ```
 
-## Source of Truth
-
-- **PostgreSQL** is the authoritative source for Game score and ScoringEvent history.
-- **REST** is the mutation boundary.
-- **Socket.IO** notifies connected clients about committed state.
-- Clients must not treat Socket.IO or browser memory as authoritative state.
-
-## Game Score
-
-The `games` table stores:
-
-- `home_score` — integer, required, default `0`
-- `away_score` — integer, required, default `0`
-
-The current displayed score is read from the Game record. Clients do not calculate the current score by replaying ScoringEvents.
-
-## ScoringEvent Entity
-
-A ScoringEvent records an accepted scoring mutation.
-
-Fields:
-
-- `id`
-- `game_id`
-- `team_id`
-- `player_id` — nullable
-- `event_type`
-- `created_at`
-
-Milestone 7 supports only:
+## Application Layers
 
 ```text
-event_type = goal
+HTTP / Socket.IO
+      ↓
+FastAPI / python-socketio
+      ↓
+Routes
+      ↓
+Services
+      ↓
+SQLAlchemy Async
+      ↓
+PostgreSQL
 ```
 
-One accepted goal increments the scoring Team by exactly one.
+## State Ownership
 
-## Validation Rules
+### PostgreSQL
 
-A scoring request is valid only when:
+Authoritative for:
 
-1. The Game exists.
-2. The scoring Team is the Game's home or away Team.
-3. If `player_id` is supplied, the Player exists.
-4. If `player_id` is supplied, the Player belongs to the scoring Team.
-5. `event_type` is `goal`.
+```text
+Games
+Teams
+Players
+Game score
+ScoringEvents
+```
 
-A null `player_id` is valid.
+### REST
 
-## Transaction Boundary
+Authoritative mutation boundary for persistent business state.
 
-ScoringEvent creation and score increment are one logical database transaction.
+### Socket.IO
+
+Notification layer only.
+
+Socket.IO messages communicate state that has already successfully committed.
+
+## Transaction Rule
+
+Never emit a successful domain event for state that failed to persist.
+
+Canonical pattern:
+
+```text
+Validate
+ ↓
+Mutate
+ ↓
+COMMIT
+ ↓
+Reload
+ ↓
+Emit
+```
+
+## Roster Architecture
+
+Roster is a query, not a domain table:
+
+```text
+Players WHERE team_id = Team.id
+```
+
+`roster:updated` invalidates client roster state.
+
+Clients refetch through REST.
+
+## Score Architecture
+
+Current score is stored directly on Game:
+
+```text
+home_score
+away_score
+```
+
+There is no separate `game_state` table.
+
+ScoringEvents are history; Game score is current state.
+
+## Scoring Concurrency
+
+Accepted simultaneous goals must not overwrite one another.
+
+M7 uses an atomic PostgreSQL score increment inside the same transaction as the ScoringEvent insert.
+
+Production validation proved 10 simultaneous accepted goals result in:
+
+```text
++10 Game score
++10 ScoringEvents
+10 scoring_event:created events
+10 game:score_updated events
+0 lost increments
+```
+
+## Real-Time Architecture
+
+The same application container serves REST and Socket.IO.
+
+No separate event service exists.
+
+Current domain event flow:
 
 ```text
 POST /api/scoring-events
-        ↓
-Validation
-        ↓
-Create ScoringEvent
-        ↓
-Atomic PostgreSQL score UPDATE
-        ↓
-ONE COMMIT
-        ↓
-Reload committed state
-        ↓
-Socket.IO notifications
-```
-
-The score increment uses an atomic PostgreSQL update rather than an ORM read/increment/write cycle. This prevents lost increments when valid scoring requests arrive concurrently.
-
-## REST API Boundaries
-
-### Scoring
-
-```text
-POST /api/scoring-events
-GET  /api/games/{game_id}/scoring-events
-```
-
-### Existing Game State
-
-```text
-GET /api/games/{game_id}
-```
-
-returns authoritative `home_score` and `away_score`.
-
-Direct score mutation through the normal Game PATCH endpoint is not part of Milestone 7.
-
-## Socket.IO Event Flow
-
-After a successful scoring transaction commits:
-
-```text
+ ↓
+Scoring service
+ ↓
+PostgreSQL transaction
+ ↓
+COMMIT
+ ↓
 scoring_event:created
-        ↓
+ ↓
 game:score_updated
 ```
 
-### `scoring_event:created`
+## Deployment Architecture
 
-Contains the committed ScoringEvent representation.
-
-### `game:score_updated`
-
-Contains:
-
-```json
-{
-  "game_id": "<game UUID>",
-  "home_score": 1,
-  "away_score": 0
-}
+```text
+Developer VM
+ ↓
+Docker Compose
+ ↓
+GitHub
+ ↓
+Render
+ ↓
+PostgreSQL
 ```
 
-No successful-state M7 events are emitted for failed scoring requests.
+## Infrastructure Deliberately Not Present
 
-## Existing Player / Roster Architecture
+```text
+Redis
+NATS
+Kafka
+RabbitMQ
+Kubernetes
+CQRS
+Event sourcing
+Distributed Socket.IO
+Microservice decomposition
+```
 
-Players still belong to Teams through `Player.team_id`.
+Adding these requires an approved milestone need.
 
-A Team roster is still derived by querying Players for that Team. No separate Roster table exists.
+## Next Architectural Layer
 
-`roster:updated` remains invalidation-only; clients refetch the authoritative roster through REST.
+M8 is expected to introduce Game Clock / Timer behavior.
 
-## Out of Scope for Milestone 7
+It must be architected separately.
 
-Milestone 7 does not implement:
-
-- score correction or goal undo
-- scoring-event deletion or editing
-- game clock
-- periods / halves
-- assists
-- cards
-- substitutions
-- statistics
-- authentication / authorization
-- production scoreboard UI
-- OBS overlay
-- Redis, NATS, Kafka, or microservice decomposition
+Do not infer M8 design from M7.

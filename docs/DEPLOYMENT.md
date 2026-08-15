@@ -1,57 +1,135 @@
+# ScoreStreamLive — Deployment
 
----
+## Deployment Flow
 
-## `docs/MILESTONES.md`
+```text
+Local Ubuntu VM
+ ↓
+Docker Compose
+ ↓
+Validation
+ ↓
+Git
+ ↓
+GitHub
+ ↓
+Render
+ ↓
+PostgreSQL migration
+ ↓
+Production validation
+```
 
-**Purpose:** Tracks milestone progress and upcoming work.
+## Local Startup
 
-```markdown
-# Milestones
+Typical:
 
-## Milestone 0 — Golden Path Validation
-**Status:** Complete  
-Validated the AI-assisted development pipeline: GPT → Kimi → Devin → Docker → Local VM → GitHub → Render → Production.
+```bash
+sudo docker compose down
+sudo docker compose up --build -d
+sudo docker compose ps
+sudo docker compose logs app --tail=100
+```
 
-## Milestone 1 — Production Configuration & Observability
-**Status:** In Progress  
-Establish operational foundation: centralized configuration, structured logging, health endpoints, application metadata, Docker improvements.
+## Migration Check
 
-## Milestone 2 — Database Foundation
-**Status:** Planned  
-Introduce PostgreSQL connection and integrate database health into `/health/ready`.
+Local:
 
-# Deployment
+```bash
+sudo docker compose exec app alembic current
+```
 
-## Local Development
+Current M7 head:
 
-1. Copy environment variables:
-   ```bash
-   cp .env.example .env
+```text
+20260813_0004
+```
 
-## Render (Manual Database)
+## Local Validation
 
-1. Push the repository to GitHub.
-2. In Render, create a new **Web Service** from your GitHub repo.
-3. Separately, create a **Managed PostgreSQL** database in Render.
-4. Copy the database connection details (host, port, name, user, password) from the database dashboard.
-5. In your Web Service's **Environment** tab, manually add:
-   - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
-   - `APP_NAME`, `APP_ENV=production`, `APP_VERSION`, `LOG_LEVEL`
-6. Deploy the web service.
+Current final milestone harness:
 
-# Deployment
+```bash
+sudo BASE_URL="http://<LOCAL-IP>:8000" ./scripts/validate_m7.sh
+```
 
-## Local Development
+Expected:
 
-1. Copy environment variables:
-   ```bash
-   cp .env.example .env
+```text
+M7 VALIDATION PASSED
+Failed: 0
+```
 
+M6 regression:
 
-# Deployment
+```bash
+sudo BASE_URL="http://<LOCAL-IP>:8000" ./scripts/validate_m6.sh
+```
 
-## Local Development
+Expected:
 
-1. Copy environment variables:
-   ```bash
-   cp .env.example .env
+```text
+57 passed
+0 failed
+```
+
+## Git
+
+Before push:
+
+```bash
+git status
+git diff --stat
+git diff --check
+git diff
+```
+
+## Production
+
+Render deploys from GitHub.
+
+Production URL:
+
+```text
+https://scorestreamlive.onrender.com
+```
+
+## Production Validation
+
+```bash
+sudo BASE_URL="https://scorestreamlive.onrender.com" ./scripts/validate_m7.sh
+```
+
+M7 production result:
+
+```text
+127 passed
+0 failed
+```
+
+Standalone M6 regression:
+
+```bash
+sudo BASE_URL="https://scorestreamlive.onrender.com" ./scripts/validate_m6.sh
+```
+
+Result:
+
+```text
+57 passed
+0 failed
+```
+
+## Socket.IO Transient Retry
+
+The final M7 wrapper allows one retry of the M6 regression harness after a short pause when the first production Socket.IO connection attempt fails.
+
+A second failure still fails the milestone validation.
+
+This handles observed transient Render/Socket.IO connection timing without masking persistent regressions.
+
+## Docker Compose Warning
+
+The obsolete top-level Compose `version` warning is known and non-blocking.
+
+It is deferred maintenance and should not be mixed into feature milestones unless deliberately scheduled.

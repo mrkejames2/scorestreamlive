@@ -1,71 +1,119 @@
+# ScoreStreamLive — Milestones
 
----
+## Development Model
 
-## `docs/MILESTONES.md`
+Each milestone uses a checkpoint model where appropriate:
 
-**Purpose:** Tracks milestone progress.
+```text
+A — Persistence
+ ↓
+B — REST / Service
+ ↓
+C — Socket.IO
+ ↓
+D — Client / Docs / Regression
+ ↓
+Independent Review
+ ↓
+Production
+ ↓
+Documentation Refresh
+```
 
-```markdown
-# Milestones
+## Completed
 
-## Milestone 0 — Golden Path Validation
-**Status:** Complete  
-Validated the AI-assisted development pipeline: GPT → Kimi → Devin → Docker → Local VM → GitHub → Render → Production.
+### M0 — Deployment Foundation
 
-## Milestone 1 — Production Configuration & Observability
-**Status:** Complete  
-Established operational foundation: centralized configuration, structured logging, health endpoints, application metadata, Docker improvements.
+Established:
 
-## Milestone 2 — PostgreSQL Foundation
-**Status:** In Progress  
-Introduced PostgreSQL as the persistent data layer: SQLAlchemy 2.0 async, asyncpg, Alembic migrations, Docker Compose PostgreSQL service, Render managed PostgreSQL, readiness health check validates database connectivity.
+```text
+VM → Docker → GitHub → Render
+```
 
-## Milestone 3 — Real-Time Communication Foundation
-**Status:** Planned  
-Introduce Socket.IO for real-time client-server communication.
+### M1 — Application Foundation
 
-# Milestones
+Configuration, logging, health, production structure.
 
-## Milestone 0 — Golden Path Validation
-**Status:** Complete  
-Validated the AI-assisted development pipeline.
+### M2 — PostgreSQL Foundation
 
-## Milestone 1 — Production Configuration & Observability
-**Status:** Complete  
-Centralized configuration, structured logging, health endpoints, metadata.
+Async SQLAlchemy, PostgreSQL, Alembic, readiness.
 
-## Milestone 2 — PostgreSQL Foundation
-**Status:** Complete  
-PostgreSQL connectivity, SQLAlchemy async, Alembic, Render managed database.
+### M3 — Socket.IO Foundation
 
-## Milestone 3 — Socket.IO Real-Time Communication Foundation
-**Status:** In Progress  
-Socket.IO server/client, connection lifecycle, ping/pong, broadcast, reconnection, CORS, validation client.
+Browser ↔ Socket.IO ↔ application real-time foundation.
 
-## Milestone 4 — Game / Match Foundation
-**Status:** Planned  
-Introduce the first ScoreStreamLive domain concept: Game/Match entity.
+### M4 — Game Foundation
 
-# Milestones
+Persistent Game domain and REST behavior.
 
-## Milestone 0 — Golden Path Validation
-**Status:** Complete
+### M5 — Team Foundation
 
-## Milestone 1 — Production Configuration & Observability
-**Status:** Complete
+Persistent Team domain and Game ↔ Team references.
 
-## Milestone 2 — PostgreSQL Foundation
-**Status:** Complete
+### M6 — Player / Roster Foundation
 
-## Milestone 3 — Socket.IO Real-Time Communication Foundation
-**Status:** Complete
+Persistent Player domain, Team roster derivation, Player/roster Socket.IO.
 
-## Milestone 4 — Game / Match Foundation
-**Status:** Complete
+Production:
 
-## Milestone 5 — Team Foundation and Game-Team Relationships
-**Status:** In Progress  
-Team entity, REST API, Game-Team relationships, Socket.IO domain events, validation.
+```text
+57 / 57 PASS
+```
 
-## Milestone 6 — Players / Rosters
-**Status:** Planned
+### M7 — Game Score / Scoring Events
+
+Status:
+
+```text
+COMPLETE — PRODUCTION VALIDATED
+```
+
+Implemented:
+
+```text
+Game.home_score
+Game.away_score
+ScoringEvent
+POST /api/scoring-events
+GET /api/games/{game_id}/scoring-events
+atomic concurrent score increment
+scoring_event:created
+game:score_updated
+final validation client
+```
+
+Validation:
+
+```text
+Local:      127 / 127 PASS
+Production: 127 / 127 PASS
+M6 prod:     57 / 57 PASS
+```
+
+Independent review:
+
+```text
+DeepSeek: APPROVED
+```
+
+## Planned
+
+### M8 — Game Clock / Timer Foundation
+
+Not started.
+
+Requires architecture specification before coding.
+
+### M9 — Scoreboard Projection
+
+Directional only.
+
+### M10 — OBS / Streaming Integration
+
+Directional only.
+
+## Rule
+
+Roadmap placement does not authorize implementation.
+
+The next milestone begins only after the current one is production validated and documentation is synchronized.

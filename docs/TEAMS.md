@@ -1,21 +1,69 @@
-# Team Domain
+# ScoreStreamLive — Team Domain
 
-## Overview
+## Status
 
-The Team is a persistent domain entity representing a sports team. Games reference Teams as Home and Away opponents through foreign-key relationships.
+Production validated.
 
-## Model
+## Purpose
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `id` | UUID | Yes | Unique identifier |
-| `name` | String(255) | Yes | Full team name |
-| `short_name` | String(100) | No | Concise display name for scoreboards |
-| `created_at` | DateTime(tz) | Yes | Creation timestamp |
-| `updated_at` | DateTime(tz) | Yes | Last modification timestamp |
+Team represents a sports team referenced by Games and Players.
 
-## REST API
+Conceptual fields:
 
-### Create Team
 ```text
-POST /api/teams
+id
+name
+short_name
+created_at
+updated_at
+```
+
+## API
+
+```text
+POST   /api/teams
+GET    /api/teams
+GET    /api/teams/{team_id}
+PATCH  /api/teams/{team_id}
+GET    /api/teams/{team_id}/players
+```
+
+## Game Relationship
+
+Games reference Teams as:
+
+```text
+home_team_id
+away_team_id
+```
+
+## Player Relationship
+
+Players belong to a Team through:
+
+```text
+Player.team_id
+```
+
+## Roster
+
+No separate roster table exists.
+
+The Team roster is derived by querying Players.
+
+## Scoring Validation
+
+In M7, a Team can score only when it participates in the target Game as Home or Away Team.
+
+## Socket.IO
+
+```text
+team:created
+team:updated
+```
+
+Roster changes are represented separately with:
+
+```text
+roster:updated
+```

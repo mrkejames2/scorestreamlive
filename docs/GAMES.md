@@ -1,107 +1,100 @@
-# Game Domain
+# ScoreStreamLive — Game Domain
 
-## Overview
+## Status
 
-A Game represents a sporting event and now owns the authoritative current score.
+Production validated through Milestone 7.
 
-Milestone 7 adds persistent `home_score` and `away_score` fields and links Game state to durable ScoringEvent history.
+## Game State
 
-## Model
-
-| Field | Type | Required | Description |
-|---|---|---:|---|
-| `id` | UUID | Yes | Unique identifier, generated automatically |
-| `name` | String(255) | Yes | Human-readable game name |
-| `status` | String(20) | Yes | `scheduled`, `live`, `completed`, or `cancelled` |
-| `scheduled_at` | DateTime(tz) | No | Optional scheduled start time |
-| `home_team_id` | UUID | No | Home Team reference |
-| `away_team_id` | UUID | No | Away Team reference |
-| `home_score` | Integer | Yes | Authoritative home score; defaults to `0` |
-| `away_score` | Integer | Yes | Authoritative away score; defaults to `0` |
-| `created_at` | DateTime(tz) | Yes | Record creation timestamp |
-| `updated_at` | DateTime(tz) | Yes | Last modification timestamp |
-
-## Score Ownership
-
-The authoritative current score is:
+Current fields conceptually include:
 
 ```text
-Game.home_score
-Game.away_score
+id
+name
+status
+scheduled_at
+home_team_id
+away_team_id
+home_score
+away_score
+created_at
+updated_at
 ```
 
-Clients should retrieve current Game state with:
+## Team Relationships
+
+A Game can reference:
 
 ```text
-GET /api/games/{game_id}
+home_team_id
+away_team_id
 ```
 
-Clients do not calculate the current score by replaying scoring history.
+Both point to Team records.
 
-## Scoring Events
+## Score
 
-Milestone 7 introduces durable `ScoringEvent` records with:
-
-- `id`
-- `game_id`
-- `team_id`
-- `player_id` — nullable
-- `event_type`
-- `created_at`
-
-The supported M7 event type is:
+Game owns the authoritative current score:
 
 ```text
-goal
+home_score
+away_score
 ```
 
-One accepted goal adds one point to the scoring Team.
+New Games begin `0–0`.
 
-## Scoring REST API
+Clients retrieve current score from Game REST state.
 
-Create a scoring event:
+ScoringEvent history is not replayed to calculate current score.
+
+## API
+
+```text
+POST   /api/games
+GET    /api/games
+GET    /api/games/{game_id}
+PATCH  /api/games/{game_id}
+```
+
+Scoring is not performed through normal Game PATCH.
+
+Scoring goes through:
 
 ```text
 POST /api/scoring-events
 ```
 
-Retrieve Game scoring history:
+## Real-Time
+
+Existing Game events:
 
 ```text
-GET /api/games/{game_id}/scoring-events
+game:created
+game:updated
 ```
 
-Scoring history is ordered by:
+M7 adds:
 
 ```text
-created_at ASC
-id ASC
+game:score_updated
 ```
 
-## Scoring Validation
+Example score update:
 
-The service validates that:
+```json
+{
+  "game_id": "<game UUID>",
+  "home_score": 2,
+  "away_score": 1
+}
+```
 
-- the Game exists;
-- the Team belongs to the Game;
-- a supplied Player exists;
-- a supplied Player belongs to the scoring Team;
-- `event_type` is `goal`.
+## Deferred
 
-`player_id = null` is valid.
-
-## Atomic Score Mutation
-
-ScoringEvent creation and Game score increment occur in one transaction.
-
-The Game score is incremented with a concurrency-safe atomic PostgreSQL `UPDATE`, preventing lost increments from simultaneous accepted goals.
-
-## Direct Score Mutation
-
-Milestone 7 does not expose manual score override through the normal Game update endpoint.
-
-Score correction, undo, decrement, and scoring-event deletion are deferred.
-
-## Status Lifecycle
-
-Existing Game status behavior remains unchanged by Milestone 7.
+```text
+clock
+timer
+period / half
+game-completion workflow
+manual score correction
+```

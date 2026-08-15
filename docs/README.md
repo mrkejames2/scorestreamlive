@@ -1,60 +1,72 @@
-# ScoreStreamLive Bootstrap
+# ScoreStreamLive Documentation
 
-## Project Purpose
+This directory is the project documentation source of truth.
 
-Foundational Dockerized deployment platform for the ScoreStreamLive project.  
-This is **Milestone 1: Production Configuration & Observability**.
+## Current State
 
-## Tech Stack
+```text
+Milestones complete: M0–M7
+Current production milestone: M7
+Next milestone: M8 — Game Clock / Timer Foundation
+M8 status: NOT STARTED
+```
 
-- Python 3.13
-- FastAPI
-- Uvicorn
-- Docker & Docker Compose
-- Render
+Milestone 7 is production validated.
 
-## Local Setup
+```text
+Local M7 validation:      127 / 127 PASS
+Production M7 validation: 127 / 127 PASS
+M6 production regression:  57 / 57 PASS
+Alembic head:             20260813_0004
+```
 
-### Prerequisites
+## Start Here
 
-- [Docker](https://docs.docker.com/get-docker/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
+For a human:
 
-### Environment Variables
+1. `ARCHITECTURE.md`
+2. `IMPLEMENTATION_MAP.md`
+3. `MILESTONES.md`
+4. Domain documentation as needed
 
-1. Copy the example environment file:
-   ```bash
-   cp .env.example .env
+For a new AI session:
 
+1. `AI_HANDOFF.md`
+2. `IMPLEMENTATION_MAP.md`
+3. `CURRENT_MILESTONE_STATUS.md`
+4. current milestone specification
+5. actual repository
+6. `ai/GOLDEN_RULE.md`
 
-# ScoreStreamLive Bootstrap
+## Files
 
-## Project Purpose
+| File | Purpose |
+|---|---|
+| `AI_HANDOFF.md` | Persistent cross-session project context |
+| `ARCHITECTURE.md` | Architectural model and boundaries |
+| `CURRENT_MILESTONE_STATUS.md` | Short live baton between AI sessions |
+| `DECISIONS.md` | Architecture decision records |
+| `DEPLOYMENT.md` | Local → GitHub → Render workflow |
+| `GAMES.md` | Game domain |
+| `IMPLEMENTATION_MAP.md` | What is actually implemented now |
+| `MILESTONES.md` | Roadmap and completed milestone record |
+| `MILESTONE_7.md` | Final M7 specification / completion record |
+| `PLAYERS.md` | Player and roster domain |
+| `SCORING.md` | M7 scoring architecture |
+| `SOCKET_IO.md` | Real-time event contracts |
+| `TEAMS.md` | Team domain |
+| `ai/` | AI role contracts and session bootstrap |
 
-Foundational Dockerized deployment platform for the ScoreStreamLive project.  
-**Current milestone: Milestone 2 — PostgreSQL Foundation.**
+## Documentation Rule
 
-## Tech Stack
+Documentation describes **validated implementation**, not wishes.
 
-- Python 3.13
-- FastAPI
-- Uvicorn
-- SQLAlchemy 2.0 (Async)
-- asyncpg
-- Alembic
-- PostgreSQL 16
-- Docker & Docker Compose
-- Render
+If repository behavior changes:
 
-## Local Setup
+1. validate the change;
+2. update the relevant domain docs;
+3. update `IMPLEMENTATION_MAP.md`;
+4. update `AI_HANDOFF.md`;
+5. update `CURRENT_MILESTONE_STATUS.md`.
 
-### Prerequisites
-
-- [Docker](https://docs.docker.com/get-docker/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
-
-### Environment Variables
-
-1. Copy the example environment file:
-   ```bash
-   cp .env.example .env
+Do this before beginning the next milestone.
