@@ -1,4 +1,4 @@
-"""ScoreStreamLive — Milestone 5."""
+"""ScoreStreamLive — Milestone 8."""
 
 import logging
 import time
@@ -9,6 +9,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.api.game_clock import router as game_clock_router
 from app.api.games import router as games_router
 from app.api.players import router as players_router
 from app.api.scoring_events import router as scoring_events_router
@@ -24,8 +25,8 @@ configure_logging(settings.LOG_LEVEL)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Handle application startup and shutdown events."""
-    logger = logging.getLogger("app")
 
+    logger = logging.getLogger("app")
     logger.info(
         "CONFIG DIAGNOSTIC — env=%s host=%s port=%s name=%s user=%s password_set=%s url=%s",
         settings.APP_ENV,
@@ -37,7 +38,6 @@ async def lifespan(app: FastAPI):
         get_safe_database_url(),
         extra={"event": "config.diagnostic"},
     )
-
     logger.info(
         "Application startup — env=%s version=%s",
         settings.APP_ENV,
@@ -50,6 +50,7 @@ async def lifespan(app: FastAPI):
     )
 
     db_ready = await check_database_connection()
+
     if db_ready:
         logger.info(
             "Database connection established",
@@ -77,6 +78,7 @@ app = FastAPI(
 )
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.include_router(game_clock_router)
 app.include_router(scoring_events_router)
 app.include_router(games_router)
 app.include_router(players_router)
@@ -86,6 +88,7 @@ app.include_router(teams_router)
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     """Log incoming HTTP requests with structured metadata."""
+
     start_time = time.time()
     response = await call_next(request)
     duration_ms = (time.time() - start_time) * 1000
@@ -101,18 +104,21 @@ async def log_requests(request: Request, call_next):
             "duration_ms": round(duration_ms, 2),
         },
     )
+
     return response
 
 
 @app.get("/client")
 async def client_page():
     """Serve the Socket.IO validation client."""
+
     return FileResponse("static/index.html")
 
 
 @app.api_route("/", methods=["GET", "HEAD"])
 async def root():
     """Return application status."""
+
     return {
         "status": "running",
         "environment": settings.APP_ENV,
@@ -123,15 +129,19 @@ async def root():
 @app.api_route("/health/live", methods=["GET", "HEAD"])
 async def health_live():
     """Liveness probe. Confirms the application process is alive."""
+
     return {"status": "ok"}
 
 
 @app.api_route("/health/ready", methods=["GET", "HEAD"])
 async def health_ready():
     """Readiness probe. Confirms the application and PostgreSQL are operational."""
+
     db_ready = await check_database_connection()
+
     if db_ready:
         return {"status": "ready"}
+
     return JSONResponse(
         status_code=503,
         content={"status": "not ready"},
@@ -141,6 +151,7 @@ async def health_ready():
 @app.api_route("/info", methods=["GET", "HEAD"])
 async def info():
     """Return application metadata from centralized configuration."""
+
     return {
         "application": settings.APP_NAME,
         "version": settings.APP_VERSION,

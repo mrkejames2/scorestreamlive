@@ -1,181 +1,124 @@
 # ScoreStreamLive Architecture
 
-## Architectural Goal
-
-ScoreStreamLive is being built as a small, reliable real-time sports application appropriate for a one-person development team.
-
-The architecture intentionally avoids distributed complexity until actual requirements justify it.
-
-## Current Production Architecture
+## Current Candidate State
 
 ```text
-                         GAME
-                          │
-        ┌─────────────────┼─────────────────┐
-        ▼                 ▼                 ▼
-    HOME TEAM         AWAY TEAM           SCORE
-        │                 │          home_score
-        ▼                 ▼          away_score
-     PLAYERS           PLAYERS              │
-                                              ▼
-                                      SCORING EVENTS
+M0–M7 COMPLETE / PRODUCTION VALIDATED
+M8-A PASS
+M8-B PASS
+M8-C PASS
+M8-D IN PROGRESS
 ```
 
-## Application Layers
+M8 production validation is not yet complete.
+
+## Runtime
 
 ```text
-HTTP / Socket.IO
-      ↓
-FastAPI / python-socketio
-      ↓
-Routes
-      ↓
-Services
-      ↓
-SQLAlchemy Async
-      ↓
-PostgreSQL
+Browser / API Client
+        │
+   ┌────┴────┐
+   │         │
+ REST     Socket.IO
+   │         │
+   └────┬────┘
+        │
+     FastAPI
+        │
+     Services
+        │
+ SQLAlchemy Async
+        │
+   PostgreSQL
 ```
 
 ## State Ownership
 
-### PostgreSQL
-
-Authoritative for:
+PostgreSQL owns durable state:
 
 ```text
 Games
 Teams
 Players
-Game score
+Scores
 ScoringEvents
+GameClocks
 ```
 
-### REST
+REST is the persistent mutation boundary.
 
-Authoritative mutation boundary for persistent business state.
+Socket.IO distributes committed state.
 
-### Socket.IO
+## Current Domain
 
-Notification layer only.
+```text
+Game
+├── Home Team
+│   └── Players
+├── Away Team
+│   └── Players
+├── home_score
+├── away_score
+├── ScoringEvents
+└── GameClock
+```
 
-Socket.IO messages communicate state that has already successfully committed.
-
-## Transaction Rule
-
-Never emit a successful domain event for state that failed to persist.
-
-Canonical pattern:
+## Mutation Rule
 
 ```text
 Validate
  ↓
-Mutate
+database mutation
  ↓
 COMMIT
  ↓
-Reload
+reload
  ↓
-Emit
+Socket.IO notification
 ```
 
-## Roster Architecture
+A successful event must never describe uncommitted state.
 
-Roster is a query, not a domain table:
+## Clock Architecture
+
+The GameClock is `state + time`, not a background timer process.
 
 ```text
-Players WHERE team_id = Team.id
+elapsed_seconds
++
+running_since
++
+server_time
+=
+current authoritative elapsed time
 ```
 
-`roster:updated` invalidates client roster state.
+Clients render the clock locally.
 
-Clients refetch through REST.
+The server emits `clock:updated` only on committed state/configuration transitions.
 
-## Score Architecture
+There is no per-second `clock:tick`.
 
-Current score is stored directly on Game:
+## Concurrency
+
+GameClock commands use optimistic `version` control and conditional PostgreSQL updates.
+
+Two controllers using the same version cannot both overwrite state.
+
+## Scale Boundary
+
+No timer task is created per Game.
+
+Many simultaneous running Games therefore do not require one continuous server loop or one database write every second.
+
+## Deferred
 
 ```text
-home_score
-away_score
+Game lifecycle/phases
+Production control UI
+Production scoreboard
+OBS
+Authentication
+Organizations
+Distributed messaging infrastructure
 ```
-
-There is no separate `game_state` table.
-
-ScoringEvents are history; Game score is current state.
-
-## Scoring Concurrency
-
-Accepted simultaneous goals must not overwrite one another.
-
-M7 uses an atomic PostgreSQL score increment inside the same transaction as the ScoringEvent insert.
-
-Production validation proved 10 simultaneous accepted goals result in:
-
-```text
-+10 Game score
-+10 ScoringEvents
-10 scoring_event:created events
-10 game:score_updated events
-0 lost increments
-```
-
-## Real-Time Architecture
-
-The same application container serves REST and Socket.IO.
-
-No separate event service exists.
-
-Current domain event flow:
-
-```text
-POST /api/scoring-events
- ↓
-Scoring service
- ↓
-PostgreSQL transaction
- ↓
-COMMIT
- ↓
-scoring_event:created
- ↓
-game:score_updated
-```
-
-## Deployment Architecture
-
-```text
-Developer VM
- ↓
-Docker Compose
- ↓
-GitHub
- ↓
-Render
- ↓
-PostgreSQL
-```
-
-## Infrastructure Deliberately Not Present
-
-```text
-Redis
-NATS
-Kafka
-RabbitMQ
-Kubernetes
-CQRS
-Event sourcing
-Distributed Socket.IO
-Microservice decomposition
-```
-
-Adding these requires an approved milestone need.
-
-## Next Architectural Layer
-
-M8 is expected to introduce Game Clock / Timer behavior.
-
-It must be architected separately.
-
-Do not infer M8 design from M7.

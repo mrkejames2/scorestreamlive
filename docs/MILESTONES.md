@@ -1,119 +1,56 @@
 # ScoreStreamLive — Milestones
 
-## Development Model
-
-Each milestone uses a checkpoint model where appropriate:
+## Completed Production Milestones
 
 ```text
-A — Persistence
- ↓
-B — REST / Service
- ↓
-C — Socket.IO
- ↓
-D — Client / Docs / Regression
- ↓
-Independent Review
- ↓
-Production
- ↓
-Documentation Refresh
+M0 Deployment Foundation
+M1 Application Foundation
+M2 PostgreSQL Foundation
+M3 Socket.IO Foundation
+M4 Game Foundation
+M5 Team Foundation
+M6 Player / Roster Foundation
+M7 Score / ScoringEvent Foundation
 ```
 
-## Completed
-
-### M0 — Deployment Foundation
-
-Established:
-
-```text
-VM → Docker → GitHub → Render
-```
-
-### M1 — Application Foundation
-
-Configuration, logging, health, production structure.
-
-### M2 — PostgreSQL Foundation
-
-Async SQLAlchemy, PostgreSQL, Alembic, readiness.
-
-### M3 — Socket.IO Foundation
-
-Browser ↔ Socket.IO ↔ application real-time foundation.
-
-### M4 — Game Foundation
-
-Persistent Game domain and REST behavior.
-
-### M5 — Team Foundation
-
-Persistent Team domain and Game ↔ Team references.
-
-### M6 — Player / Roster Foundation
-
-Persistent Player domain, Team roster derivation, Player/roster Socket.IO.
-
-Production:
-
-```text
-57 / 57 PASS
-```
-
-### M7 — Game Score / Scoring Events
-
-Status:
-
-```text
-COMPLETE — PRODUCTION VALIDATED
-```
-
-Implemented:
-
-```text
-Game.home_score
-Game.away_score
-ScoringEvent
-POST /api/scoring-events
-GET /api/games/{game_id}/scoring-events
-atomic concurrent score increment
-scoring_event:created
-game:score_updated
-final validation client
-```
-
-Validation:
-
-```text
-Local:      127 / 127 PASS
-Production: 127 / 127 PASS
-M6 prod:     57 / 57 PASS
-```
-
-Independent review:
-
-```text
-DeepSeek: APPROVED
-```
-
-## Planned
+## Current Milestone
 
 ### M8 — Game Clock / Timer Foundation
 
-Not started.
+```text
+M8-A Persistence               PASS
+M8-B REST / Clock Engine       PASS
+M8-C Real-Time Synchronization PASS
+M8-D Finalization              IN PROGRESS
+```
 
-Requires architecture specification before coding.
+M8 provides:
 
-### M9 — Scoreboard Projection
+```text
+count up
+count down
+start
+pause
+resume
+reset
+configuration
+durable timestamp anchors
+restart/reconnect recovery
+optimistic concurrency
+multi-client synchronization
+soccer added-time derivation
+no tick broadcasting
+```
 
-Directional only.
+M8 is not complete until independent review and production validation pass.
 
-### M10 — OBS / Streaming Integration
+## Directional Future
 
-Directional only.
+```text
+M9  Game Lifecycle / Phases
+M10 Game Control UI
+M11 Live Scoreboard
+M12 OBS / Stream Overlay
+```
 
-## Rule
-
-Roadmap placement does not authorize implementation.
-
-The next milestone begins only after the current one is production validated and documentation is synchronized.
+These are directional roadmap items, not authorization to implement.

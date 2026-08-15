@@ -3,83 +3,237 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ScoreStreamLive — Socket.IO Validation</title>
+    <title>ScoreStreamLive — Technical Validation Client</title>
     <style>
-        body { font-family: system-ui, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; }
-        .status { padding: 12px; border-radius: 6px; margin: 12px 0; font-weight: 600; }
-        .connected { background: #d4edda; color: #155724; }
-        .disconnected { background: #f8d7da; color: #721c24; }
-        .reconnecting { background: #fff3cd; color: #856404; }
-        button { padding: 10px 18px; margin: 6px 4px; cursor: pointer; font-size: 14px; }
-        #log, #games-log, #teams-log, #players-log, #scoring-log {
-            border: 1px solid #ccc;
-            padding: 12px;
-            height: 200px;
-            overflow-y: auto;
-            font-family: monospace;
-            font-size: 12px;
-            background: #fafafa;
+        :root {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
-        .log-entry { margin: 3px 0; padding: 3px 0; border-bottom: 1px solid #e0e0e0; }
-        .section { margin: 24px 0; }
-        h1 { font-size: 22px; }
-        h2 { font-size: 16px; margin-top: 24px; }
-        .game-card, .team-card, .player-card {
-            background: #fff;
-            border: 1px solid #ddd;
+
+        body {
+            max-width: 1100px;
+            margin: 32px auto;
+            padding: 0 18px 48px;
+            background: #f6f7f9;
+            color: #20242a;
+        }
+
+        h1, h2, h3 { margin-bottom: 10px; }
+        h1 { font-size: 24px; }
+        h2 { font-size: 18px; margin-top: 0; }
+
+        .section {
+            background: white;
+            border: 1px solid #dfe3e8;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 18px 0;
+        }
+
+        .status {
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .connected { background: #dff4e4; color: #17652b; }
+        .disconnected { background: #f8dddd; color: #781f1f; }
+        .reconnecting { background: #fff2cc; color: #705800; }
+
+        button, select, input {
+            padding: 9px 11px;
+            font-size: 14px;
+            margin: 4px 3px;
+        }
+
+        button { cursor: pointer; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+        }
+
+        .metric {
+            border: 1px solid #e3e6ea;
+            background: #fafbfc;
+            border-radius: 6px;
             padding: 10px;
-            margin: 6px 0;
-            border-radius: 4px;
         }
-        .game-card strong, .team-card strong, .player-card strong { color: #333; }
+
+        .metric-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: #66717f;
+        }
+
+        .metric-value {
+            margin-top: 4px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            overflow-wrap: anywhere;
+        }
+
+        #clock-display {
+            font-size: 46px;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            margin: 10px 0;
+        }
+
+        #added-time {
+            font-size: 24px;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .row label {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        #log, #domain-log, #clock-log {
+            height: 220px;
+            overflow-y: auto;
+            border: 1px solid #d8dde3;
+            background: #fbfbfc;
+            padding: 10px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            padding: 3px 0;
+            border-bottom: 1px solid #eceff2;
+            overflow-wrap: anywhere;
+        }
+
+        .help {
+            font-size: 13px;
+            color: #5e6875;
+            line-height: 1.45;
+        }
+
+        .warning {
+            background: #fff7df;
+            border: 1px solid #ead795;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
-    <h1>ScoreStreamLive — Socket.IO Validation Client</h1>
-
-    <div id="connection-status" class="status disconnected">Disconnected</div>
-    <div>Socket ID: <span id="socket-id">-</span></div>
+    <h1>ScoreStreamLive — Technical Validation Client</h1>
+    <p class="help">
+        Development diagnostics only. This page is not the production game controller or scoreboard.
+    </p>
 
     <div class="section">
-        <h2>Controls</h2>
-        <button id="btn-ping">Send Ping</button>
-        <button id="btn-broadcast">Send Broadcast</button>
-        <button id="btn-disconnect">Force Disconnect</button>
+        <h2>Socket.IO Connection</h2>
+        <div id="connection-status" class="status disconnected">Disconnected</div>
+        <div>Socket ID: <span id="socket-id">-</span></div>
+        <div class="row">
+            <button id="btn-ping">Send Ping</button>
+            <button id="btn-broadcast">Send Broadcast</button>
+            <button id="btn-disconnect">Force Disconnect / Reconnect</button>
+        </div>
     </div>
 
     <div class="section">
-        <h2>Event Log</h2>
-        <div id="log"></div>
+        <h2>M8 Game Clock</h2>
+
+        <div class="warning">
+            Enter an existing Game UUID. Clock mutations use REST. Socket.IO only receives committed
+            <code>clock:updated</code> snapshots. No per-second server tick is used.
+        </div>
+
+        <div class="row" style="margin-top: 10px;">
+            <label for="clock-game-id">Game ID</label>
+            <input id="clock-game-id" size="38" placeholder="Game UUID">
+
+            <label for="clock-mode">Mode</label>
+            <select id="clock-mode">
+                <option value="count_up">count_up</option>
+                <option value="count_down">count_down</option>
+            </select>
+
+            <label for="clock-duration">Duration seconds</label>
+            <input id="clock-duration" type="number" min="1" value="2700" style="width: 100px;">
+        </div>
+
+        <div class="row">
+            <button id="btn-clock-create">Create Clock</button>
+            <button id="btn-clock-get">Get / Refresh</button>
+            <button id="btn-clock-configure">Apply Mode / Duration</button>
+            <button id="btn-clock-start">Start</button>
+            <button id="btn-clock-pause">Pause</button>
+            <button id="btn-clock-resume">Resume</button>
+            <button id="btn-clock-reset">Reset</button>
+        </div>
+
+        <div>
+            <span id="clock-display">--:--</span>
+            <span id="added-time"></span>
+        </div>
+
+        <div class="grid">
+            <div class="metric">
+                <div class="metric-label">Status</div>
+                <div id="clock-status" class="metric-value">-</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Version</div>
+                <div id="clock-version" class="metric-value">-</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Mode</div>
+                <div id="clock-current-mode" class="metric-value">-</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Duration</div>
+                <div id="clock-current-duration" class="metric-value">-</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Persisted Elapsed</div>
+                <div id="clock-elapsed" class="metric-value">-</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Authoritative Elapsed</div>
+                <div id="clock-authoritative" class="metric-value">-</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Running Since</div>
+                <div id="clock-running-since" class="metric-value">-</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Server Time</div>
+                <div id="clock-server-time" class="metric-value">-</div>
+            </div>
+        </div>
+
+        <h3>Clock Events / REST</h3>
+        <div id="clock-log"></div>
     </div>
 
     <div class="section">
-        <h2>Teams (via Socket.IO)</h2>
-        <div id="teams-list"></div>
-        <h3>Team Events</h3>
-        <div id="teams-log"></div>
-    </div>
-
-    <div class="section">
-        <h2>Games (via Socket.IO)</h2>
-        <div id="games-list"></div>
-        <h3>Game Events</h3>
-        <div id="games-log"></div>
-    </div>
-
-    <div class="section">
-        <h2>Players (via Socket.IO)</h2>
-        <div id="players-list"></div>
-        <h3>Player &amp; Roster Events</h3>
-        <div id="players-log"></div>
-    </div>
-
-    <div class="section">
-        <h2>Scoring (via Socket.IO)</h2>
-        <p>
-            Technical event view only. PostgreSQL remains authoritative;
-            retrieve current Game state via REST.
+        <h2>Existing Domain Event Regression</h2>
+        <p class="help">
+            Logs Team, Game, Player/Roster, and M7 Scoring events so they remain visible while testing M8.
         </p>
-        <div id="scoring-log"></div>
+        <div id="domain-log"></div>
+    </div>
+
+    <div class="section">
+        <h2>General Event Log</h2>
+        <div id="log"></div>
     </div>
 
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>

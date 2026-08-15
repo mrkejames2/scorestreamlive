@@ -1,324 +1,159 @@
 # ScoreStreamLive — AI Handoff
 
-## Purpose
-
-This file allows a completely new AI conversation to reconstruct ScoreStreamLive without depending on previous chat memory.
-
-AI conversation history is disposable. The repository is persistent project memory.
-
-## Current Production State
+## Current Status
 
 ```text
-Completed: M0–M7
-Current production milestone: M7
-Next planned milestone: M8
-M8 status: NOT STARTED
+M0–M7 COMPLETE / PRODUCTION VALIDATED
+
+M8-A Clock Persistence            PASS
+M8-B REST / Clock Engine          PASS
+M8-C Real-Time Synchronization    PASS
+M8-D Finalization                 IN PROGRESS
 ```
 
-Milestone 7 is fully production validated:
+M8 is not production-complete yet.
+
+Pending:
 
 ```text
-Local M7:       127 / 127 PASS
-Production M7:  127 / 127 PASS
-Production M6:   57 / 57 PASS
-Alembic head:   20260813_0004
-DeepSeek:       APPROVED
-Render:         PASS
+M8-D final local validation
+DeepSeek independent review
+GPT disposition
+GitHub push
+Render deployment
+production M8 validation
+final documentation status flip
 ```
-
-## Project
-
-ScoreStreamLive is a sports-focused real-time game-management and scoreboard platform.
-
-Current development is soccer-first, while avoiding unnecessary design choices that would prevent later sports support.
 
 ## Core Architecture
 
 ```text
-Browser / API Client
-        │
-   ┌────┴────┐
-   │         │
- REST     Socket.IO
-   │         │
-   └────┬────┘
-        │
-     FastAPI
-        │
-     Services
-        │
- SQLAlchemy Async
-        │
-   PostgreSQL
+PostgreSQL = authoritative persistent state
+REST       = persistent mutation boundary
+Socket.IO  = post-commit committed-state notification
 ```
-
-### Non-negotiable rules
-
-1. PostgreSQL is authoritative.
-2. REST is the persistent mutation boundary.
-3. Socket.IO communicates committed state.
-4. Successful domain events occur only after database commit.
-5. Do not redesign working architecture without architecture approval.
-6. Do not introduce infrastructure until a milestone proves it is needed.
-7. Preserve regression harnesses.
-8. Work in checkpoint-sized changes.
-9. Repository + migrations outrank AI memory.
 
 ## Current Domain
 
 ```text
-                         GAME
-                          │
-        ┌─────────────────┼─────────────────┐
-        ▼                 ▼                 ▼
-    HOME TEAM         AWAY TEAM           SCORE
-        │                 │          home_score
-        ▼                 ▼          away_score
-     PLAYERS           PLAYERS              │
-                                              ▼
-                                      SCORING EVENTS
+Game
+├── Teams
+│   └── Players / derived Rosters
+├── Score
+├── ScoringEvents
+└── GameClock
 ```
 
-## Game
+## M8 GameClock
 
-Persistent Game state includes:
+Persistent:
 
 ```text
 id
-name
+game_id UNIQUE
+mode
 status
-scheduled_at
-home_team_id
-away_team_id
-home_score
-away_score
+duration_seconds
+elapsed_seconds
+running_since
+version
 created_at
 updated_at
 ```
 
-Current score is authoritative on Game.
-
-## Team
-
-Teams exist independently and are referenced by Games.
-
-## Player / Roster
-
-Player belongs to one Team through `team_id`.
-
-No Roster table exists.
-
-Roster is:
+Modes:
 
 ```text
-Players WHERE team_id = Team.id
+count_up
+count_down
 ```
 
-Roster endpoint:
+States:
 
 ```text
-GET /api/teams/{team_id}/players
+stopped
+running
+paused
 ```
 
-`roster:updated` is an invalidation notification containing `team_id`; clients refetch the authoritative roster.
+Clock truth is reconstructed from persisted elapsed state and UTC timestamp anchor.
 
-## Scoring
+No one-second Socket.IO tick exists.
 
-M7 introduced persistent ScoringEvents.
+No background per-Game timer is authoritative.
+
+## Clock REST
 
 ```text
-id
-game_id
-team_id
-player_id   nullable
-event_type
-created_at
+POST  /api/games/{game_id}/clock
+GET   /api/games/{game_id}/clock
+PATCH /api/games/{game_id}/clock
+
+POST /api/games/{game_id}/clock/start
+POST /api/games/{game_id}/clock/pause
+POST /api/games/{game_id}/clock/resume
+POST /api/games/{game_id}/clock/reset
 ```
 
-M7 supports:
+Mutations require `expected_version`.
+
+Same-version concurrent controllers result in one winner and stale conflicts.
+
+## Clock Socket.IO
 
 ```text
-event_type = goal
+clock:updated
 ```
 
-One goal adds one point.
-
-Scoring REST:
+Emitted after successful committed:
 
 ```text
-POST /api/scoring-events
-GET  /api/games/{game_id}/scoring-events
+create
+configure
+start
+pause
+resume
+reset
 ```
 
-Scoring transaction:
+Failed/stale commands emit no clock update.
+
+## Soccer Added-Time Presentation
+
+For a 45-minute count-up target:
 
 ```text
-Validate
- ↓
-Create ScoringEvent
- +
-Atomic PostgreSQL Game score increment
- ↓
-ONE COMMIT
- ↓
-Reload committed state
- ↓
-scoring_event:created
- ↓
-game:score_updated
+45:00–45:59 → +1
+46:00–46:59 → +2
+47:00–47:59 → +3
 ```
 
-## M7 Socket.IO
+This is derived presentation state, not announced referee stoppage time.
 
-New events:
+## Current Migration Head
 
 ```text
-scoring_event:created
-game:score_updated
+20260814_0005
 ```
 
-Single-request order:
+## Validation State
 
 ```text
-scoring_event:created
-game:score_updated
+M8-A: 44/44 PASS
+M8-B: 79/79 PASS
+M8-C: 75/75 PASS
+M7:   127/127 PASS through regression chain
+M6:    57/57 PASS through regression chain
 ```
 
-Both occur after commit.
-
-Failed scoring mutations emit neither event.
-
-## Current Alembic Chain
-
-Relevant latest revisions:
-
-```text
-20260813_0003 — Player / roster persistence
-20260813_0004 — Game scores + ScoringEvent persistence
-```
-
-Current production schema successfully supports M7.
-
-## Validation Assets
-
-```text
-scripts/validate_m6.sh
-scripts/validate_m7a.sh
-scripts/validate_m7b.sh
-scripts/validate_m7c.sh
-scripts/validate_m7.sh
-```
-
-`validate_m7.sh` is the final current-M7 harness.
-
-## Development Workflow
-
-Normal role model:
-
-```text
-GPT
-Architecture
-  ↓
-Kimi
-Implementation
-  ↓
-Devin
-Environment / Git / Deployment
-  ↓
-DeepSeek
-Independent Review
-  ↓
-GPT
-Final Decision
-```
-
-During M7, GPT temporarily performed implementation work while Kimi was unavailable. This did not change the architecture governance model.
-
-Rule:
-
-> DeepSeek recommends. GPT decides. Implementation follows approved architecture. Devin executes environment/Git/deployment work.
-
-## Mandatory Milestone Gate
-
-```text
-Architecture
- ↓
-Checkpoint implementation
- ↓
-Local validation
- ↓
-Regression validation
- ↓
-Independent review
- ↓
-GPT disposition
- ↓
-GitHub
- ↓
-Render
- ↓
-Production validation
- ↓
-Documentation refresh
- ↓
-Next milestone
-```
-
-## Source-of-Truth Hierarchy
-
-```text
-1. Approved architecture decision
-2. Active milestone specification
-3. Actual repository
-4. Alembic migrations
-5. IMPLEMENTATION_MAP.md
-6. Domain documentation
-7. AI_HANDOFF.md
-8. Previous AI conversation
-```
-
-## Fresh AI Procedure
-
-Before writing code:
-
-1. read this file;
-2. read `IMPLEMENTATION_MAP.md`;
-3. read `CURRENT_MILESTONE_STATUS.md`;
-4. read the active milestone spec;
-5. inspect the repository;
-6. inspect the Alembic chain;
-7. describe current architecture;
-8. identify expected files to change;
-9. list unresolved conflicts;
-10. wait for architecture approval where required.
-
-## Explicit Deferrals
-
-Not yet implemented:
-
-```text
-Game clock
-Timer
-Periods / halves
-Score correction / goal undo
-Production scoreboard UI
-OBS overlay
-Authentication
-Authorization
-Organizations
-Seasons
-Microservices
-Redis
-NATS
-Kafka
-```
+M8-D introduces the canonical final `scripts/validate_m8.sh` and restart validation.
 
 ## Next Milestone
 
+Directional only:
+
 ```text
-M8 — Game Clock / Timer Foundation
+M9 — Game Lifecycle / Phases
 ```
 
-M8 is not architected and not authorized.
-
-This is the intended pause point.
+Do not implement M9 until M8 is independently reviewed, deployed, production validated, and documentation is finalized.

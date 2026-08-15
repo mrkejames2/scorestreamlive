@@ -1,234 +1,70 @@
-# ScoreStreamLive — Architecture Decision Records
+# ScoreStreamLive — Architecture Decisions
 
-This file records architectural decisions that future AI sessions must preserve unless explicitly superseded.
+## Current M8 Decisions
 
-## ADR-001 — Centralized Configuration
+### Clock truth
 
-**Decision:** Keep environment-specific configuration centralized.
+PostgreSQL stores the authoritative GameClock anchor/state.
 
-**Reason:** Avoid scattered environment logic and hard-coded secrets.
+### Clock rendering
 
----
+Clients render locally. The server does not broadcast one timer tick per second.
 
-## ADR-002 — Structured Application Logging
+### Modes
 
-**Decision:** Use structured application logging without exposing credentials.
-
----
-
-## ADR-003 — Separate Liveness and Readiness
-
-**Decision:**
+Generic modes are:
 
 ```text
-/health/live
-/health/ready
+count_up
+count_down
 ```
 
-have separate contracts.
+### Persistence model
 
----
+A dedicated `game_clocks` table is used, with one clock maximum per Game.
 
-## ADR-004 — PostgreSQL
+### Time storage
 
-**Decision:** PostgreSQL is the persistent authoritative database.
+Store elapsed integer seconds and UTC timestamp anchors, not formatted display strings.
 
----
+### Count-down
 
-## ADR-005 — Async SQLAlchemy
+Persist elapsed time; derive remaining display. Clamp displayed remaining time at zero.
 
-**Decision:** Use SQLAlchemy 2.x async with asyncpg.
+### Soccer added time
 
----
+Derive `+1`, `+2`, etc. from generic elapsed time after the configured regulation threshold.
 
-## ADR-006 — Alembic
+Do not persist soccer-specific stoppage-time state in the generic GameClock.
 
-**Decision:** Schema evolution is managed through Alembic migrations.
+### Concurrency
 
-Never rewrite applied migration history casually.
+Use optimistic integer `version` and PostgreSQL conditional updates.
 
----
+Do not use process-local locks as the correctness mechanism.
 
-## ADR-007 — Socket.IO in the Application Service
+### Real-time contract
 
-**Decision:** Use `python-socketio` ASGI integration in the same application service as FastAPI.
-
-**Reason:** Avoid premature additional services.
-
----
-
-## ADR-008 — PostgreSQL Is the Source of Truth
-
-**Decision:** Browser or Socket.IO state is never authoritative persistent state.
-
----
-
-## ADR-009 — REST Is the Mutation Boundary
-
-**Decision:** Persistent business mutations enter through REST/service logic unless a future architecture explicitly changes this.
-
----
-
-## ADR-010 — Domain Events After Commit
-
-**Decision:** Socket.IO successful-state events are emitted only after database commit.
-
----
-
-## ADR-011 — Roster Is Derived
-
-**Decision:** Do not create a Roster table in the current architecture.
-
-Roster:
+Emit one canonical post-commit:
 
 ```text
-Players WHERE team_id = Team.id
+clock:updated
 ```
 
----
-
-## ADR-012 — roster:updated Is Invalidation-Only
-
-Payload:
-
-```json
-{
-  "team_id": "<team UUID>"
-}
-```
-
-Clients refetch the roster.
-
----
-
-## ADR-013 — Player Team Membership Is Immutable in Current Domain
-
-Player transfer is deferred to a future explicit design.
-
----
-
-## ADR-014 — Jersey Numbers Are Not Unique
-
-Jersey number:
+Do not emit:
 
 ```text
-nullable
-0–999
-duplicates allowed
+clock:tick
 ```
 
----
+### Reset safety
 
-## ADR-015 — Game Owns Current Score
+Reset while running is rejected. Pause first.
 
-**Decision:** Store:
+### Lifecycle boundary
 
-```text
-Game.home_score
-Game.away_score
-```
+Game phases/halves are deferred to M9.
 
-Do not add a separate `game_state` table for M7.
+### Infrastructure
 
----
-
-## ADR-016 — ScoringEvent Stores Scoring History
-
-ScoringEvent is durable history.
-
-Game score is current state.
-
-Clients do not replay ScoringEvents to derive current score.
-
----
-
-## ADR-017 — Scoring Player Is Optional
-
-`ScoringEvent.player_id` is nullable.
-
-Unknown/unavailable scorer does not require a fake Player.
-
----
-
-## ADR-018 — M7 Soccer Scoring Value
-
-M7 supports:
-
-```text
-goal = +1
-```
-
-A generic multi-point sports engine is deferred.
-
----
-
-## ADR-019 — Atomic Concurrent Score Increment
-
-**Decision:** Increment Game score with an atomic PostgreSQL update in the same transaction as ScoringEvent creation.
-
-**Reason:** Prevent lost updates under simultaneous valid scoring requests.
-
-Production validation proved zero lost increments for 10 concurrent goals.
-
----
-
-## ADR-020 — M7 Socket.IO Scoring Contract
-
-Successful scoring emits after commit:
-
-```text
-scoring_event:created
-game:score_updated
-```
-
-in that order for a single mutation.
-
----
-
-## ADR-021 — Checkpoint Development Model
-
-New domain milestones should prefer:
-
-```text
-A Persistence
-B REST / Service
-C Socket.IO
-D Client / Docs / Regression
-```
-
-with validation after every checkpoint.
-
----
-
-## ADR-022 — Documentation Is a Milestone Gate
-
-Before the next milestone:
-
-```text
-AI_HANDOFF.md
-IMPLEMENTATION_MAP.md
-CURRENT_MILESTONE_STATUS.md
-relevant domain docs
-```
-
-must reflect production-validated reality.
-
----
-
-## ADR-023 — No Premature Distributed Infrastructure
-
-Do not introduce:
-
-```text
-Redis
-NATS
-Kafka
-RabbitMQ
-Kubernetes
-CQRS
-Event sourcing
-distributed Socket.IO
-microservice decomposition
-```
-
-without a demonstrated requirement.
+No Redis, NATS, Kafka, message broker, Socket.IO room requirement, or per-Game background timer is introduced in M8.
