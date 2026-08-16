@@ -130,11 +130,11 @@ echo "Checking M8 migration presence..."
 
 ALEMBIC_HISTORY=$(docker compose exec -T app alembic history 2>/dev/null || true)
 
-if grep -F "20260814_0005" <<< "$ALEMBIC_HISTORY" >/dev/null; then
-    pass "Alembic history contains 20260814_0005"
+if grep -F "20260815_0006" <<< "$ALEMBIC_HISTORY" >/dev/null; then
+    pass "Alembic history contains 20260815_0006"
 else
     echo "$ALEMBIC_HISTORY"
-    fail "Alembic history does not contain 20260814_0005"
+    fail "Alembic history does not contain 20260815_0006"
 fi
 
 # ============================================================
