@@ -22,7 +22,7 @@
           <span class="connection-dot"></span>
           <span id="connection-label">CONNECTING</span>
         </div>
-        <div class="read-only-badge">M10-E · LIFECYCLE + MATCH-DAY UX</div>
+        <div class="read-only-badge">M10-G · MOBILE + TABLET GAME-DAY UX</div>
       </div>
     </header>
 
@@ -51,8 +51,10 @@
     <section id="operator-message" class="operator-message hidden" aria-live="polite"></section>
 
     <section id="socket-message" class="socket-message hidden" aria-live="polite">
-      Live connection was interrupted. Displayed data remains visible while ScoreStreamLive reconnects.
-      Authoritative state will refresh after reconnect.
+      <strong id="socket-message-title">Controls paused</strong>
+      <div id="socket-message-text">
+        Live connection was interrupted. Controls remain paused until authoritative state is confirmed.
+      </div>
     </section>
 
     <div id="control-content" class="hidden">
@@ -82,7 +84,7 @@
       </section>
 
       <section class="operator-grid">
-        <article class="card operator-card">
+        <article class="card operator-card game-day-action-card">
           <div class="card-header">
             <h2>Game Lifecycle</h2>
             <span id="command-status" class="command-status">READY</span>
@@ -101,7 +103,7 @@
       </section>
 
       <section class="scoring-control-grid">
-        <article class="card scoring-control-card">
+        <article class="card scoring-control-card game-day-action-card">
           <div class="card-header">
             <h2><span id="home-scoring-team-name">Home</span> Goal</h2>
             <span class="scoring-side-label">HOME</span>
@@ -114,7 +116,7 @@
           <button id="home-goal-button" class="goal-button home-goal-button" type="button" data-side="home" disabled>+ Record Home Goal</button>
         </article>
 
-        <article class="card scoring-control-card">
+        <article class="card scoring-control-card game-day-action-card">
           <div class="card-header">
             <h2><span id="away-scoring-team-name">Away</span> Goal</h2>
             <span class="scoring-side-label">AWAY</span>
@@ -128,7 +130,7 @@
         </article>
       </section>
 
-      <section class="details-grid">
+      <section class="details-grid secondary-game-info">
         <article class="card">
           <div class="card-header">
             <h2>Match Status</h2>
@@ -158,7 +160,7 @@
         </article>
       </section>
 
-      <section class="roster-grid">
+      <section class="roster-grid secondary-game-info">
         <article class="card">
           <h2><span id="home-roster-team-name">Home</span> Roster</h2>
           <div id="home-roster" class="roster-list"></div>
@@ -170,7 +172,7 @@
       </section>
 
       <footer class="control-footer">
-        <span>M10-E Lifecycle + Scoring Operator Controls</span>
+        <span>M10-G Mobile-First Match-Day Controls</span>
         <span>REST mutation boundary · PostgreSQL authoritative score · Socket.IO committed-state events · M9 lifecycle preserved</span>
       </footer>
     </div>

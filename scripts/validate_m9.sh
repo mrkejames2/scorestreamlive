@@ -158,11 +158,14 @@ echo "BASE_URL: ${BASE_URL}"
 echo "========================================"
 
 if is_local_target; then
-    current=$(docker compose exec -T app alembic current 2>/dev/null || true)
-    if grep -F "20260815_0006" <<< "$current" >/dev/null; then
-        pass "Alembic current is 20260815_0006"
+    # Historical M9 regression must permit newer migration heads.
+    # Verify that the M9 revision is still in the migration chain rather
+    # than requiring the database to remain frozen at the old head.
+    history=$(docker compose exec -T app alembic history 2>/dev/null || true)
+    if grep -F "20260815_0006" <<< "$history" >/dev/null; then
+        pass "Alembic history contains M9 revision 20260815_0006"
     else
-        fail "Alembic current is not 20260815_0006"
+        fail "Alembic history does not contain M9 revision 20260815_0006"
     fi
 
     run_harness "M9-D real-time validation" "./scripts/validate_m9d.sh"

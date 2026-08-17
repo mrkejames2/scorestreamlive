@@ -16,7 +16,11 @@ import {
   updateServerOffset,
 } from "./clock.js";
 
-import { replaceState, state } from "./state.js";
+import {
+  replaceState,
+  setStateAuthoritative,
+  state,
+} from "./state.js";
 import { connectControlSocket } from "./socket.js";
 
 const byId = (id) => document.getElementById(id);
@@ -39,6 +43,7 @@ const ACTION_LABELS = {
 let commandInFlight = false;
 let scoringCommandInFlight = false;
 let operatorMessageTimer = null;
+let connectionController = null;
 
 function gameIdFromPage() {
   return document.body.dataset.gameId;
@@ -142,15 +147,34 @@ function scoringIsAllowed() {
   return ["first_half", "second_half"].includes(state.lifecycle?.phase);
 }
 
+function mutationStateIsReady() {
+  return (
+    state.socketConnected
+    && state.stateAuthoritative
+    && state.connectionState === "live"
+  );
+}
+
 function renderScoringControls() {
-  const enabled = state.socketConnected && scoringIsAllowed() && !scoringCommandInFlight;
+  const ready = mutationStateIsReady();
+  const goalEnabled =
+    ready
+    && scoringIsAllowed()
+    && !scoringCommandInFlight;
+
   for (const id of ["home-goal-button", "away-goal-button"]) {
     const button = byId(id);
-    if (button) button.disabled = !enabled;
+    if (button) button.disabled = !goalEnabled;
   }
+
   for (const id of ["home-scorer-select", "away-scorer-select"]) {
     const select = byId(id);
-    if (select) select.disabled = scoringCommandInFlight;
+    if (select) {
+      select.disabled =
+        !ready
+        || !scoringIsAllowed()
+        || scoringCommandInFlight;
+    }
   }
 }
 
@@ -225,32 +249,70 @@ function renderScoring() {
 }
 
 function renderLifecycleControls() {
-  const validAction = LIFECYCLE_ACTION_BY_PHASE[state.lifecycle?.phase] ?? null;
+  const validAction =
+    LIFECYCLE_ACTION_BY_PHASE[state.lifecycle?.phase] ?? null;
+  const ready = mutationStateIsReady();
   const buttons = document.querySelectorAll(".lifecycle-button");
 
   for (const button of buttons) {
     const isValidAction = button.dataset.action === validAction;
-    button.disabled = commandInFlight || !state.socketConnected || !isValidAction;
-    button.classList.toggle("valid-action", isValidAction);
+
+    // M10-G presentation hint: on narrow phones we show only the lifecycle
+    // action relevant to the current authoritative phase. This class does
+    // not grant mutation permission; M10-F readiness still controls disabled.
+    button.classList.toggle("current-action", isValidAction);
+
+    button.disabled =
+      commandInFlight
+      || !ready
+      || !isValidAction;
+    button.classList.toggle("valid-action", isValidAction && ready);
   }
 
-  text(
-    "command-status",
-    commandInFlight
-      ? "UPDATING..."
-      : state.socketConnected
-        ? "READY"
-        : "WAITING FOR LIVE CONNECTION",
-  );
+  let status = "READY";
+
+  if (commandInFlight) {
+    status = "UPDATING...";
+  } else if (state.connectionState === "recovering") {
+    status = "RECOVERING STATE...";
+  } else if (state.connectionState === "reconnecting") {
+    status = "RECONNECTING...";
+  } else if (!ready) {
+    status = "CONTROLS PAUSED";
+  }
+
+  text("command-status", status);
 }
 
 
 function syncMatchDayUx() {
   const phase = state.lifecycle?.phase || "pregame";
-  text("ux-phase-chip", String(phase).replaceAll("_", " ").toUpperCase());
-  text("ux-connection-chip", state.socketConnected ? "LIVE" : "OFFLINE");
-  text("ux-operator-chip", (commandInFlight || scoringInFlight) ? "UPDATING" : "READY");
+
+  text(
+    "ux-phase-chip",
+    String(phase).replaceAll("_", " ").toUpperCase(),
+  );
+
+  const connectionLabel = {
+    live: "LIVE",
+    recovering: "RECOVERING",
+    reconnecting: "RECONNECTING",
+    offline: "OFFLINE",
+    connecting: "CONNECTING",
+  }[state.connectionState] || "CONNECTING";
+
+  text("ux-connection-chip", connectionLabel);
+
+  let operatorState = "READY";
+  if (commandInFlight || scoringCommandInFlight) {
+    operatorState = "UPDATING";
+  } else if (!mutationStateIsReady()) {
+    operatorState = "PAUSED";
+  }
+
+  text("ux-operator-chip", operatorState);
   document.body.dataset.phase = phase;
+  document.body.dataset.connectionState = state.connectionState;
 }
 
 let goalFeedbackTimer = null;
@@ -265,18 +327,30 @@ function showGoalFeedback(detail) {
 }
 
 function renderLiveMetadata() {
-  text("connection-detail", state.socketConnected ? "LIVE" : "NOT CONNECTED");
+  const detail = {
+    live: "LIVE — authoritative state confirmed",
+    recovering: "RECOVERING — verifying authoritative state",
+    reconnecting: "RECONNECTING — controls paused",
+    offline: "OFFLINE — controls paused",
+    connecting: "CONNECTING — controls paused",
+  }[state.connectionState] || "CONNECTING";
+
+  text("connection-detail", detail);
 
   if (!state.lastLiveEvent) {
     text("last-live-event", "—");
     return;
   }
 
-  const eventTime = state.lastLiveEvent.at instanceof Date
-    ? state.lastLiveEvent.at.toLocaleTimeString()
-    : "—";
+  const eventTime =
+    state.lastLiveEvent.at instanceof Date
+      ? state.lastLiveEvent.at.toLocaleTimeString()
+      : "—";
 
-  text("last-live-event", `${state.lastLiveEvent.name} @ ${eventTime}`);
+  text(
+    "last-live-event",
+    `${state.lastLiveEvent.name} @ ${eventTime}`,
+  );
 }
 
 function renderStaticState() {
@@ -318,30 +392,56 @@ function renderClock() {
   text("added-time", added === null ? "" : `+${added}`);
 }
 
-function setConnectionUi(mode) {
+function setConnectionUi(mode, detail = null) {
   const badge = byId("connection-badge");
   const label = byId("connection-label");
   const message = byId("socket-message");
+  const messageText = byId("socket-message-text");
 
-  badge.classList.remove("connection-live", "connection-connecting", "connection-offline");
+  badge.classList.remove(
+    "connection-live",
+    "connection-connecting",
+    "connection-recovering",
+    "connection-offline",
+  );
 
   if (mode === "live") {
     badge.classList.add("connection-live");
     label.textContent = "LIVE";
     message.classList.add("hidden");
-  } else if (mode === "connecting") {
+  } else if (mode === "recovering") {
+    badge.classList.add("connection-recovering");
+    label.textContent = "RECOVERING";
+    message.classList.remove("hidden");
+    if (messageText) {
+      messageText.textContent =
+        detail
+        || "Connection restored. ScoreStreamLive is verifying authoritative game state before controls are re-enabled.";
+    }
+  } else if (mode === "reconnecting") {
     badge.classList.add("connection-connecting");
     label.textContent = "RECONNECTING";
     message.classList.remove("hidden");
+    if (messageText) {
+      messageText.textContent =
+        detail
+        || "Live connection was interrupted. Controls are paused while ScoreStreamLive reconnects.";
+    }
   } else {
     badge.classList.add("connection-offline");
     label.textContent = "OFFLINE";
     message.classList.remove("hidden");
+    if (messageText) {
+      messageText.textContent =
+        detail
+        || "ScoreStreamLive is offline. Controls are paused to prevent changes from stale state.";
+    }
   }
 
   renderLiveMetadata();
   renderLifecycleControls();
   renderScoringControls();
+  syncMatchDayUx();
 }
 
 function setLoading(isLoading) {
@@ -393,7 +493,7 @@ async function fetchAuthoritativeState({ showLoading = false } = {}) {
     renderClock();
     byId("control-content").classList.remove("hidden");
   } catch (error) {
-    console.error("M10-D authoritative state load failed", error);
+    console.error("M10-F authoritative state load failed", error);
     showError(error);
     throw error;
   } finally {
@@ -445,8 +545,13 @@ async function runLifecycleAction(action) {
     showOperatorMessage(`${label} completed.`, "success", 3000);
   } catch (error) {
     if (error?.status === 409) {
+      setStateAuthoritative(false);
+      renderLifecycleControls();
+      renderScoringControls();
+      syncMatchDayUx();
+
       showOperatorMessage(
-        "Game state changed on another controller. Refreshing authoritative state; the command was not retried.",
+        "Another controller changed the game first. Your command was not retried. ScoreStreamLive is refreshing the latest game state.",
         "warning",
         7000,
       );
@@ -471,8 +576,12 @@ async function runLifecycleAction(action) {
 async function runScoringAction(side) {
   if (scoringCommandInFlight) return;
 
-  if (!state.socketConnected) {
-    showOperatorMessage("Live connection is required before recording a goal.", "warning", 6000);
+  if (!mutationStateIsReady()) {
+    showOperatorMessage(
+      "Controls are paused until the live connection and authoritative game state are confirmed.",
+      "warning",
+      6000,
+    );
     return;
   }
 
@@ -539,11 +648,28 @@ function applyClockUpdate(payload) {
   renderClock();
 }
 
-byId("refresh-button")?.addEventListener("click", () =>
-  fetchAuthoritativeState({ showLoading: true }),
+async function manualAuthoritativeRefresh() {
+  if (
+    connectionController?.socket?.connected
+    && !mutationStateIsReady()
+  ) {
+    await connectionController.recoverAuthoritativeState();
+    return;
+  }
+
+  await fetchAuthoritativeState({ showLoading: true });
+  renderLifecycleControls();
+  renderScoringControls();
+  syncMatchDayUx();
+}
+
+byId("refresh-button")?.addEventListener(
+  "click",
+  () => manualAuthoritativeRefresh(),
 );
-byId("retry-button")?.addEventListener("click", () =>
-  fetchAuthoritativeState({ showLoading: true }),
+byId("retry-button")?.addEventListener(
+  "click",
+  () => manualAuthoritativeRefresh(),
 );
 
 for (const button of document.querySelectorAll(".lifecycle-button")) {
@@ -559,33 +685,75 @@ setInterval(renderClock, 250);
 await fetchAuthoritativeState({ showLoading: true });
 
 try {
-  connectControlSocket({
+  connectionController = connectControlSocket({
     gameId: gameIdFromPage(),
-    onConnected: () => setConnectionUi("live"),
-    onDisconnected: () => setConnectionUi("offline"),
-    onReconnectAttempt: () => setConnectionUi("connecting"),
+
+    onTransportConnected: () => {
+      setConnectionUi("recovering");
+    },
+
+    onRecoveryStarted: () => {
+      setConnectionUi("recovering");
+    },
+
+    onReady: () => {
+      setConnectionUi("live");
+      showOperatorMessage(
+        "Live connection restored. Authoritative game state confirmed.",
+        "success",
+        3500,
+      );
+    },
+
+    onDisconnected: () => {
+      setConnectionUi("offline");
+    },
+
+    onReconnectAttempt: () => {
+      setConnectionUi("reconnecting");
+    },
+
+    onRecoveryFailed: (error) => {
+      setConnectionUi(
+        "recovering",
+        "Connection is back, but the latest authoritative game state could not be verified. Controls remain paused. Tap Refresh to try again.",
+      );
+      showOperatorMessage(
+        `State recovery failed: ${error?.message || error}`,
+        "error",
+        7000,
+      );
+    },
+
     onScoreUpdated: (payload) => {
       applyScoreUpdate(payload);
       renderLiveMetadata();
     },
-    onScoringEventCreated: (payload) => applyScoringEvent(payload),
+
+    onScoringEventCreated: (payload) => {
+      applyScoringEvent(payload);
+    },
+
     onPhaseUpdated: (payload) => {
       applyPhaseUpdate(payload);
       renderLiveMetadata();
     },
+
     onClockUpdated: (payload) => {
       applyClockUpdate(payload);
       renderLiveMetadata();
     },
+
     onAuthoritativeRefresh: async () => {
       await fetchAuthoritativeState({ showLoading: false });
     },
   });
 } catch (error) {
-  console.error("M10-D live connection failed", error);
+  console.error("M10-F live connection failed", error);
+  setStateAuthoritative(false);
   setConnectionUi("offline");
 }
 
 
-// M10-E initial UX synchronization
+// M10-F initial connection/UX synchronization
 syncMatchDayUx();

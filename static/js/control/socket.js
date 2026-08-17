@@ -1,4 +1,9 @@
-import { setLastLiveEvent, setSocketConnected } from "./state.js";
+import {
+  setConnectionState,
+  setLastLiveEvent,
+  setSocketConnected,
+  setStateAuthoritative,
+} from "./state.js";
 
 function isCurrentGame(payload, gameId) {
   return payload && String(payload.game_id) === String(gameId);
@@ -6,9 +11,12 @@ function isCurrentGame(payload, gameId) {
 
 export function connectControlSocket({
   gameId,
-  onConnected,
+  onTransportConnected,
+  onReady,
   onDisconnected,
   onReconnectAttempt,
+  onRecoveryStarted,
+  onRecoveryFailed,
   onScoreUpdated,
   onScoringEventCreated,
   onPhaseUpdated,
@@ -31,23 +39,65 @@ export function connectControlSocket({
     timeout: 10000,
   });
 
-  socket.on("connect", async () => {
-    setSocketConnected(true);
-    onConnected?.();
+  let recoveryInFlight = false;
+
+  async function recoverAuthoritativeState() {
+    if (recoveryInFlight) return false;
+
+    recoveryInFlight = true;
+    setSocketConnected(false);
+    setStateAuthoritative(false);
+    setConnectionState("recovering");
+    onRecoveryStarted?.();
+
     try {
       await onAuthoritativeRefresh?.();
+
+      // A successful authoritative refresh is the gate that makes the
+      // controller safe to mutate again.
+      setStateAuthoritative(true);
+      setSocketConnected(true);
+      setConnectionState("live");
+      onReady?.();
+      return true;
     } catch (error) {
-      console.error("Authoritative refresh after socket connect failed", error);
+      setSocketConnected(false);
+      setStateAuthoritative(false);
+      setConnectionState("recovering");
+      onRecoveryFailed?.(error);
+      console.error("Authoritative recovery after socket connect failed", error);
+      return false;
+    } finally {
+      recoveryInFlight = false;
     }
+  }
+
+  socket.on("connect", async () => {
+    setSocketConnected(false);
+    setStateAuthoritative(false);
+    setConnectionState("recovering");
+    onTransportConnected?.();
+    await recoverAuthoritativeState();
   });
 
   socket.on("disconnect", () => {
     setSocketConnected(false);
+    setStateAuthoritative(false);
+    setConnectionState("offline");
     onDisconnected?.();
   });
 
   socket.io.on("reconnect_attempt", () => {
     setSocketConnected(false);
+    setStateAuthoritative(false);
+    setConnectionState("reconnecting");
+    onReconnectAttempt?.();
+  });
+
+  socket.io.on("reconnect_error", () => {
+    setSocketConnected(false);
+    setStateAuthoritative(false);
+    setConnectionState("reconnecting");
     onReconnectAttempt?.();
   });
 
@@ -75,5 +125,8 @@ export function connectControlSocket({
     onClockUpdated?.(payload);
   });
 
-  return socket;
+  return {
+    socket,
+    recoverAuthoritativeState,
+  };
 }

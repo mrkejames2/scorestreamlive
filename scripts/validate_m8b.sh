@@ -85,12 +85,6 @@ for path in /health/live /health/ready /info; do
     [ "$CODE" = "200" ] && pass "$path" || fail "$path"
 done
 
-if docker compose exec -T app alembic current 2>/dev/null | grep -q "20260815_0006"; then
-    pass "Alembic current is 20260815_0006"
-else
-    fail "Alembic current is not 20260815_0006"
-fi
-
 # ============================================================
 # 2. Setup Teams/Games
 # ============================================================

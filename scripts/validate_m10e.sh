@@ -47,7 +47,11 @@ req("POST",f"/api/games/{g['id']}/lifecycle",{})
 req("POST",f"/api/games/{g['id']}/clock",{"mode":"count_up","duration_seconds":2700})
 _,page,ct=req("GET",f"/control/games/{g['id']}")
 check("Control Center returns HTML","text/html" in ct.lower())
-check("Control Center identifies M10-E","M10-E" in page)
+check(
+    "Control Center preserves M10-E match-day UX capability",
+    "match-status-strip" in page
+    and "goal-feedback" in page,
+)
 check("Match-day status strip present","match-status-strip" in page)
 check("Goal feedback surface present","goal-feedback" in page)
 check("Lifecycle controls preserved",all(x in page for x in ["start_first_half","end_first_half","start_second_half","end_game"]))
@@ -60,7 +64,17 @@ _,js,_=req("GET","/static/js/control/control.js")
 check("M10-E UX synchronization exists","syncMatchDayUx" in js)
 check("Goal feedback behavior exists","showGoalFeedback" in js)
 check("Lifecycle guard preserved","commandInFlight" in js)
-check("Scoring guard preserved","scoringInFlight" in js)
+check(
+    "Scoring guard preserved",
+    (
+        "scoringCommandInFlight" in js
+        or "scoringInFlight" in js
+    )
+    and (
+        "mutationStateIsReady" in js
+        or "scoringIsAllowed" in js
+    ),
+)
 check("Authoritative refresh preserved","fetchAuthoritativeState" in js)
 check("No client-side score arithmetic","home_score + 1" not in js and "away_score + 1" not in js)
 check("No clock:tick consumer","socket.on(\"clock:tick\"" not in js and "socket.on('clock:tick'" not in js)
@@ -81,6 +95,9 @@ rm -f "$TMP"
 
 echo ""
 echo "========================================"
+# Historical validators below are intentionally capability-based.
+# They must verify that M10-D/M10-C behavior still works without requiring
+# the current Control Center to present itself as those older milestones.
 echo "Running M10-D regression"
 echo "========================================"
 set +e

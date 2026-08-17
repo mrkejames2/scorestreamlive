@@ -33,6 +33,17 @@ button, input, select { font: inherit; }
 .connection-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 .connection-live { border-color: rgba(70,209,122,.38); color: var(--success); }
 .connection-connecting { border-color: rgba(255,204,102,.38); color: var(--warning); }
+.connection-recovering {
+  border-color: rgba(104, 181, 255, .5);
+  color: #8ec5ff;
+}
+.connection-recovering .connection-dot {
+  animation: m10f-pulse 1s ease-in-out infinite alternate;
+}
+@keyframes m10f-pulse {
+  from { opacity: .35; transform: scale(.85); }
+  to { opacity: 1; transform: scale(1.15); }
+}
 .connection-offline { border-color: rgba(255,107,107,.38); color: var(--danger); }
 .hidden { display: none !important; }
 .status-panel { display: flex; align-items: center; gap: 14px; min-height: 86px; padding: 18px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
@@ -217,4 +228,379 @@ select {
   .score { font-size: clamp(54px, 20vw, 90px); }
   .clock-display { font-size: clamp(40px, 15vw, 62px); }
   .goal-button, .lifecycle-button, .secondary-button, select { min-height: 60px; }
+}
+
+
+/* M10-F reliability UX */
+body[data-connection-state="offline"] .scoreboard-card,
+body[data-connection-state="reconnecting"] .scoreboard-card,
+body[data-connection-state="recovering"] .scoreboard-card {
+  border-color: rgba(255, 204, 102, .28);
+}
+
+.socket-message strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #fff0c8;
+}
+
+#ux-operator-chip {
+  white-space: nowrap;
+}
+
+
+/* ================================================================
+   M10-G — MOBILE + TABLET GAME-DAY UX
+   Phone is the primary operator benchmark; tablet/desktop retain
+   the fuller information layout.
+   ================================================================ */
+
+button,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(142, 197, 255, .65);
+  outline-offset: 2px;
+}
+
+/* Tablet: keep controls generous but reduce unnecessary vertical travel. */
+@media (max-width: 900px) {
+  .control-shell {
+    padding-top: 16px;
+  }
+
+  .control-header {
+    margin-bottom: 14px;
+  }
+
+  .match-status-strip {
+    margin-bottom: 12px;
+  }
+
+  .operator-grid,
+  .scoring-control-grid,
+  .details-grid,
+  .roster-grid {
+    margin-top: 12px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .operator-help,
+  .scoring-help {
+    margin-bottom: 10px;
+  }
+}
+
+/* Phone benchmark */
+@media (max-width: 520px) {
+  body {
+    background: var(--bg);
+  }
+
+  .control-shell {
+    width: 100%;
+    padding: 8px 6px 24px;
+  }
+
+  /* Compact header: product identity + connection without spending a
+     quarter of the screen on chrome. */
+  .control-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    margin: 0 4px 8px;
+  }
+
+  .control-header h1 {
+    margin-top: 2px;
+    font-size: 22px;
+  }
+
+  .eyebrow {
+    font-size: 10px;
+  }
+
+  .header-status {
+    justify-content: flex-end;
+  }
+
+  .read-only-badge {
+    display: none;
+  }
+
+  .connection-badge {
+    min-height: 38px;
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+
+  /* Three operational facts remain visible in a single compact row. */
+  .match-status-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+    margin: 0 0 6px;
+  }
+
+  .match-status-item {
+    display: block;
+    min-height: 42px;
+    padding: 6px 4px;
+    text-align: center;
+    border-radius: 9px;
+  }
+
+  .match-status-item span {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 8px;
+    letter-spacing: .06em;
+  }
+
+  .match-status-item strong {
+    display: block;
+    overflow: hidden;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* The sticky board is intentionally shallow. It keeps score + clock in
+     view without hiding the controls below it. */
+  .scoreboard-card {
+    top: 4px;
+    grid-template-columns: minmax(0, .95fr) minmax(126px, 1.2fr) minmax(0, .95fr);
+    grid-template-rows: auto;
+    gap: 5px;
+    min-height: 0;
+    padding: 7px;
+    border-radius: 13px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.34);
+  }
+
+  .team-panel,
+  .score-panel {
+    grid-row: 1;
+    min-height: 92px;
+  }
+
+  .team-panel {
+    padding: 7px 5px;
+    border: 0;
+    background: transparent;
+  }
+
+  .team-panel-away {
+    text-align: right;
+  }
+
+  .team-label {
+    margin-bottom: 4px;
+    font-size: 8px;
+    letter-spacing: .08em;
+  }
+
+  .team-name {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 14px;
+    line-height: 1.08;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .score-panel {
+    grid-column: 2;
+    align-self: center;
+    justify-self: stretch;
+  }
+
+  .score-row {
+    gap: 6px;
+  }
+
+  .score {
+    min-width: 32px;
+    font-size: 44px;
+  }
+
+  .score-divider {
+    font-size: 18px;
+  }
+
+  .clock-row {
+    gap: 4px;
+    margin-top: 3px;
+  }
+
+  .clock-display {
+    font-size: 28px;
+  }
+
+  .added-time {
+    font-size: 15px;
+  }
+
+  .phase-display {
+    margin-top: 1px;
+    font-size: 9px;
+    letter-spacing: .08em;
+  }
+
+  /* Game-day notices stay concise on the benchmark screen. */
+  .socket-message,
+  .operator-message {
+    margin: 6px 0;
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  .status-panel {
+    margin-bottom: 8px;
+    padding: 12px;
+  }
+
+  /* Keep the one lifecycle action relevant to the current phase.
+     Disabled/current still remains visible during M10-F recovery. */
+  .operator-grid,
+  .scoring-control-grid,
+  .details-grid,
+  .roster-grid {
+    margin-top: 8px;
+  }
+
+  .game-day-action-card {
+    padding: 12px;
+  }
+
+  .operator-card .card-header,
+  .scoring-control-card .card-header {
+    margin-bottom: 8px;
+  }
+
+  .operator-card h2,
+  .scoring-control-card h2 {
+    font-size: 16px;
+  }
+
+  .operator-help,
+  .scoring-help,
+  .scorer-label {
+    display: none;
+  }
+
+  .lifecycle-actions {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .lifecycle-button:not(.current-action) {
+    display: none;
+  }
+
+  .lifecycle-button.current-action {
+    display: block;
+    width: 100%;
+    min-height: 64px;
+    font-size: 18px;
+  }
+
+  .scoring-control-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .scoring-control-card {
+    min-width: 0;
+  }
+
+  .scoring-side-label {
+    display: none;
+  }
+
+  .scorer-select {
+    min-width: 0;
+    min-height: 52px;
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .goal-button {
+    min-height: 64px;
+    margin-top: 7px;
+    padding: 9px 5px;
+    font-size: 16px;
+    line-height: 1.1;
+  }
+
+  /* Match Status + Scoring Summary remain available, but compact.
+     Rosters are intentionally lower-priority game-day information. */
+  .details-grid,
+  .roster-grid {
+    gap: 8px;
+  }
+
+  .secondary-game-info .card {
+    padding: 12px;
+  }
+
+  .secondary-game-info .card h2 {
+    margin-bottom: 10px;
+    font-size: 16px;
+  }
+
+  .status-list > div {
+    grid-template-columns: 82px minmax(0,1fr);
+    gap: 7px;
+    padding: 6px 0;
+    font-size: 12px;
+  }
+
+  .roster-player,
+  .scoring-event {
+    padding: 8px 9px;
+  }
+
+  .scoring-event {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  .control-footer {
+    display: none;
+  }
+
+  /* Prevent iOS from zooming form controls while preserving comfortable taps. */
+  select,
+  input {
+    font-size: 16px;
+  }
+}
+
+/* Very narrow phones (older/smaller devices): stack goal controls only here. */
+@media (max-width: 360px) {
+  .scoring-control-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .scoreboard-card {
+    grid-template-columns: minmax(0, .9fr) minmax(112px, 1.2fr) minmax(0, .9fr);
+  }
+
+  .team-name {
+    font-size: 13px;
+  }
+
+  .score {
+    font-size: 40px;
+  }
+
+  .clock-display {
+    font-size: 26px;
+  }
 }
