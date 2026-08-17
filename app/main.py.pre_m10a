@@ -85,7 +85,6 @@ app.include_router(scoring_events_router)
 app.include_router(games_router)
 app.include_router(players_router)
 app.include_router(teams_router)
-app.include_router(control_router)
 
 
 @app.middleware("http")

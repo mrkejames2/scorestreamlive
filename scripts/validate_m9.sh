@@ -43,7 +43,8 @@ run_harness() {
 
     cp=$(grep -oP 'Passed: \K[0-9]+' "$out" | tail -1 || true)
     cf=$(grep -oP 'Failed: \K[0-9]+' "$out" | tail -1 || true)
-    cp="${cp:-0}"; cf="${cf:-0}"
+    cp="${cp:-0}"
+    cf="${cf:-0}"
 
     PASS=$((PASS + cp))
     FAIL=$((FAIL + cf))
@@ -177,7 +178,6 @@ else
     run_harness "M9-D remote real-time validation" "./scripts/validate_m9d.sh"
     run_harness "M9-C remote atomic integration regression" "./scripts/validate_m9c.sh"
 
-    # Production-safe historical regression.
     if [ -x "./scripts/validate_m7.sh" ]; then
         run_harness "M7 production regression" "./scripts/validate_m7.sh"
     fi

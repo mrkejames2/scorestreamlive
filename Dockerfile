@@ -23,6 +23,7 @@ COPY --chown=appuser:appuser alembic/ ./alembic/
 COPY --chown=appuser:appuser alembic.ini .
 COPY --chown=appuser:appuser static/ ./static/
 COPY --chown=appuser:appuser entrypoint.sh .
+COPY --chown=appuser:appuser templates/ ./templates/
 
 # Make entrypoint executable
 RUN chmod +x entrypoint.sh

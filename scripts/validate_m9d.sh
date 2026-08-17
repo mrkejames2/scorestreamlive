@@ -139,6 +139,39 @@ class Client:
         with self.lock:
             return [e for e in self.events if e[2].get("game_id")==game_id]
 
+    def events_for_transition(self,game_id,transition_id):
+        with self.lock:
+            return [e for e in self.events
+                    if e[2].get("game_id")==game_id
+                    and e[2].get("transition_id")==transition_id]
+
+    def wait_clock_version(self,game_id,clock_version,timeout=7):
+        deadline=time.time()+timeout
+        while time.time()<deadline:
+            with self.lock:
+                matches=[e for e in self.events
+                         if e[0]=="clock"
+                         and e[2].get("game_id")==game_id
+                         and e[2].get("version")==clock_version]
+            if matches:
+                return matches[-1]
+            time.sleep(.05)
+        return None
+
+    def wait_for_quiet(self,game_id,quiet_seconds=.75,timeout=5):
+        deadline=time.time()+timeout
+        last=-1
+        quiet_since=time.time()
+        while time.time()<deadline:
+            count=len(self.matching_events(game_id))
+            if count!=last:
+                last=count
+                quiet_since=time.time()
+            elif time.time()-quiet_since>=quiet_seconds:
+                return count
+            time.sleep(.05)
+        return len(self.matching_events(game_id))
+
 c1=Client("A"); c2=Client("B")
 c1.connect(); c2.connect()
 check("Client A connected",c1.sio.connected)
@@ -148,7 +181,6 @@ time.sleep(.3)
 check("Client A connection:ready",len(c1.ready)>=1)
 check("Client B connection:ready",len(c2.ready)>=1)
 
-# ping/pong regression
 c1.sio.emit("client:ping",{"source":"m9d"})
 deadline=time.time()+3
 while time.time()<deadline and not c1.pongs:
@@ -207,49 +239,99 @@ for action,phase,status,base_elapsed,duration in steps:
     lv=response["lifecycle"]["version"]
     cv=response["clock"]["version"]
 
-# Failed transition suppression
-gf,_,_=setup(prefix+"-FAIL")
+# Failed transition suppression.
+gf,_,gf_clock=setup(prefix+"-FAIL")
+
+# Drain the expected setup-time clock:updated event before the test window.
+setup_clock_a=c1.wait_clock_version(gf["id"],gf_clock["version"])
+setup_clock_b=c2.wait_clock_version(gf["id"],gf_clock["version"])
+check("stale test setup clock received Client A",setup_clock_a is not None)
+check("stale test setup clock received Client B",setup_clock_b is not None)
+
 c1.clear(); c2.clear()
+
 status,_=tr(gf,"start_first_half",1,99,True)
 check("stale clock transition returns 409",status==409)
-time.sleep(.7)
+time.sleep(.75)
 check("stale transition emits nothing Client A",len(c1.matching_events(gf["id"]))==0)
 check("stale transition emits nothing Client B",len(c2.matching_events(gf["id"]))==0)
 
-# Concurrent loser: exactly one correlated pair.
-gc,_,_=setup(prefix+"-CON")
+# Concurrent loser: exactly one correlated winner pair.
+gc,_,gc_clock=setup(prefix+"-CON")
+
+# Drain setup-time clock:updated before the concurrency window.
+setup_clock_a=c1.wait_clock_version(gc["id"],gc_clock["version"])
+setup_clock_b=c2.wait_clock_version(gc["id"],gc_clock["version"])
+check("concurrency setup clock received Client A",setup_clock_a is not None)
+check("concurrency setup clock received Client B",setup_clock_b is not None)
+
 c1.clear(); c2.clear()
 
 def same():
     return tr(gc,"start_first_half",1,1,True)
 
 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
-    results=[x.result() for x in [pool.submit(same),pool.submit(same)]]
+    futures=[pool.submit(same),pool.submit(same)]
+    results=[future.result() for future in futures]
+
 statuses=sorted([x[0] for x in results])
 check("concurrent integrated one 200 / one 409",statuses==[200,409])
+
 winner=[x[1] for x in results if x[0]==200][0]
 winner_tid=str(winner["transition_id"])
+
 a_phase,a_clock=c1.wait_pair(gc["id"],winner_tid)
 b_phase,b_clock=c2.wait_pair(gc["id"],winner_tid)
+
 check("concurrent winner Client A receives one pair",a_phase is not None and a_clock is not None)
 check("concurrent winner Client B receives one pair",b_phase is not None and b_clock is not None)
-time.sleep(.5)
-check("concurrent loser emits no extra pair Client A",
-      len(c1.matching_events(gc["id"]))==2)
-check("concurrent loser emits no extra pair Client B",
-      len(c2.matching_events(gc["id"]))==2)
+
+c1.wait_for_quiet(gc["id"])
+c2.wait_for_quiet(gc["id"])
+
+a_events=c1.matching_events(gc["id"])
+b_events=c2.matching_events(gc["id"])
+
+a_transition_ids={e[2].get("transition_id") for e in a_events}
+b_transition_ids={e[2].get("transition_id") for e in b_events}
+
+check("concurrent loser emits no extra transition Client A",
+      a_transition_ids=={winner_tid})
+check("concurrent loser emits no extra transition Client B",
+      b_transition_ids=={winner_tid})
+
+a_winner=c1.events_for_transition(gc["id"],winner_tid)
+b_winner=c2.events_for_transition(gc["id"],winner_tid)
+
+check("concurrent winner exactly one phase event Client A",
+      len([e for e in a_winner if e[0]=="phase"])==1)
+check("concurrent winner exactly one clock event Client A",
+      len([e for e in a_winner if e[0]=="clock"])==1)
+check("concurrent winner exactly one phase event Client B",
+      len([e for e in b_winner if e[0]=="phase"])==1)
+check("concurrent winner exactly one clock event Client B",
+      len([e for e in b_winner if e[0]=="clock"])==1)
 
 # Reconnect + late authoritative recovery.
-gr,_,_=setup(prefix+"-RECONNECT")
+gr,_,gr_clock=setup(prefix+"-RECONNECT")
+
+# Drain setup event so reconnect starts from a known event boundary.
+c1.wait_clock_version(gr["id"],gr_clock["version"])
+c2.wait_clock_version(gr["id"],gr_clock["version"])
+c1.clear(); c2.clear()
+
 status,r=tr(gr,"start_first_half",1,1)
 check("reconnect test starts first half",status==200)
 before=r["clock"]["authoritative_elapsed_seconds"]
+
 c2.disconnect()
 time.sleep(2)
 c2.connect()
 time.sleep(.3)
+
 _,lc_now=req("GET",f"/api/games/{gr['id']}/lifecycle")
 _,cl_now=req("GET",f"/api/games/{gr['id']}/clock")
+
 check("reconnect lifecycle recovery first_half",lc_now["phase"]=="first_half")
 check("reconnect clock recovery running",cl_now["status"]=="running")
 check("reconnect clock includes disconnect interval",
@@ -266,10 +348,13 @@ RC=$?
 set -e
 
 cat "$TMP"
+
 P=$(grep -oP 'M9-D Socket Tests Passed: \K[0-9]+' "$TMP" | tail -1 || true)
 F=$(grep -oP 'Failed: \K[0-9]+' "$TMP" | tail -1 || true)
+
 PASS=$((PASS + ${P:-0}))
 FAIL=$((FAIL + ${F:-0}))
+
 rm -f "$TMP"
 
 [ "$RC" -eq 0 ] \

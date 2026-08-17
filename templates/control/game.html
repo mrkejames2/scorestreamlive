@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ScoreStreamLive — Game Control</title>
+  <link rel="stylesheet" href="/static/css/control.css">
+</head>
+<body data-game-id="{{ game_id }}">
+  <main class="control-shell">
+    <header class="control-header">
+      <div>
+        <div class="eyebrow">ScoreStreamLive</div>
+        <h1>Game Control</h1>
+      </div>
+      <div class="header-status">
+        <div id="connection-badge" class="connection-badge connection-connecting" aria-live="polite">
+          <span class="connection-dot"></span>
+          <span id="connection-label">CONNECTING</span>
+        </div>
+        <div class="read-only-badge">M10-C · LIFECYCLE CONTROL</div>
+      </div>
+    </header>
+
+    <section id="loading-state" class="status-panel">
+      <div class="spinner"></div>
+      <div>
+        <strong>Loading authoritative game state…</strong>
+        <div class="muted">Game <span id="loading-game-id">{{ game_id }}</span></div>
+      </div>
+    </section>
+
+    <section id="error-state" class="status-panel error-panel hidden">
+      <div>
+        <strong>Unable to load complete game state.</strong>
+        <div id="error-message" class="muted">Unknown error.</div>
+        <button id="retry-button" type="button" class="secondary-button">Retry</button>
+      </div>
+    </section>
+
+    <section id="operator-message" class="operator-message hidden" aria-live="polite"></section>
+
+    <section id="socket-message" class="socket-message hidden" aria-live="polite">
+      Live connection was interrupted. Displayed data remains visible while ScoreStreamLive reconnects.
+      Authoritative state will refresh after reconnect.
+    </section>
+
+    <div id="control-content" class="hidden">
+      <section class="scoreboard-card">
+        <div class="team-panel">
+          <div class="team-label">HOME</div>
+          <div id="home-team-name" class="team-name">—</div>
+        </div>
+
+        <div class="score-panel">
+          <div class="score-row">
+            <span id="home-score" class="score">0</span>
+            <span class="score-divider">—</span>
+            <span id="away-score" class="score">0</span>
+          </div>
+          <div class="clock-row">
+            <span id="clock-display" class="clock-display">00:00</span>
+            <span id="added-time" class="added-time"></span>
+          </div>
+          <div id="phase-display" class="phase-display">PREGAME</div>
+        </div>
+
+        <div class="team-panel team-panel-away">
+          <div class="team-label">AWAY</div>
+          <div id="away-team-name" class="team-name">—</div>
+        </div>
+      </section>
+
+      <section class="operator-grid">
+        <article class="card operator-card">
+          <div class="card-header">
+            <h2>Game Lifecycle</h2>
+            <span id="command-status" class="command-status">READY</span>
+          </div>
+          <p class="muted operator-help">
+            Only the valid action for the current authoritative phase is enabled. Lifecycle and clock changes
+            are committed atomically by the existing M9 transition endpoint.
+          </p>
+          <div class="lifecycle-actions">
+            <button id="start-first-half-button" class="lifecycle-button primary-action" type="button" data-action="start_first_half" disabled>Start First Half</button>
+            <button id="end-first-half-button" class="lifecycle-button warning-action" type="button" data-action="end_first_half" disabled>End First Half</button>
+            <button id="start-second-half-button" class="lifecycle-button primary-action" type="button" data-action="start_second_half" disabled>Start Second Half</button>
+            <button id="end-game-button" class="lifecycle-button danger-action" type="button" data-action="end_game" disabled>End Game</button>
+          </div>
+        </article>
+      </section>
+
+      <section class="details-grid">
+        <article class="card">
+          <div class="card-header">
+            <h2>Game Status</h2>
+            <button id="refresh-button" type="button" class="secondary-button">Refresh</button>
+          </div>
+          <dl class="status-list">
+            <div><dt>Game ID</dt><dd id="game-id">{{ game_id }}</dd></div>
+            <div><dt>Lifecycle</dt><dd id="lifecycle-phase">—</dd></div>
+            <div><dt>Lifecycle Version</dt><dd id="lifecycle-version">—</dd></div>
+            <div><dt>Clock Status</dt><dd id="clock-status">—</dd></div>
+            <div><dt>Clock Mode</dt><dd id="clock-mode">—</dd></div>
+            <div><dt>Clock Version</dt><dd id="clock-version">—</dd></div>
+            <div><dt>Clock Target</dt><dd id="clock-duration">—</dd></div>
+            <div><dt>Live Sync</dt><dd id="connection-detail">CONNECTING</dd></div>
+            <div><dt>Last Live Event</dt><dd id="last-live-event">—</dd></div>
+          </dl>
+        </article>
+
+        <article class="card">
+          <h2>Scoring</h2>
+          <div id="scoring-list" class="scoring-list"><div class="empty-state">No scoring events.</div></div>
+        </article>
+      </section>
+
+      <section class="roster-grid">
+        <article class="card">
+          <h2><span id="home-roster-team-name">Home</span> Roster</h2>
+          <div id="home-roster" class="roster-list"></div>
+        </article>
+        <article class="card">
+          <h2><span id="away-roster-team-name">Away</span> Roster</h2>
+          <div id="away-roster" class="roster-list"></div>
+        </article>
+      </section>
+
+      <footer class="control-footer">
+        <span>M10-C Lifecycle Operator Controls</span>
+        <span>REST bootstrap · Socket.IO committed-state events · M9 atomic lifecycle mutation · No scoring controls</span>
+      </footer>
+    </div>
+  </main>
+
+  <script src="/static/vendor/socket.io.min.js"></script>
+  <script type="module" src="/static/js/control/control.js"></script>
+</body>
+</html>
