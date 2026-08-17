@@ -6,8 +6,12 @@
   <title>ScoreStreamLive — Game Control</title>
   <link rel="stylesheet" href="/static/css/control.css">
 </head>
-<body data-game-id="{{ game_id }}">
+<body class="m10e-matchday" data-game-id="{{ game_id }}">
   <main class="control-shell">
+    <div id="goal-feedback" class="goal-feedback hidden" aria-live="assertive">
+      <div class="goal-feedback-title">GOAL</div>
+      <div id="goal-feedback-detail" class="goal-feedback-detail">Score updated</div>
+    </div>
     <header class="control-header">
       <div>
         <div class="eyebrow">ScoreStreamLive</div>
@@ -18,9 +22,15 @@
           <span class="connection-dot"></span>
           <span id="connection-label">CONNECTING</span>
         </div>
-        <div class="read-only-badge">M10-C · LIFECYCLE CONTROL</div>
+        <div class="read-only-badge">M10-E · LIFECYCLE + MATCH-DAY UX</div>
       </div>
     </header>
+
+    <section id="match-status-strip" class="match-status-strip" aria-live="polite">
+      <div class="match-status-item"><span>Phase</span><strong id="ux-phase-chip">PREGAME</strong></div>
+      <div class="match-status-item"><span>Connection</span><strong id="ux-connection-chip">CONNECTING</strong></div>
+      <div class="match-status-item"><span>Operator</span><strong id="ux-operator-chip">READY</strong></div>
+    </section>
 
     <section id="loading-state" class="status-panel">
       <div class="spinner"></div>
@@ -90,6 +100,34 @@
         </article>
       </section>
 
+      <section class="scoring-control-grid">
+        <article class="card scoring-control-card">
+          <div class="card-header">
+            <h2><span id="home-scoring-team-name">Home</span> Goal</h2>
+            <span class="scoring-side-label">HOME</span>
+          </div>
+          <p class="muted scoring-help">Choose a scorer, or leave Team Goal selected when the scorer is unknown.</p>
+          <label class="scorer-label" for="home-scorer-select">Scorer</label>
+          <select id="home-scorer-select" class="scorer-select">
+            <option value="">Team Goal / Unknown Scorer</option>
+          </select>
+          <button id="home-goal-button" class="goal-button home-goal-button" type="button" data-side="home" disabled>+ Record Home Goal</button>
+        </article>
+
+        <article class="card scoring-control-card">
+          <div class="card-header">
+            <h2><span id="away-scoring-team-name">Away</span> Goal</h2>
+            <span class="scoring-side-label">AWAY</span>
+          </div>
+          <p class="muted scoring-help">Choose a scorer, or leave Team Goal selected when the scorer is unknown.</p>
+          <label class="scorer-label" for="away-scorer-select">Scorer</label>
+          <select id="away-scorer-select" class="scorer-select">
+            <option value="">Team Goal / Unknown Scorer</option>
+          </select>
+          <button id="away-goal-button" class="goal-button away-goal-button" type="button" data-side="away" disabled>+ Record Away Goal</button>
+        </article>
+      </section>
+
       <section class="details-grid">
         <article class="card">
           <div class="card-header">
@@ -127,8 +165,8 @@
       </section>
 
       <footer class="control-footer">
-        <span>M10-C Lifecycle Operator Controls</span>
-        <span>REST bootstrap · Socket.IO committed-state events · M9 atomic lifecycle mutation · No scoring controls</span>
+        <span>M10-E Lifecycle + Scoring Operator Controls</span>
+        <span>REST mutation boundary · PostgreSQL authoritative score · Socket.IO committed-state events · M9 lifecycle preserved</span>
       </footer>
     </div>
   </main>

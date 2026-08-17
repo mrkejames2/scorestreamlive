@@ -6,6 +6,7 @@ import {
   getScoringEvents,
   getTeam,
   transitionLifecycle,
+  createScoringEvent,
 } from "./api.js";
 
 import {
@@ -36,6 +37,7 @@ const ACTION_LABELS = {
 };
 
 let commandInFlight = false;
+let scoringCommandInFlight = false;
 let operatorMessageTimer = null;
 
 function gameIdFromPage() {
@@ -107,6 +109,48 @@ function renderRoster(containerId, players) {
 
     row.append(jersey, name);
     container.appendChild(row);
+  }
+}
+
+
+function populateScorerSelect(selectId, players) {
+  const select = byId(selectId);
+  if (!select) return;
+
+  const previous = select.value;
+  select.replaceChildren();
+
+  const teamGoal = document.createElement("option");
+  teamGoal.value = "";
+  teamGoal.textContent = "Team Goal / Unknown Scorer";
+  select.appendChild(teamGoal);
+
+  for (const player of players) {
+    const option = document.createElement("option");
+    option.value = player.id;
+    const jersey = player.jersey_number == null ? "" : `#${player.jersey_number} `;
+    option.textContent = `${jersey}${playerDisplayName(player)}`;
+    select.appendChild(option);
+  }
+
+  if ([...select.options].some((option) => option.value === previous)) {
+    select.value = previous;
+  }
+}
+
+function scoringIsAllowed() {
+  return ["first_half", "second_half"].includes(state.lifecycle?.phase);
+}
+
+function renderScoringControls() {
+  const enabled = state.socketConnected && scoringIsAllowed() && !scoringCommandInFlight;
+  for (const id of ["home-goal-button", "away-goal-button"]) {
+    const button = byId(id);
+    if (button) button.disabled = !enabled;
+  }
+  for (const id of ["home-scorer-select", "away-scorer-select"]) {
+    const select = byId(id);
+    if (select) select.disabled = scoringCommandInFlight;
   }
 }
 
@@ -192,6 +236,26 @@ function renderLifecycleControls() {
   );
 }
 
+
+function syncMatchDayUx() {
+  const phase = state.lifecycle?.phase || "pregame";
+  text("ux-phase-chip", String(phase).replaceAll("_", " ").toUpperCase());
+  text("ux-connection-chip", state.socketConnected ? "LIVE" : "OFFLINE");
+  text("ux-operator-chip", (commandInFlight || scoringInFlight) ? "UPDATING" : "READY");
+  document.body.dataset.phase = phase;
+}
+
+let goalFeedbackTimer = null;
+
+function showGoalFeedback(detail) {
+  const panel = byId("goal-feedback");
+  if (!panel) return;
+  if (goalFeedbackTimer) window.clearTimeout(goalFeedbackTimer);
+  text("goal-feedback-detail", detail || "Score updated");
+  panel.classList.remove("hidden");
+  goalFeedbackTimer = window.setTimeout(() => panel.classList.add("hidden"), 1800);
+}
+
 function renderLiveMetadata() {
   text("connection-detail", state.socketConnected ? "LIVE" : "NOT CONNECTED");
 
@@ -224,9 +288,14 @@ function renderStaticState() {
 
   renderRoster("home-roster", state.homeRoster);
   renderRoster("away-roster", state.awayRoster);
+  text("home-scoring-team-name", state.homeTeam?.name || "Home");
+  text("away-scoring-team-name", state.awayTeam?.name || "Away");
+  populateScorerSelect("home-scorer-select", state.homeRoster);
+  populateScorerSelect("away-scorer-select", state.awayRoster);
   renderScoring();
   renderLiveMetadata();
   renderLifecycleControls();
+  renderScoringControls();
 }
 
 function renderClock() {
@@ -264,6 +333,7 @@ function setConnectionUi(mode) {
 
   renderLiveMetadata();
   renderLifecycleControls();
+  renderScoringControls();
 }
 
 function setLoading(isLoading) {
@@ -315,7 +385,7 @@ async function fetchAuthoritativeState({ showLoading = false } = {}) {
     renderClock();
     byId("control-content").classList.remove("hidden");
   } catch (error) {
-    console.error("M10-C authoritative state load failed", error);
+    console.error("M10-D authoritative state load failed", error);
     showError(error);
     throw error;
   } finally {
@@ -389,6 +459,46 @@ async function runLifecycleAction(action) {
   }
 }
 
+
+async function runScoringAction(side) {
+  if (scoringCommandInFlight) return;
+
+  if (!state.socketConnected) {
+    showOperatorMessage("Live connection is required before recording a goal.", "warning", 6000);
+    return;
+  }
+
+  if (!scoringIsAllowed()) {
+    showOperatorMessage("Goals can only be recorded during the first or second half.", "warning", 6000);
+    return;
+  }
+
+  const team = side === "home" ? state.homeTeam : state.awayTeam;
+  const select = byId(side === "home" ? "home-scorer-select" : "away-scorer-select");
+  if (!team) {
+    showOperatorMessage("Team state is unavailable. Refreshing authoritative state.", "warning", 6000);
+    await fetchAuthoritativeState();
+    return;
+  }
+
+  const playerId = select?.value || null;
+  scoringCommandInFlight = true;
+  renderScoringControls();
+
+  try {
+    await createScoringEvent(gameIdFromPage(), team.id, playerId);
+    showOperatorMessage(`${team.name} goal recorded.`, "success", 3000);
+  } catch (error) {
+    showOperatorMessage(`Goal was not recorded: ${error?.message || error}`, "error", 7000);
+    try {
+      await fetchAuthoritativeState();
+    } catch (_) {}
+  } finally {
+    scoringCommandInFlight = false;
+    renderScoringControls();
+  }
+}
+
 function applyScoreUpdate(payload) {
   if (!state.game) return;
   state.game = {
@@ -405,6 +515,8 @@ function applyScoringEvent(payload) {
   }
   renderScoring();
   renderLiveMetadata();
+  showGoalFeedback("Goal committed");
+  syncMatchDayUx();
 }
 
 function applyPhaseUpdate(payload) {
@@ -429,6 +541,9 @@ byId("retry-button")?.addEventListener("click", () =>
 for (const button of document.querySelectorAll(".lifecycle-button")) {
   button.addEventListener("click", () => runLifecycleAction(button.dataset.action));
 }
+
+byId("home-goal-button")?.addEventListener("click", () => runScoringAction("home"));
+byId("away-goal-button")?.addEventListener("click", () => runScoringAction("away"));
 
 // Local presentation only. No per-second REST polling and no clock:tick.
 setInterval(renderClock, 250);
@@ -459,6 +574,10 @@ try {
     },
   });
 } catch (error) {
-  console.error("M10-C live connection failed", error);
+  console.error("M10-D live connection failed", error);
   setConnectionUi("offline");
 }
+
+
+// M10-E initial UX synchronization
+syncMatchDayUx();

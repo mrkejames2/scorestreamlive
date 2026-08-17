@@ -71,3 +71,16 @@ export function transitionLifecycle(
     },
   );
 }
+
+
+export function createScoringEvent(gameId, teamId, playerId = null) {
+  return requestJson(`/api/scoring-events`, {
+    method: "POST",
+    payload: {
+      game_id: gameId,
+      team_id: teamId,
+      player_id: playerId || null,
+      event_type: "goal",
+    },
+  });
+}

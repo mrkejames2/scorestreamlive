@@ -123,3 +123,98 @@ button, input, select { font: inherit; }
   .lifecycle-actions { grid-template-columns: 1fr; }
   .lifecycle-button { min-height: 62px; }
 }
+
+
+/* M10-D scoring controls */
+.scoring-control-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; margin-top: 18px; }
+.scoring-control-card { border-color: #314154; }
+.scoring-side-label { color: var(--muted); font-size: 12px; font-weight: 850; letter-spacing: .12em; }
+.scoring-help { min-height: 38px; margin: 0 0 14px; }
+.scorer-label { display: block; margin-bottom: 7px; color: var(--muted); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+.scorer-select { width: 100%; min-height: 48px; padding: 10px 12px; border: 1px solid #354559; border-radius: 10px; background: #111923; color: var(--text); }
+.goal-button { width: 100%; min-height: 62px; margin-top: 12px; padding: 12px 16px; border: 1px solid rgba(70,209,122,.5); border-radius: 12px; background: rgba(70,209,122,.12); color: #8af0ad; font-weight: 900; cursor: pointer; }
+.goal-button:hover:not(:disabled) { background: rgba(70,209,122,.19); }
+.goal-button:disabled { border-color: #354559; background: #18222e; color: #718096; cursor: not-allowed; opacity: .55; }
+@media (max-width:800px) { .scoring-control-grid { grid-template-columns: 1fr; } }
+
+
+/* M10-E match-day UX */
+.match-status-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: -8px 0 18px;
+}
+.match-status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 46px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255,255,255,.025);
+}
+.match-status-item span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.scoreboard-card {
+  position: sticky;
+  top: 8px;
+  z-index: 20;
+  backdrop-filter: blur(12px);
+}
+.score {
+  font-size: clamp(64px, 10vw, 112px);
+}
+.clock-display {
+  font-size: clamp(44px, 7vw, 72px);
+}
+.goal-button {
+  min-height: 70px;
+  font-size: 20px;
+  font-weight: 900;
+  touch-action: manipulation;
+}
+.lifecycle-button,
+.secondary-button,
+select {
+  min-height: 52px;
+}
+.goal-feedback {
+  position: fixed;
+  inset: 18px 18px auto;
+  z-index: 1000;
+  width: min(520px, calc(100% - 36px));
+  margin: 0 auto;
+  padding: 16px 20px;
+  border: 1px solid rgba(70,209,122,.5);
+  border-radius: 16px;
+  background: rgba(13,28,20,.96);
+  box-shadow: 0 20px 70px rgba(0,0,0,.45);
+  text-align: center;
+}
+.goal-feedback-title {
+  color: #94f1b4;
+  font-size: 28px;
+  font-weight: 950;
+  letter-spacing: .14em;
+}
+.goal-feedback-detail {
+  margin-top: 4px;
+  color: #d9f8e4;
+  font-weight: 750;
+}
+@media (max-width: 800px) {
+  .match-status-strip { grid-template-columns: 1fr; }
+  .goal-button, .lifecycle-button { min-height: 64px; }
+}
+@media (max-width: 520px) {
+  .control-shell { width: min(100% - 10px, 1180px); }
+  .score { font-size: clamp(54px, 20vw, 90px); }
+  .clock-display { font-size: clamp(40px, 15vw, 62px); }
+  .goal-button, .lifecycle-button, .secondary-button, select { min-height: 60px; }
+}
