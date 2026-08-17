@@ -71,21 +71,7 @@ ap=post("/api/players",{"team_id":b["id"],"first_name":"Away","last_name":"Score
 
 status,html=req("GET",f"/control/games/{g['id']}")
 check("Control Center page returns 200",status==200)
-# Forward-compatible historical regression:
-# Later milestones may change the displayed milestone label and presentation.
-# M10-D owns the scoring-control capability, so validate that capability.
-check(
-    "Control Center preserves M10-D scoring-control capability",
-    all(
-        marker in html
-        for marker in (
-            'id="home-goal-button"',
-            'id="away-goal-button"',
-            'id="home-scorer-select"',
-            'id="away-scorer-select"',
-        )
-    ),
-)
+check("Control Center identifies M10-D", "M10-D · LIFECYCLE + SCORING CONTROL" in html)
 check("Home goal button present", 'id="home-goal-button"' in html)
 check("Away goal button present", 'id="away-goal-button"' in html)
 check("Home scorer selector present", 'id="home-scorer-select"' in html)

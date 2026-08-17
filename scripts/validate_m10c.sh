@@ -224,20 +224,10 @@ check(
     "text/html" in content_type.lower(),
 )
 
-# Forward-compatible historical regression:
-# The current Control Center may identify as M10-D, M10-E, or a later
-# milestone. M10-C only owns the lifecycle-control capability.
 check(
-    "Control Center preserves M10-C lifecycle-control capability",
-    all(
-        marker in page
-        for marker in (
-            'data-action="start_first_half"',
-            'data-action="end_first_half"',
-            'data-action="start_second_half"',
-            'data-action="end_game"',
-        )
-    ),
+    "Control Center identifies M10-C",
+    "M10-C" in page
+    and "LIFECYCLE CONTROL" in page,
 )
 
 for marker, label in [
@@ -306,20 +296,12 @@ check(
     "fetchAuthoritativeState" in control_module,
 )
 
-# Do NOT assert that scoring UI is absent here. M10-D intentionally added
-# scoring controls. Historical M10-C regression must prove that the lifecycle
-# behavior remains intact after later milestones extend the Control Center.
 check(
-    "M10-C lifecycle capability remains intact after later UI milestones",
-    all(
-        action in control_module
-        for action in (
-            "start_first_half",
-            "end_first_half",
-            "start_second_half",
-            "end_game",
-        )
-    ),
+    "M10-C has no scoring mutation UI code",
+    "recordGoal" not in control_module
+    and "createScoring" not in control_module
+    and "home-goal-button" not in control_module
+    and "away-goal-button" not in control_module,
 )
 
 check(

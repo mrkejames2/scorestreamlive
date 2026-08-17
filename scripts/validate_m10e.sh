@@ -81,9 +81,6 @@ rm -f "$TMP"
 
 echo ""
 echo "========================================"
-# Historical validators below are intentionally capability-based.
-# They must verify that M10-D/M10-C behavior still works without requiring
-# the current Control Center to present itself as those older milestones.
 echo "Running M10-D regression"
 echo "========================================"
 set +e

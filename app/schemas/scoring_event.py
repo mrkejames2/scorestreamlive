@@ -4,27 +4,20 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ScoringEventCreate(BaseModel):
-    """Fields required to create a ScoringEvent."""
+    """Fields accepted from a scoring client."""
 
     game_id: UUID
     team_id: UUID
     player_id: Optional[UUID] = None
     event_type: str = Field(..., min_length=1, max_length=50)
 
-    @field_validator("event_type")
-    @classmethod
-    def validate_event_type(cls, v: str) -> str:
-        if v != "goal":
-            raise ValueError("event_type must be 'goal'")
-        return v
-
 
 class ScoringEventResponse(BaseModel):
-    """Full ScoringEvent representation returned by the API."""
+    """Committed scoring event returned by REST and Socket.IO."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -33,4 +26,8 @@ class ScoringEventResponse(BaseModel):
     team_id: UUID
     player_id: Optional[UUID] = None
     event_type: str
+
+    # Server-computed match time. Clients never submit this value.
+    game_elapsed_seconds: Optional[int] = None
+
     created_at: datetime

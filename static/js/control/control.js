@@ -171,14 +171,22 @@ function scoringTeamName(event) {
 }
 
 function formatEventTime(event) {
-  if (!event.created_at) return "GOAL";
-  const parsed = new Date(event.created_at);
-  if (Number.isNaN(parsed.getTime())) return "GOAL";
-  return parsed.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
+  const elapsed = Number(event.game_elapsed_seconds);
+
+  if (!Number.isFinite(elapsed) || elapsed < 0) {
+    // Legacy scoring events created before M10-E cleanup do not have a
+    // durable game-time snapshot. Do not misrepresent wall-clock time as
+    // match time.
+    return "—";
+  }
+
+  // Soccer notation uses the minute in which play is occurring:
+  // 00:01 -> 1', 31:07 -> 32', 45:00 -> 45'.
+  if (elapsed <= 0) return "1'";
+
+  const wholeSeconds = Math.floor(elapsed);
+  const minute = Math.floor((wholeSeconds - 1) / 60) + 1;
+  return `${minute}'`;
 }
 
 function renderScoring() {

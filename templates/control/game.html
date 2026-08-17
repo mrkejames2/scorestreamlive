@@ -36,7 +36,7 @@
       <div class="spinner"></div>
       <div>
         <strong>Loading authoritative game state…</strong>
-        <div class="muted">Game <span id="loading-game-id">{{ game_id }}</span></div>
+        <div class="muted">Loading match details and live state.</div>
       </div>
     </section>
 
@@ -131,24 +131,29 @@
       <section class="details-grid">
         <article class="card">
           <div class="card-header">
-            <h2>Game Status</h2>
+            <h2>Match Status</h2>
             <button id="refresh-button" type="button" class="secondary-button">Refresh</button>
           </div>
           <dl class="status-list">
-            <div><dt>Game ID</dt><dd id="game-id">{{ game_id }}</dd></div>
-            <div><dt>Lifecycle</dt><dd id="lifecycle-phase">—</dd></div>
-            <div><dt>Lifecycle Version</dt><dd id="lifecycle-version">—</dd></div>
-            <div><dt>Clock Status</dt><dd id="clock-status">—</dd></div>
-            <div><dt>Clock Mode</dt><dd id="clock-mode">—</dd></div>
-            <div><dt>Clock Version</dt><dd id="clock-version">—</dd></div>
-            <div><dt>Clock Target</dt><dd id="clock-duration">—</dd></div>
+            <div><dt>Phase</dt><dd id="lifecycle-phase">—</dd></div>
+            <div><dt>Clock</dt><dd id="clock-status">—</dd></div>
             <div><dt>Live Sync</dt><dd id="connection-detail">CONNECTING</dd></div>
-            <div><dt>Last Live Event</dt><dd id="last-live-event">—</dd></div>
+            <div><dt>Last Update</dt><dd id="last-live-event">—</dd></div>
           </dl>
+
+          <!-- Technical values remain available to JavaScript without
+               consuming operator-screen space. -->
+          <div class="technical-state hidden" aria-hidden="true">
+            <span id="game-id">{{ game_id }}</span>
+            <span id="lifecycle-version">—</span>
+            <span id="clock-mode">—</span>
+            <span id="clock-version">—</span>
+            <span id="clock-duration">—</span>
+          </div>
         </article>
 
         <article class="card">
-          <h2>Scoring</h2>
+          <h2>Scoring Summary</h2>
           <div id="scoring-list" class="scoring-list"><div class="empty-state">No scoring events.</div></div>
         </article>
       </section>

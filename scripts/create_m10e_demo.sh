@@ -12,9 +12,9 @@ def req(method,path,payload=None):
     r=urllib.request.Request(BASE+path,data=data,headers=headers,method=method)
     with urllib.request.urlopen(r,timeout=15) as x:
         raw=x.read(); return json.loads(raw) if raw else None
-h=req("POST","/api/teams",{"name":f"Saginaw United Demo {stamp}","short_name":"SAG"})
-a=req("POST","/api/teams",{"name":f"Detroit City Demo {stamp}","short_name":"DCFC"})
-g=req("POST","/api/games",{"name":f"ScoreStreamLive M10-E Demo {stamp}","home_team_id":h["id"],"away_team_id":a["id"]})
+h=req("POST","/api/teams",{"name":"Saginaw United","short_name":"SAG"})
+a=req("POST","/api/teams",{"name":"Detroit City","short_name":"DCFC"})
+g=req("POST","/api/games",{"name":"ScoreStreamLive Demo Match","home_team_id":h["id"],"away_team_id":a["id"]})
 req("POST",f"/api/games/{g['id']}/lifecycle",{})
 req("POST",f"/api/games/{g['id']}/clock",{"mode":"count_up","duration_seconds":2700})
 for first,last,num in [("Ace","James",17),("Wyatt","James",7),("Maverick","James",22),("Alex","Morgan",10)]:
