@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>ScoreStreamLive — Games</title>
+  <link rel="stylesheet" href="/static/css/games.css">
+</head>
+<body>
+  <main class="games-shell">
+    <header class="games-header">
+      <div>
+        <div class="eyebrow">SCORESTREAMLIVE</div>
+        <h1>Games</h1>
+        <p class="subhead">
+          Create a launch-ready match, find an existing game, and jump directly into match control or the broadcast overlay.
+        </p>
+      </div>
+
+      <div class="header-actions">
+        <span id="games-status" class="status-chip" data-state="loading">LOADING</span>
+        <button id="new-game-button" class="button button-primary" type="button">
+          New Game
+        </button>
+        <button id="refresh-games" class="button button-secondary" type="button">
+          Refresh
+        </button>
+      </div>
+    </header>
+
+    <section
+      id="new-game-panel"
+      class="new-game-panel hidden"
+      aria-labelledby="new-game-title"
+    >
+      <div class="new-game-heading">
+        <div>
+          <div class="eyebrow">M12-C</div>
+          <h2 id="new-game-title">Create Game</h2>
+          <p>
+            Choose existing teams. ScoreStreamLive will create the Game, initialize Pregame lifecycle state, and initialize a stopped 45-minute count-up clock.
+          </p>
+        </div>
+
+        <button
+          id="cancel-new-game"
+          class="button button-secondary"
+          type="button"
+        >
+          Cancel
+        </button>
+      </div>
+
+      <form id="new-game-form" class="new-game-form" novalidate>
+        <label class="form-field form-field-wide">
+          <span class="field-label">Game Name</span>
+          <input
+            id="game-name"
+            name="game_name"
+            class="text-input"
+            type="text"
+            maxlength="255"
+            autocomplete="off"
+            placeholder="Example: Saginaw United vs Midland City"
+            required
+          >
+        </label>
+
+        <div class="team-picker-grid">
+          <section class="team-picker" aria-labelledby="home-team-label">
+            <div class="team-picker-heading">
+              <span id="home-team-label" class="field-label">Home Team</span>
+              <span id="home-team-selected" class="selected-team-label">Not selected</span>
+            </div>
+
+            <input
+              id="home-team-search"
+              class="text-input"
+              type="search"
+              autocomplete="off"
+              placeholder="Search home teams..."
+              aria-label="Search Home Team"
+            >
+            <input id="home-team-id" type="hidden">
+            <div
+              id="home-team-results"
+              class="team-search-results"
+              role="listbox"
+              aria-label="Home Team search results"
+            ></div>
+          </section>
+
+          <section class="team-picker" aria-labelledby="away-team-label">
+            <div class="team-picker-heading">
+              <span id="away-team-label" class="field-label">Away Team</span>
+              <span id="away-team-selected" class="selected-team-label">Not selected</span>
+            </div>
+
+            <input
+              id="away-team-search"
+              class="text-input"
+              type="search"
+              autocomplete="off"
+              placeholder="Search away teams..."
+              aria-label="Search Away Team"
+            >
+            <input id="away-team-id" type="hidden">
+            <div
+              id="away-team-results"
+              class="team-search-results"
+              role="listbox"
+              aria-label="Away Team search results"
+            ></div>
+          </section>
+        </div>
+
+        <div id="new-game-error" class="notice notice-error hidden" role="alert"></div>
+        <div id="new-game-success" class="notice notice-success hidden" role="status"></div>
+
+        <div class="new-game-actions">
+          <span class="new-game-hint">
+            Existing Teams only for M12-C. Team creation will be added separately.
+          </span>
+          <button id="create-game-submit" class="button button-primary" type="submit">
+            Create Game
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section class="summary-grid" aria-label="Game management summary">
+      <article class="summary-card">
+        <span class="summary-label">Games</span>
+        <strong id="summary-total" class="summary-value">—</strong>
+      </article>
+      <article class="summary-card">
+        <span class="summary-label">Active</span>
+        <strong id="summary-active" class="summary-value">—</strong>
+      </article>
+      <article class="summary-card">
+        <span class="summary-label">Completed</span>
+        <strong id="summary-completed" class="summary-value">—</strong>
+      </article>
+    </section>
+
+    <section class="games-panel">
+      <div class="panel-heading">
+        <div>
+          <h2>Game Management</h2>
+          <p>
+            Recent games are shown below. Newly-created games are initialized and ready for Control Center and Overlay.
+          </p>
+        </div>
+      </div>
+
+      <div id="games-error" class="notice notice-info hidden" role="status"></div>
+
+      <div id="games-empty" class="empty-state hidden">
+        <h3>No games yet</h3>
+        <p>Use New Game to create the first match.</p>
+      </div>
+
+      <div id="games-list" class="games-list" aria-live="polite"></div>
+    </section>
+
+    <footer class="games-footer">
+      <span>Milestone {{ milestone }}</span>
+      <span>Game Creation + Launch Readiness</span>
+    </footer>
+  </main>
+
+  <template id="game-card-template">
+    <article class="game-card">
+      <div class="game-card-top">
+        <div class="game-identity">
+          <div class="game-name"></div>
+          <div class="game-meta">
+            <span class="game-phase chip"></span>
+            <span class="game-clock chip"></span>
+          </div>
+        </div>
+
+        <div class="game-scoreline" aria-label="Current score">
+          <div class="score-team score-team-home">
+            <span class="score-team-name home-team-name">HOME</span>
+            <strong class="score-value home-score">0</strong>
+          </div>
+          <div class="score-divider">—</div>
+          <div class="score-team score-team-away">
+            <strong class="score-value away-score">0</strong>
+            <span class="score-team-name away-team-name">AWAY</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-card-bottom">
+        <div class="game-detail">
+          <span class="detail-label">Game ID</span>
+          <code class="game-id"></code>
+        </div>
+
+        <div class="game-actions">
+          <a class="button button-primary control-link">Open Control Center</a>
+          <a class="button button-secondary overlay-link" target="_blank" rel="noopener">
+            Open Overlay
+          </a>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <script type="module" src="/static/js/games/index.js"></script>
+</body>
+</html>
