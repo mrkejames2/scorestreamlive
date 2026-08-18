@@ -1,7 +1,7 @@
-"""M10-A operator-facing Control Center page route.
+"""Operator-facing Control Center and broadcast overlay page routes.
 
-This route serves the read-only Control Center shell.
-It does not mutate game state and does not own authoritative game data.
+These routes serve browser shells only.
+They do not mutate game state and do not own authoritative game data.
 """
 
 import uuid
@@ -27,9 +27,29 @@ async def game_control_page(
     request: Request,
     game_id: uuid.UUID,
 ):
+    """Serve the M10 multi-device Match Control Center."""
     return templates.TemplateResponse(
         request=request,
         name="control/game.html",
+        context={
+            "game_id": str(game_id),
+        },
+    )
+
+
+@router.get(
+    "/overlay/games/{game_id}",
+    response_class=HTMLResponse,
+    include_in_schema=False,
+)
+async def game_overlay_page(
+    request: Request,
+    game_id: uuid.UUID,
+):
+    """Serve the M11 read-only broadcast overlay shell."""
+    return templates.TemplateResponse(
+        request=request,
+        name="overlay/game.html",
         context={
             "game_id": str(game_id),
         },
