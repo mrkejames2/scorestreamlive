@@ -109,8 +109,11 @@ check("M11-F auto-clears match-state banner",
 check("M11-F has phase-title mapping","matchStateTitle" in js)
 check("M11-F renders authoritative scoreline","matchStateScoreline" in js)
 check("M11-F avoids duplicate phase presentation","lastPresentedPhase" in js)
-check("M11-F does not replay lifecycle banner on bootstrap",
-      "Do not present a lifecycle banner simply because the page loaded." in js)
+check(
+    "M11-F does not replay lifecycle banner on bootstrap",
+    "await loadAuthoritativeState();" in js
+    and "state.lastPresentedPhase = state.lifecycle?.phase || null;" in js,
+)
 check("M11-F lifecycle presentation handler exists","applyLifecyclePresentation" in js)
 check("M11-F listens for lifecycle committed-state events",
       'socket.on("game:lifecycle_updated"' in js

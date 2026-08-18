@@ -1,0 +1,172 @@
+/* ScoreStreamLive M12-D6 Branded Broadcast Overlay */
+
+.branded-overlay-team {
+  --team-primary: #2a77ff;
+  --team-secondary: #ffffff;
+  position: relative;
+}
+
+.branded-overlay-team::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background: var(--team-primary);
+  box-shadow: 0 -1px 0 rgba(255,255,255,.06);
+}
+
+.team-home {
+  grid-template-columns: 62px minmax(0,1fr) 86px;
+}
+
+.team-away {
+  grid-template-columns: 86px minmax(0,1fr) 62px;
+}
+
+.overlay-team-logo-shell,
+.goal-banner-logo-shell {
+  --team-primary: #2a77ff;
+  --team-secondary: #ffffff;
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  border: 2px solid color-mix(in srgb, var(--team-primary) 72%, white 10%);
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--team-primary) 82%, #09121f),
+      color-mix(in srgb, var(--team-primary) 42%, #07101d)
+    );
+  box-shadow:
+    0 7px 20px rgba(0,0,0,.24),
+    inset 0 0 0 2px rgba(255,255,255,.035);
+}
+
+.overlay-team-logo-shell::after,
+.goal-banner-logo-shell::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background: var(--team-secondary);
+}
+
+.overlay-team-logo-shell {
+  width: 62px;
+  height: 62px;
+  border-radius: 13px;
+}
+
+.overlay-team-logo,
+.goal-banner-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: rgba(255,255,255,.96);
+}
+
+.overlay-team-logo { padding: 5px; }
+
+.overlay-team-logo-fallback,
+.goal-banner-logo-fallback {
+  position: relative;
+  z-index: 1;
+  padding: 0 3px;
+  color: var(--team-secondary);
+  font-weight: 950;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(0,0,0,.45);
+}
+
+.overlay-team-logo-fallback { font-size: 12px; }
+
+.team-home .team-copy { text-align: left; }
+.team-away .team-copy { text-align: right; }
+
+.goal-banner {
+  --team-primary: #2a77ff;
+  --team-secondary: #ffffff;
+  grid-template-columns: 10px 82px minmax(0,1fr);
+}
+
+.goal-banner-accent {
+  background:
+    linear-gradient(
+      180deg,
+      var(--team-primary),
+      color-mix(in srgb, var(--team-primary) 68%, #06101d)
+    );
+}
+
+.goal-banner-logo-shell {
+  width: 66px;
+  height: 66px;
+  align-self: center;
+  justify-self: center;
+  border-radius: 14px;
+}
+
+.goal-banner-logo { padding: 5px; }
+.goal-banner-logo-fallback { font-size: 12px; }
+
+.goal-word { color: var(--team-secondary); }
+
+@media (max-width: 1280px) {
+  .team-home {
+    grid-template-columns: 54px minmax(0,1fr) 76px;
+  }
+
+  .team-away {
+    grid-template-columns: 76px minmax(0,1fr) 54px;
+  }
+
+  .overlay-team-logo-shell {
+    width: 54px;
+    height: 54px;
+  }
+
+  .goal-banner {
+    grid-template-columns: 10px 72px minmax(0,1fr);
+  }
+
+  .goal-banner-logo-shell {
+    width: 58px;
+    height: 58px;
+  }
+}
+
+@media (max-width: 900px) {
+  .team-home {
+    grid-template-columns: 42px minmax(0,1fr) 64px;
+  }
+
+  .team-away {
+    grid-template-columns: 64px minmax(0,1fr) 42px;
+  }
+
+  .overlay-team-logo-shell {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+  }
+
+  .overlay-team-logo-fallback {
+    font-size: 9px;
+  }
+
+  .goal-banner {
+    grid-template-columns: 8px 60px minmax(0,1fr);
+  }
+
+  .goal-banner-logo-shell {
+    width: 48px;
+    height: 48px;
+    border-radius: 11px;
+  }
+}

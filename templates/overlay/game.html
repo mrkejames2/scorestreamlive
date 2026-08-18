@@ -5,16 +5,18 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>ScoreStreamLive Overlay</title>
   <link rel="stylesheet" href="/static/css/overlay.css">
+  <link rel="stylesheet" href="/static/css/overlay-d6.css">
 </head>
 <body data-game-id="{{ game_id }}">
   <main class="overlay-stage" aria-label="ScoreStreamLive broadcast scoreboard">
     <section id="overlay-scoreboard" class="overlay-scoreboard overlay-loading">
+      <div class="brand-rail"><span class="brand-mark">SSL</span></div>
 
-      <div class="brand-rail">
-        <span class="brand-mark">SSL</span>
-      </div>
-
-      <div class="team-panel team-home">
+      <div id="home-overlay-team-panel" class="team-panel team-home branded-overlay-team">
+        <div id="home-overlay-logo-shell" class="overlay-team-logo-shell" aria-hidden="true">
+          <span id="home-overlay-logo-fallback" class="overlay-team-logo-fallback">H</span>
+          <img id="home-overlay-logo" class="overlay-team-logo hidden" alt="">
+        </div>
         <div class="team-copy">
           <span class="team-label">HOME</span>
           <span id="home-team-name" class="team-name">HOME</span>
@@ -24,31 +26,31 @@
 
       <div class="match-center">
         <div class="match-topline">
-          <span id="overlay-status-badge" class="status-badge" data-state="connecting">
-            CONNECTING
-          </span>
+          <span id="overlay-status-badge" class="status-badge" data-state="connecting">CONNECTING</span>
         </div>
         <div id="clock-display" class="clock-display">00:00</div>
         <div id="phase-display" class="phase-display">PREGAME</div>
       </div>
 
-      <div class="team-panel team-away">
+      <div id="away-overlay-team-panel" class="team-panel team-away branded-overlay-team">
         <div id="away-score" class="team-score">0</div>
         <div class="team-copy">
           <span class="team-label">AWAY</span>
           <span id="away-team-name" class="team-name">AWAY</span>
         </div>
+        <div id="away-overlay-logo-shell" class="overlay-team-logo-shell" aria-hidden="true">
+          <span id="away-overlay-logo-fallback" class="overlay-team-logo-fallback">A</span>
+          <img id="away-overlay-logo" class="overlay-team-logo hidden" alt="">
+        </div>
       </div>
-
     </section>
 
-    <section
-      id="goal-banner"
-      class="goal-banner hidden"
-      aria-live="polite"
-      aria-atomic="true"
-    >
+    <section id="goal-banner" class="goal-banner hidden" aria-live="polite" aria-atomic="true">
       <div class="goal-banner-accent"></div>
+      <div id="goal-banner-logo-shell" class="goal-banner-logo-shell" aria-hidden="true">
+        <span id="goal-banner-logo-fallback" class="goal-banner-logo-fallback">G</span>
+        <img id="goal-banner-logo" class="goal-banner-logo hidden" alt="">
+      </div>
       <div class="goal-banner-copy">
         <div class="goal-banner-kicker">
           <span class="goal-word">GOAL</span>
@@ -59,12 +61,7 @@
       </div>
     </section>
 
-    <section
-      id="match-state-banner"
-      class="match-state-banner hidden"
-      aria-live="polite"
-      aria-atomic="true"
-    >
+    <section id="match-state-banner" class="match-state-banner hidden" aria-live="polite" aria-atomic="true">
       <div class="match-state-accent"></div>
       <div class="match-state-copy">
         <div id="match-state-title" class="match-state-title"></div>

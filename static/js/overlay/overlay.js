@@ -5,6 +5,8 @@ const gameId = document.body.dataset.gameId;
 const CLOCK_RESYNC_MS = 5000;
 const GOAL_BANNER_VISIBLE_MS = 5000;
 const MATCH_STATE_BANNER_VISIBLE_MS = 5000;
+const DEFAULT_PRIMARY = "#2A77FF";
+const DEFAULT_SECONDARY = "#FFFFFF";
 
 const state = {
   game: null,
@@ -14,18 +16,14 @@ const state = {
   clock: null,
   homeRoster: [],
   awayRoster: [],
-
   clockAnchorElapsed: 0,
   clockAnchorPerformanceMs: null,
-
   socketConnected: false,
   recovering: false,
   clockResyncing: false,
   hasAuthoritativeState: false,
-
   goalBannerTimeout: null,
   lastGoalEventId: null,
-
   matchStateBannerTimeout: null,
   lastPresentedPhase: null,
 };
@@ -36,11 +34,94 @@ function api(path) {
     headers: { "Accept": "application/json" },
     cache: "no-store",
   }).then(async (response) => {
-    if (!response.ok) {
-      throw new Error(`${path} returned HTTP ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`${path} returned HTTP ${response.status}`);
     return response.json();
   });
+}
+
+function normalizedTeamColor(value, fallback) {
+  const raw = String(value || "").trim();
+  return /^#[0-9A-Fa-f]{6}$/.test(raw) ? raw.toUpperCase() : fallback;
+}
+
+function teamInitials(team, fallback = "TEAM") {
+  const source = String(team?.short_name || team?.name || fallback).trim();
+  if (!source) return fallback.slice(0, 1);
+
+  const words = source.split(/\s+/).filter(Boolean);
+  if (words.length >= 2) {
+    return `${words[0][0]}${words[1][0]}`.toUpperCase();
+  }
+  return source.slice(0, 3).toUpperCase();
+}
+
+function applyLogo(shell, logo, fallbackNode, team, fallback) {
+  if (!shell || !logo || !fallbackNode) return;
+
+  const primary = normalizedTeamColor(team?.primary_color, DEFAULT_PRIMARY);
+  const secondary = normalizedTeamColor(team?.secondary_color, DEFAULT_SECONDARY);
+
+  shell.style.setProperty("--team-primary", primary);
+  shell.style.setProperty("--team-secondary", secondary);
+  fallbackNode.textContent = teamInitials(team, fallback);
+
+  const logoUrl = String(team?.logo_url || "").trim();
+  if (!logoUrl) {
+    logo.removeAttribute("src");
+    logo.alt = "";
+    logo.classList.add("hidden");
+    fallbackNode.classList.remove("hidden");
+    return;
+  }
+
+  logo.src = logoUrl;
+  logo.alt = `${team?.name || fallback} logo`;
+  logo.classList.remove("hidden");
+  fallbackNode.classList.add("hidden");
+  logo.onerror = () => {
+    logo.classList.add("hidden");
+    fallbackNode.classList.remove("hidden");
+  };
+}
+
+function applyOverlayTeamBrand(side, team) {
+  const prefix = side === "home" ? "home" : "away";
+  const fallback = side === "home" ? "HOME" : "AWAY";
+  const primary = normalizedTeamColor(team?.primary_color, DEFAULT_PRIMARY);
+  const secondary = normalizedTeamColor(team?.secondary_color, DEFAULT_SECONDARY);
+
+  const panel = byId(`${prefix}-overlay-team-panel`);
+  if (panel) {
+    panel.style.setProperty("--team-primary", primary);
+    panel.style.setProperty("--team-secondary", secondary);
+  }
+
+  applyLogo(
+    byId(`${prefix}-overlay-logo-shell`),
+    byId(`${prefix}-overlay-logo`),
+    byId(`${prefix}-overlay-logo-fallback`),
+    team,
+    fallback,
+  );
+}
+
+function applyGoalBannerBrand(team) {
+  const banner = byId("goal-banner");
+  if (!banner) return;
+
+  const primary = normalizedTeamColor(team?.primary_color, DEFAULT_PRIMARY);
+  const secondary = normalizedTeamColor(team?.secondary_color, DEFAULT_SECONDARY);
+
+  banner.style.setProperty("--team-primary", primary);
+  banner.style.setProperty("--team-secondary", secondary);
+
+  applyLogo(
+    byId("goal-banner-logo-shell"),
+    byId("goal-banner-logo"),
+    byId("goal-banner-logo-fallback"),
+    team,
+    "GOAL",
+  );
 }
 
 function phaseLabel(value) {
@@ -74,30 +155,23 @@ function captureClockAnchor(clock) {
 
 function renderedElapsed() {
   if (!state.clock) return 0;
-
   let elapsed = state.clockAnchorElapsed;
 
-  if (
-    state.clock.status === "running"
-    && state.clockAnchorPerformanceMs !== null
-  ) {
+  if (state.clock.status === "running" && state.clockAnchorPerformanceMs !== null) {
     elapsed += Math.max(
       0,
       Math.floor((performance.now() - state.clockAnchorPerformanceMs) / 1000),
     );
   }
-
   return elapsed;
 }
 
 function clockSecondsForDisplay() {
   const elapsed = renderedElapsed();
-
   if (state.clock?.mode === "count_down") {
     const duration = Number(state.clock.duration_seconds || 0);
     return Math.max(0, duration - elapsed);
   }
-
   return elapsed;
 }
 
@@ -111,7 +185,6 @@ function formatClock(totalSeconds) {
 function setPresentationConnectionState() {
   const overlay = byId("overlay-scoreboard");
   const badge = byId("overlay-status-badge");
-
   if (!overlay || !badge) return;
 
   if (state.socketConnected) {
@@ -133,15 +206,15 @@ function render() {
 
   byId("home-team-name").textContent =
     state.homeTeam?.short_name || state.homeTeam?.name || "HOME";
-
   byId("away-team-name").textContent =
     state.awayTeam?.short_name || state.awayTeam?.name || "AWAY";
-
   byId("home-score").textContent = String(state.game.home_score ?? 0);
   byId("away-score").textContent = String(state.game.away_score ?? 0);
   byId("phase-display").textContent = phaseLabel(state.lifecycle?.phase);
   byId("clock-display").textContent = formatClock(clockSecondsForDisplay());
 
+  applyOverlayTeamBrand("home", state.homeTeam);
+  applyOverlayTeamBrand("away", state.awayTeam);
   setPresentationConnectionState();
 }
 
@@ -155,16 +228,10 @@ function belongsToThisGame(payload) {
 
 function playerDisplayName(playerId) {
   if (!playerId) return "";
-
   const player = [...state.homeRoster, ...state.awayRoster]
     .find((candidate) => String(candidate.id) === String(playerId));
-
   if (!player) return "";
-
-  return [player.first_name, player.last_name]
-    .filter(Boolean)
-    .join(" ")
-    .trim();
+  return [player.first_name, player.last_name].filter(Boolean).join(" ").trim();
 }
 
 function teamForId(teamId) {
@@ -175,9 +242,7 @@ function teamForId(teamId) {
 
 function scoringMinute(payload) {
   const raw = Number(payload?.game_elapsed_seconds);
-
   if (!Number.isFinite(raw) || raw < 0) return "";
-
   return `${Math.floor(raw / 60) + 1}'`;
 }
 
@@ -199,26 +264,20 @@ function showGoalBanner(payload) {
 
   const eventId = String(payload.id || "");
   if (eventId && eventId === state.lastGoalEventId) return;
-
   state.lastGoalEventId = eventId || null;
 
   const team = teamForId(payload.team_id);
   const scorerName = playerDisplayName(payload.player_id);
   const minute = scoringMinute(payload);
 
-  byId("goal-team-name").textContent =
-    team?.short_name || team?.name || "GOAL";
+  applyGoalBannerBrand(team);
 
-  byId("goal-scorer-name").textContent =
-    scorerName || "TEAM GOAL";
-
+  byId("goal-team-name").textContent = team?.short_name || team?.name || "GOAL";
+  byId("goal-scorer-name").textContent = scorerName || "TEAM GOAL";
   byId("goal-minute").textContent = minute;
 
   const banner = byId("goal-banner");
-
-  if (state.goalBannerTimeout !== null) {
-    window.clearTimeout(state.goalBannerTimeout);
-  }
+  if (state.goalBannerTimeout !== null) window.clearTimeout(state.goalBannerTimeout);
 
   banner.classList.remove("hidden", "goal-banner-exit", "goal-banner-enter");
   void banner.offsetWidth;
@@ -237,19 +296,14 @@ function matchStateTitle(phase) {
     second_half: "SECOND HALF",
     full_time: "FULL TIME",
   };
-
   return titles[phase] || "";
 }
 
 function matchStateScoreline() {
-  const home =
-    state.homeTeam?.short_name || state.homeTeam?.name || "HOME";
-  const away =
-    state.awayTeam?.short_name || state.awayTeam?.name || "AWAY";
-
+  const home = state.homeTeam?.short_name || state.homeTeam?.name || "HOME";
+  const away = state.awayTeam?.short_name || state.awayTeam?.name || "AWAY";
   const homeScore = state.game?.home_score ?? 0;
   const awayScore = state.game?.away_score ?? 0;
-
   return `${home} ${homeScore} — ${awayScore} ${away}`;
 }
 
@@ -272,24 +326,17 @@ function showMatchStateBanner(phase) {
 
   const title = matchStateTitle(phase);
   if (!title) return;
-
   state.lastPresentedPhase = phase;
 
   byId("match-state-title").textContent = title;
   byId("match-state-scoreline").textContent = matchStateScoreline();
 
   const banner = byId("match-state-banner");
-
   if (state.matchStateBannerTimeout !== null) {
     window.clearTimeout(state.matchStateBannerTimeout);
   }
 
-  banner.classList.remove(
-    "hidden",
-    "match-state-exit",
-    "match-state-enter",
-  );
-
+  banner.classList.remove("hidden", "match-state-exit", "match-state-enter");
   void banner.offsetWidth;
   banner.classList.add("match-state-enter");
 
@@ -302,21 +349,15 @@ function showMatchStateBanner(phase) {
 async function loadAuthoritativeState() {
   const game = await api(`/api/games/${gameId}`);
 
-  const [
-    homeTeam,
-    awayTeam,
-    lifecycle,
-    clock,
-    homeRoster,
-    awayRoster,
-  ] = await Promise.all([
-    api(`/api/teams/${game.home_team_id}`),
-    api(`/api/teams/${game.away_team_id}`),
-    api(`/api/games/${gameId}/lifecycle`),
-    api(`/api/games/${gameId}/clock`),
-    api(`/api/teams/${game.home_team_id}/players`),
-    api(`/api/teams/${game.away_team_id}/players`),
-  ]);
+  const [homeTeam, awayTeam, lifecycle, clock, homeRoster, awayRoster] =
+    await Promise.all([
+      api(`/api/teams/${game.home_team_id}`),
+      api(`/api/teams/${game.away_team_id}`),
+      api(`/api/games/${gameId}/lifecycle`),
+      api(`/api/games/${gameId}/clock`),
+      api(`/api/teams/${game.home_team_id}/players`),
+      api(`/api/teams/${game.away_team_id}/players`),
+    ]);
 
   state.game = game;
   state.homeTeam = homeTeam;
@@ -336,7 +377,6 @@ async function loadAuthoritativeState() {
 
 async function resyncAuthoritativeClock() {
   if (state.clockResyncing) return;
-
   state.clockResyncing = true;
 
   try {
@@ -345,7 +385,7 @@ async function resyncAuthoritativeClock() {
     captureClockAnchor(clock);
     render();
   } catch (error) {
-    console.error("M11-F clock-only authoritative resync failed", error);
+    console.error("M12-D6 clock-only authoritative resync failed", error);
   } finally {
     state.clockResyncing = false;
   }
@@ -360,8 +400,7 @@ async function recoverAuthoritativeState() {
   try {
     await loadAuthoritativeState();
   } catch (error) {
-    console.error("M11-F authoritative recovery failed", error);
-
+    console.error("M12-D6 authoritative recovery failed", error);
     if (!state.hasAuthoritativeState) {
       byId("overlay-error").classList.remove("hidden");
     }
@@ -381,11 +420,7 @@ function applyLifecyclePresentation(payload) {
   const phase = lifecyclePhaseFromPayload(payload);
   if (!phase) return;
 
-  state.lifecycle = {
-    ...(state.lifecycle || {}),
-    ...payload,
-  };
-
+  state.lifecycle = { ...(state.lifecycle || {}), ...payload };
   render();
   showMatchStateBanner(phase);
   void recoverAuthoritativeState();
@@ -396,9 +431,6 @@ function installSocketHandlers(socket) {
     state.socketConnected = true;
     setPresentationConnectionState();
     await recoverAuthoritativeState();
-
-    // Recovery is not a new match transition. Seed the current phase so
-    // reconnects and page refreshes do not replay stale match-state banners.
     state.lastPresentedPhase = state.lifecycle?.phase || null;
   });
 
@@ -413,9 +445,7 @@ function installSocketHandlers(socket) {
   });
 
   const recoverIfThisGame = (payload) => {
-    if (belongsToThisGame(payload)) {
-      void recoverAuthoritativeState();
-    }
+    if (belongsToThisGame(payload)) void recoverAuthoritativeState();
   };
 
   socket.on("game:score_updated", recoverIfThisGame);
@@ -429,15 +459,12 @@ function installSocketHandlers(socket) {
   socket.on("game:lifecycle_updated", applyLifecyclePresentation);
   socket.on("lifecycle:updated", applyLifecyclePresentation);
   socket.on("game:phase_updated", applyLifecyclePresentation);
-
   socket.on("game:clock_updated", recoverIfThisGame);
   socket.on("clock:updated", recoverIfThisGame);
 }
 
 function installClockPrecisionResync() {
-  window.setInterval(() => {
-    void resyncAuthoritativeClock();
-  }, CLOCK_RESYNC_MS);
+  window.setInterval(() => void resyncAuthoritativeClock(), CLOCK_RESYNC_MS);
 
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
@@ -449,8 +476,6 @@ function installClockPrecisionResync() {
 async function bootstrap() {
   try {
     await loadAuthoritativeState();
-
-    // Do not present a lifecycle banner simply because the page loaded.
     state.lastPresentedPhase = state.lifecycle?.phase || null;
 
     if (typeof window.io !== "function") {
@@ -465,11 +490,10 @@ async function bootstrap() {
     installSocketHandlers(socket);
     installClockPrecisionResync();
   } catch (error) {
-    console.error("M11-F overlay bootstrap failed", error);
+    console.error("M12-D6 overlay bootstrap failed", error);
     byId("overlay-error").classList.remove("hidden");
   }
 }
 
 bootstrap();
-
 window.setInterval(render, 250);
