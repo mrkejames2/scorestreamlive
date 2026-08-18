@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ScoreStreamLive — Game Control</title>
   <link rel="stylesheet" href="/static/css/control.css">
+  <link rel="stylesheet" href="/static/css/control-d5.css">
 </head>
 <body class="m10e-matchday" data-game-id="{{ game_id }}">
   <main class="control-shell">
@@ -22,7 +23,7 @@
           <span class="connection-dot"></span>
           <span id="connection-label">CONNECTING</span>
         </div>
-        <div class="read-only-badge">M10-G · MOBILE + TABLET GAME-DAY UX</div>
+        <div class="read-only-badge">M12-D5 · BRANDED CONTROL CENTER</div>
       </div>
     </header>
 
@@ -58,10 +59,19 @@
     </section>
 
     <div id="control-content" class="hidden">
-      <section class="scoreboard-card">
-        <div class="team-panel">
-          <div class="team-label">HOME</div>
-          <div id="home-team-name" class="team-name">—</div>
+      <section id="branded-scoreboard" class="scoreboard-card branded-control-scoreboard">
+        <div id="home-control-team-panel" class="team-panel branded-team-panel branded-team-panel-home">
+          <div class="control-team-brand-row">
+            <div id="home-control-logo-shell" class="control-team-logo-shell" aria-hidden="true">
+              <span id="home-control-logo-fallback" class="control-team-logo-fallback">H</span>
+              <img id="home-control-logo" class="control-team-logo hidden" alt="">
+            </div>
+            <div class="control-team-brand-copy">
+              <div class="team-label">HOME</div>
+              <div id="home-team-name" class="team-name">—</div>
+              <div id="home-control-short-name" class="control-team-short-name"></div>
+            </div>
+          </div>
         </div>
 
         <div class="score-panel">
@@ -77,9 +87,18 @@
           <div id="phase-display" class="phase-display">PREGAME</div>
         </div>
 
-        <div class="team-panel team-panel-away">
-          <div class="team-label">AWAY</div>
-          <div id="away-team-name" class="team-name">—</div>
+        <div id="away-control-team-panel" class="team-panel team-panel-away branded-team-panel branded-team-panel-away">
+          <div class="control-team-brand-row control-team-brand-row-away">
+            <div class="control-team-brand-copy">
+              <div class="team-label">AWAY</div>
+              <div id="away-team-name" class="team-name">—</div>
+              <div id="away-control-short-name" class="control-team-short-name"></div>
+            </div>
+            <div id="away-control-logo-shell" class="control-team-logo-shell" aria-hidden="true">
+              <span id="away-control-logo-fallback" class="control-team-logo-fallback">A</span>
+              <img id="away-control-logo" class="control-team-logo hidden" alt="">
+            </div>
+          </div>
         </div>
       </section>
 
@@ -103,9 +122,15 @@
       </section>
 
       <section class="scoring-control-grid">
-        <article class="card scoring-control-card game-day-action-card">
+        <article id="home-scoring-card" class="card scoring-control-card game-day-action-card branded-scoring-card branded-scoring-card-home">
           <div class="card-header">
-            <h2><span id="home-scoring-team-name">Home</span> Goal</h2>
+            <h2 class="branded-scoring-heading">
+              <span id="home-scoring-logo-shell" class="scoring-team-logo-shell" aria-hidden="true">
+                <span id="home-scoring-logo-fallback" class="scoring-team-logo-fallback">H</span>
+                <img id="home-scoring-logo" class="scoring-team-logo hidden" alt="">
+              </span>
+              <span><span id="home-scoring-team-name">Home</span> Goal</span>
+            </h2>
             <span class="scoring-side-label">HOME</span>
           </div>
           <p class="muted scoring-help">Choose a scorer, or leave Team Goal selected when the scorer is unknown.</p>
@@ -116,9 +141,15 @@
           <button id="home-goal-button" class="goal-button home-goal-button" type="button" data-side="home" disabled>+ Record Home Goal</button>
         </article>
 
-        <article class="card scoring-control-card game-day-action-card">
+        <article id="away-scoring-card" class="card scoring-control-card game-day-action-card branded-scoring-card branded-scoring-card-away">
           <div class="card-header">
-            <h2><span id="away-scoring-team-name">Away</span> Goal</h2>
+            <h2 class="branded-scoring-heading">
+              <span id="away-scoring-logo-shell" class="scoring-team-logo-shell" aria-hidden="true">
+                <span id="away-scoring-logo-fallback" class="scoring-team-logo-fallback">A</span>
+                <img id="away-scoring-logo" class="scoring-team-logo hidden" alt="">
+              </span>
+              <span><span id="away-scoring-team-name">Away</span> Goal</span>
+            </h2>
             <span class="scoring-side-label">AWAY</span>
           </div>
           <p class="muted scoring-help">Choose a scorer, or leave Team Goal selected when the scorer is unknown.</p>
@@ -142,9 +173,6 @@
             <div><dt>Live Sync</dt><dd id="connection-detail">CONNECTING</dd></div>
             <div><dt>Last Update</dt><dd id="last-live-event">—</dd></div>
           </dl>
-
-          <!-- Technical values remain available to JavaScript without
-               consuming operator-screen space. -->
           <div class="technical-state hidden" aria-hidden="true">
             <span id="game-id">{{ game_id }}</span>
             <span id="lifecycle-version">—</span>
@@ -172,7 +200,7 @@
       </section>
 
       <footer class="control-footer">
-        <span>M10-G Mobile-First Match-Day Controls</span>
+        <span>M12-D5 Branded Match-Day Controls</span>
         <span>REST mutation boundary · PostgreSQL authoritative score · Socket.IO committed-state events · M9 lifecycle preserved</span>
       </footer>
     </div>
@@ -180,5 +208,6 @@
 
   <script src="/static/vendor/socket.io.min.js"></script>
   <script type="module" src="/static/js/control/control.js"></script>
+  <script type="module" src="/static/js/control/control-branding.js"></script>
 </body>
 </html>

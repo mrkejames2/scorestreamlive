@@ -70,7 +70,15 @@ req("POST",f"/api/games/{g['id']}/clock",{
 
 _,page,ct=req("GET",f"/control/games/{g['id']}")
 check("Control Center returns HTML","text/html" in ct.lower())
-check("Control Center identifies M10-G","M10-G" in page)
+check(
+    "M10-G mobile/tablet Control Center capability preserved",
+    "match-status-strip" in page
+    and "lifecycle-actions" in page
+    and "home-goal-button" in page
+    and "away-goal-button" in page
+    and "home-roster" in page
+    and "away-roster" in page,
+)
 check("M10-F connection badge preserved","connection-badge" in page)
 check("M10-E status strip preserved","match-status-strip" in page)
 check("Lifecycle controls preserved","lifecycle-actions" in page)
