@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>ScoreStreamLive — Games</title>
   <link rel="stylesheet" href="/static/css/games.css">
+  <link rel="stylesheet" href="/static/css/games-d3.css">
 </head>
 <body>
   <main class="games-shell">
@@ -13,7 +14,7 @@
         <div class="eyebrow">SCORESTREAMLIVE</div>
         <h1>Games</h1>
         <p class="subhead">
-          Create a launch-ready match, find an existing game, and jump directly into match control or the broadcast overlay.
+          Create a launch-ready match, create or select branded teams, and jump directly into match control or the broadcast overlay.
         </p>
       </div>
 
@@ -35,10 +36,10 @@
     >
       <div class="new-game-heading">
         <div>
-          <div class="eyebrow">M12-C</div>
+          <div class="eyebrow">M12-D3</div>
           <h2 id="new-game-title">Create Game</h2>
           <p>
-            Choose existing teams. ScoreStreamLive will create the Game, initialize Pregame lifecycle state, and initialize a stopped 45-minute count-up clock.
+            Select an existing team or create a new branded team inline. New teams can include colors and an optional logo.
           </p>
         </div>
 
@@ -82,12 +83,129 @@
               aria-label="Search Home Team"
             >
             <input id="home-team-id" type="hidden">
+
             <div
               id="home-team-results"
               class="team-search-results"
               role="listbox"
               aria-label="Home Team search results"
             ></div>
+
+            <button
+              id="home-create-team-button"
+              class="button button-create-team"
+              type="button"
+            >
+              + Create New Home Team
+            </button>
+
+            <section
+              id="home-create-team-panel"
+              class="inline-team-create hidden"
+              aria-labelledby="home-create-team-title"
+            >
+              <div class="inline-team-create-heading">
+                <div>
+                  <div class="eyebrow">NEW TEAM</div>
+                  <h3 id="home-create-team-title">Create Home Team</h3>
+                </div>
+                <button
+                  id="home-cancel-team-button"
+                  class="button button-secondary button-small"
+                  type="button"
+                >
+                  Cancel
+                </button>
+              </div>
+
+              <div class="inline-team-fields">
+                <label class="form-field">
+                  <span class="field-label">Team Name</span>
+                  <input
+                    id="home-new-team-name"
+                    class="text-input"
+                    type="text"
+                    maxlength="255"
+                    autocomplete="off"
+                    placeholder="Saginaw United"
+                  >
+                </label>
+
+                <label class="form-field">
+                  <span class="field-label">Short Name</span>
+                  <input
+                    id="home-new-team-short-name"
+                    class="text-input"
+                    type="text"
+                    maxlength="100"
+                    autocomplete="off"
+                    placeholder="SAG"
+                  >
+                </label>
+
+                <div class="color-field-grid">
+                  <label class="form-field">
+                    <span class="field-label">Primary Color</span>
+                    <div class="color-input-row">
+                      <input
+                        id="home-new-team-primary-color"
+                        class="color-input"
+                        type="color"
+                        value="#2a77ff"
+                        aria-label="Home Team Primary Color"
+                      >
+                      <code id="home-primary-color-value">#2A77FF</code>
+                    </div>
+                  </label>
+
+                  <label class="form-field">
+                    <span class="field-label">Secondary Color</span>
+                    <div class="color-input-row">
+                      <input
+                        id="home-new-team-secondary-color"
+                        class="color-input"
+                        type="color"
+                        value="#ffffff"
+                        aria-label="Home Team Secondary Color"
+                      >
+                      <code id="home-secondary-color-value">#FFFFFF</code>
+                    </div>
+                  </label>
+                </div>
+
+                <label class="form-field">
+                  <span class="field-label">Team Logo <span class="optional-label">Optional</span></span>
+                  <input
+                    id="home-new-team-logo"
+                    class="file-input"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                  >
+                </label>
+
+                <div
+                  id="home-logo-preview-shell"
+                  class="logo-preview-shell hidden"
+                  aria-label="Home Team logo preview"
+                >
+                  <img id="home-logo-preview" class="logo-preview" alt="">
+                  <div>
+                    <strong>Logo Preview</strong>
+                    <div id="home-logo-file-name" class="logo-file-name"></div>
+                  </div>
+                </div>
+
+                <div id="home-team-create-error" class="inline-team-error hidden" role="alert"></div>
+
+                <button
+                  id="home-save-team-button"
+                  class="button button-primary"
+                  type="button"
+                >
+                  Create + Select Home Team
+                </button>
+              </div>
+            </section>
           </section>
 
           <section class="team-picker" aria-labelledby="away-team-label">
@@ -105,12 +223,129 @@
               aria-label="Search Away Team"
             >
             <input id="away-team-id" type="hidden">
+
             <div
               id="away-team-results"
               class="team-search-results"
               role="listbox"
               aria-label="Away Team search results"
             ></div>
+
+            <button
+              id="away-create-team-button"
+              class="button button-create-team"
+              type="button"
+            >
+              + Create New Away Team
+            </button>
+
+            <section
+              id="away-create-team-panel"
+              class="inline-team-create hidden"
+              aria-labelledby="away-create-team-title"
+            >
+              <div class="inline-team-create-heading">
+                <div>
+                  <div class="eyebrow">NEW TEAM</div>
+                  <h3 id="away-create-team-title">Create Away Team</h3>
+                </div>
+                <button
+                  id="away-cancel-team-button"
+                  class="button button-secondary button-small"
+                  type="button"
+                >
+                  Cancel
+                </button>
+              </div>
+
+              <div class="inline-team-fields">
+                <label class="form-field">
+                  <span class="field-label">Team Name</span>
+                  <input
+                    id="away-new-team-name"
+                    class="text-input"
+                    type="text"
+                    maxlength="255"
+                    autocomplete="off"
+                    placeholder="Midland City"
+                  >
+                </label>
+
+                <label class="form-field">
+                  <span class="field-label">Short Name</span>
+                  <input
+                    id="away-new-team-short-name"
+                    class="text-input"
+                    type="text"
+                    maxlength="100"
+                    autocomplete="off"
+                    placeholder="MID"
+                  >
+                </label>
+
+                <div class="color-field-grid">
+                  <label class="form-field">
+                    <span class="field-label">Primary Color</span>
+                    <div class="color-input-row">
+                      <input
+                        id="away-new-team-primary-color"
+                        class="color-input"
+                        type="color"
+                        value="#2a77ff"
+                        aria-label="Away Team Primary Color"
+                      >
+                      <code id="away-primary-color-value">#2A77FF</code>
+                    </div>
+                  </label>
+
+                  <label class="form-field">
+                    <span class="field-label">Secondary Color</span>
+                    <div class="color-input-row">
+                      <input
+                        id="away-new-team-secondary-color"
+                        class="color-input"
+                        type="color"
+                        value="#ffffff"
+                        aria-label="Away Team Secondary Color"
+                      >
+                      <code id="away-secondary-color-value">#FFFFFF</code>
+                    </div>
+                  </label>
+                </div>
+
+                <label class="form-field">
+                  <span class="field-label">Team Logo <span class="optional-label">Optional</span></span>
+                  <input
+                    id="away-new-team-logo"
+                    class="file-input"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                  >
+                </label>
+
+                <div
+                  id="away-logo-preview-shell"
+                  class="logo-preview-shell hidden"
+                  aria-label="Away Team logo preview"
+                >
+                  <img id="away-logo-preview" class="logo-preview" alt="">
+                  <div>
+                    <strong>Logo Preview</strong>
+                    <div id="away-logo-file-name" class="logo-file-name"></div>
+                  </div>
+                </div>
+
+                <div id="away-team-create-error" class="inline-team-error hidden" role="alert"></div>
+
+                <button
+                  id="away-save-team-button"
+                  class="button button-primary"
+                  type="button"
+                >
+                  Create + Select Away Team
+                </button>
+              </div>
+            </section>
           </section>
         </div>
 
@@ -119,7 +354,7 @@
 
         <div class="new-game-actions">
           <span class="new-game-hint">
-            Existing Teams only for M12-C. Team creation will be added separately.
+            New Teams are saved immediately and become reusable for future games.
           </span>
           <button id="create-game-submit" class="button button-primary" type="submit">
             Create Game
@@ -165,7 +400,7 @@
 
     <footer class="games-footer">
       <span>Milestone {{ milestone }}</span>
-      <span>Game Creation + Launch Readiness</span>
+      <span>Game Creation + Inline Team Creation</span>
     </footer>
   </main>
 

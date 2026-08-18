@@ -32,9 +32,14 @@ done
 PAGE=$(curl -fsS "${BASE_URL}/games")
 JS=$(curl -fsS "${BASE_URL}/static/js/games/index.js")
 
-grep -Fq 'M12-C' <<<"$PAGE" \
-  && pass "M12-C Game Setup presentation present" \
-  || fail "M12-C presentation marker missing"
+# M12-C introduced launch-ready Game creation. Later milestones may change
+# presentation labels, so validate the enduring capability rather than a
+# literal "M12-C" page marker.
+grep -Fq 'Create Game' <<<"$PAGE" \
+  && grep -Fq 'new-game-form' <<<"$PAGE" \
+  && grep -Fq 'Create Game' <<<"$JS" \
+  && pass "M12-C launch-ready Game Setup capability preserved" \
+  || fail "M12-C launch-ready Game Setup capability missing"
 
 grep -Fq 'ensureLifecycleInitialized' <<<"$JS" \
   && pass "Lifecycle initialization orchestration exists" \
