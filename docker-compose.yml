@@ -27,9 +27,13 @@ services:
       - .env
     environment:
       - PYTHONUNBUFFERED=1
+      - TEAM_LOGO_STORAGE_DIR=/home/appuser/app/static/uploads/team-logos
+    volumes:
+      - team_logo_data:/home/appuser/app/static/uploads/team-logos
     depends_on:
       postgres:
         condition: service_healthy
 
 volumes:
   postgres_data:
+  team_logo_data:

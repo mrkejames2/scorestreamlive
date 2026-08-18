@@ -86,3 +86,25 @@ async def update_team(
 
     await sio.emit("team:updated", _serialize_team(team))
     return team
+
+
+async def set_team_logo_url(
+    db: AsyncSession,
+    team_id: uuid.UUID,
+    logo_url: str,
+) -> Optional[Team]:
+    """Persist a Team logo URL and emit the committed Team state."""
+    result = await db.execute(select(Team).where(Team.id == team_id))
+    team = result.scalar_one_or_none()
+
+    if not team:
+        return None
+
+    team.logo_url = logo_url
+    team.updated_at = datetime.now(timezone.utc)
+
+    await db.commit()
+    await db.refresh(team)
+
+    await sio.emit("team:updated", _serialize_team(team))
+    return team
