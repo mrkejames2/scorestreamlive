@@ -6,6 +6,7 @@
   <title>ScoreStreamLive — Games</title>
   <link rel="stylesheet" href="/static/css/games.css">
   <link rel="stylesheet" href="/static/css/games-d3.css">
+  <link rel="stylesheet" href="/static/css/games-d4.css">
 </head>
 <body>
   <main class="games-shell">
@@ -36,10 +37,10 @@
     >
       <div class="new-game-heading">
         <div>
-          <div class="eyebrow">M12-D3</div>
+          <div class="eyebrow">M12-D4</div>
           <h2 id="new-game-title">Create Game</h2>
           <p>
-            Select an existing team or create a new branded team inline. New teams can include colors and an optional logo.
+            Select or create branded teams and preview their identity before launching the match.
           </p>
         </div>
 
@@ -71,7 +72,13 @@
           <section class="team-picker" aria-labelledby="home-team-label">
             <div class="team-picker-heading">
               <span id="home-team-label" class="field-label">Home Team</span>
-              <span id="home-team-selected" class="selected-team-label">Not selected</span>
+              <span id="home-team-selected" class="selected-team-label team-selected-brand">
+                <span id="home-selected-brand-icon" class="team-brand-icon team-brand-icon-small" aria-hidden="true">
+                  <span id="home-selected-brand-fallback" class="team-brand-fallback">H</span>
+                  <img id="home-selected-brand-logo" class="team-brand-logo hidden" alt="">
+                </span>
+                <span id="home-selected-brand-text">Not selected</span>
+              </span>
             </div>
 
             <input
@@ -211,7 +218,13 @@
           <section class="team-picker" aria-labelledby="away-team-label">
             <div class="team-picker-heading">
               <span id="away-team-label" class="field-label">Away Team</span>
-              <span id="away-team-selected" class="selected-team-label">Not selected</span>
+              <span id="away-team-selected" class="selected-team-label team-selected-brand">
+                <span id="away-selected-brand-icon" class="team-brand-icon team-brand-icon-small" aria-hidden="true">
+                  <span id="away-selected-brand-fallback" class="team-brand-fallback">A</span>
+                  <img id="away-selected-brand-logo" class="team-brand-logo hidden" alt="">
+                </span>
+                <span id="away-selected-brand-text">Not selected</span>
+              </span>
             </div>
 
             <input
@@ -400,7 +413,7 @@
 
     <footer class="games-footer">
       <span>Milestone {{ milestone }}</span>
-      <span>Game Creation + Inline Team Creation</span>
+      <span>Branded Game Setup + Game Management</span>
     </footer>
   </main>
 
@@ -417,13 +430,25 @@
 
         <div class="game-scoreline" aria-label="Current score">
           <div class="score-team score-team-home">
-            <span class="score-team-name home-team-name">HOME</span>
+            <span class="game-team-brand game-team-brand-home">
+              <span class="team-brand-icon game-team-logo-shell" aria-hidden="true">
+                <span class="team-brand-fallback home-team-fallback">H</span>
+                <img class="team-brand-logo home-team-logo hidden" alt="">
+              </span>
+              <span class="score-team-name home-team-name">HOME</span>
+            </span>
             <strong class="score-value home-score">0</strong>
           </div>
           <div class="score-divider">—</div>
           <div class="score-team score-team-away">
             <strong class="score-value away-score">0</strong>
-            <span class="score-team-name away-team-name">AWAY</span>
+            <span class="game-team-brand game-team-brand-away">
+              <span class="score-team-name away-team-name">AWAY</span>
+              <span class="team-brand-icon game-team-logo-shell" aria-hidden="true">
+                <span class="team-brand-fallback away-team-fallback">A</span>
+                <img class="team-brand-logo away-team-logo hidden" alt="">
+              </span>
+            </span>
           </div>
         </div>
       </div>

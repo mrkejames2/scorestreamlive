@@ -40,9 +40,15 @@ echo "========================================"
 echo "M12-D3 Static Capability Checks"
 echo "========================================"
 
-grep -Fq 'M12-D3' <<<"$PAGE" \
-  && pass "M12-D3 Game Setup presentation present" \
-  || fail "M12-D3 presentation marker missing"
+# M12-D3 introduced inline Team creation inside Game Setup. Later milestones
+# may change the visible milestone label, so validate the enduring capability
+# instead of requiring a literal "M12-D3" presentation marker.
+grep -Fq 'id="new-game-form"' <<<"$PAGE" \
+  && grep -Fq 'id="home-create-team-button"' <<<"$PAGE" \
+  && grep -Fq 'id="away-create-team-button"' <<<"$PAGE" \
+  && grep -Fq 'async function createInlineTeam' <<<"$JS" \
+  && pass "M12-D3 inline Team creation capability preserved" \
+  || fail "M12-D3 inline Team creation capability missing"
 
 for id in \
   home-create-team-button \
