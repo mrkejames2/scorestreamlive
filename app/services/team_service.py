@@ -18,6 +18,9 @@ def _serialize_team(team: Team) -> dict:
         "id": str(team.id),
         "name": team.name,
         "short_name": team.short_name,
+        "logo_url": team.logo_url,
+        "primary_color": team.primary_color,
+        "secondary_color": team.secondary_color,
         "created_at": team.created_at.isoformat(),
         "updated_at": team.updated_at.isoformat(),
     }
@@ -29,6 +32,9 @@ async def create_team(db: AsyncSession, data: TeamCreate) -> Team:
     team = Team(
         name=data.name,
         short_name=data.short_name,
+        logo_url=data.logo_url,
+        primary_color=data.primary_color,
+        secondary_color=data.secondary_color,
         created_at=now,
         updated_at=now,
     )
@@ -52,7 +58,11 @@ async def get_team(db: AsyncSession, team_id: uuid.UUID) -> Optional[Team]:
     return result.scalar_one_or_none()
 
 
-async def update_team(db: AsyncSession, team_id: uuid.UUID, data: TeamUpdate) -> Optional[Team]:
+async def update_team(
+    db: AsyncSession,
+    team_id: uuid.UUID,
+    data: TeamUpdate,
+) -> Optional[Team]:
     """Update an existing Team, then broadcast the change via Socket.IO."""
     result = await db.execute(select(Team).where(Team.id == team_id))
     team = result.scalar_one_or_none()
@@ -63,6 +73,12 @@ async def update_team(db: AsyncSession, team_id: uuid.UUID, data: TeamUpdate) ->
         team.name = data.name
     if data.short_name is not None:
         team.short_name = data.short_name
+    if data.logo_url is not None:
+        team.logo_url = data.logo_url
+    if data.primary_color is not None:
+        team.primary_color = data.primary_color
+    if data.secondary_color is not None:
+        team.secondary_color = data.secondary_color
 
     team.updated_at = datetime.now(timezone.utc)
     await db.commit()
