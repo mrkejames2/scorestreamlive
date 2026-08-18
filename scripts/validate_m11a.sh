@@ -78,7 +78,14 @@ check("Overlay loads dedicated JS",'/static/js/overlay/overlay.js' in page)
 
 _,css,_=req("GET","/static/css/overlay.css")
 check("Overlay background is transparent","background: transparent" in css)
-check("Overlay is broadcast-positioned","bottom: 42px" in css)
+check(
+    "Overlay is broadcast-positioned",
+    ".overlay-scoreboard" in css
+    and "position: absolute" in css
+    and "left: 50%" in css
+    and "bottom:" in css
+    and "transform: translateX(-50%)" in css
+)
 check("Overlay supports responsive fallback","@media (max-width: 900px)" in css)
 
 _,js,_=req("GET","/static/js/overlay/overlay.js")

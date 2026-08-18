@@ -6,51 +6,78 @@
   <title>ScoreStreamLive Overlay</title>
   <link rel="stylesheet" href="/static/css/overlay.css">
 </head>
-
 <body data-game-id="{{ game_id }}">
   <main class="overlay-stage" aria-label="ScoreStreamLive broadcast scoreboard">
+    <section id="overlay-scoreboard" class="overlay-scoreboard overlay-loading">
 
-    <section
-      id="overlay-scoreboard"
-      class="overlay-scoreboard overlay-loading"
-    >
-      <div class="team team-home">
-        <div id="home-team-name" class="team-name">HOME</div>
+      <div class="brand-rail">
+        <span class="brand-mark">SSL</span>
+      </div>
+
+      <div class="team-panel team-home">
+        <div class="team-copy">
+          <span class="team-label">HOME</span>
+          <span id="home-team-name" class="team-name">HOME</span>
+        </div>
         <div id="home-score" class="team-score">0</div>
       </div>
 
       <div class="match-center">
+        <div class="match-topline">
+          <span id="overlay-status-badge" class="status-badge" data-state="connecting">
+            CONNECTING
+          </span>
+        </div>
         <div id="clock-display" class="clock-display">00:00</div>
         <div id="phase-display" class="phase-display">PREGAME</div>
       </div>
 
-      <div class="team team-away">
+      <div class="team-panel team-away">
         <div id="away-score" class="team-score">0</div>
-        <div id="away-team-name" class="team-name">AWAY</div>
+        <div class="team-copy">
+          <span class="team-label">AWAY</span>
+          <span id="away-team-name" class="team-name">AWAY</span>
+        </div>
+      </div>
+
+    </section>
+
+    <section
+      id="goal-banner"
+      class="goal-banner hidden"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <div class="goal-banner-accent"></div>
+      <div class="goal-banner-copy">
+        <div class="goal-banner-kicker">
+          <span class="goal-word">GOAL</span>
+          <span id="goal-minute" class="goal-minute"></span>
+        </div>
+        <div id="goal-team-name" class="goal-team-name"></div>
+        <div id="goal-scorer-name" class="goal-scorer-name"></div>
       </div>
     </section>
 
-    <div
-      id="overlay-error"
-      class="overlay-error hidden"
-      role="status"
+    <section
+      id="match-state-banner"
+      class="match-state-banner hidden"
+      aria-live="polite"
+      aria-atomic="true"
     >
+      <div class="match-state-accent"></div>
+      <div class="match-state-copy">
+        <div id="match-state-title" class="match-state-title"></div>
+        <div id="match-state-scoreline" class="match-state-scoreline"></div>
+      </div>
+    </section>
+
+    <div id="overlay-error" class="overlay-error hidden" role="status">
       SCORESTREAMLIVE DATA UNAVAILABLE
     </div>
-
   </main>
 
-  <!--
-    M11-B:
-    Load the local Socket.IO browser client before the overlay module.
-    This provides window.io to overlay.js.
-  -->
   <script src="/static/vendor/socket.io.min.js"></script>
-
-  <!-- ScoreStreamLive live broadcast overlay -->
-  <script
-    type="module"
-    src="/static/js/overlay/overlay.js"
-  ></script>
+  <script type="module" src="/static/js/overlay/overlay.js"></script>
 </body>
 </html>

@@ -604,6 +604,12 @@ async function runScoringAction(side) {
 
   try {
     await createScoringEvent(gameIdFromPage(), team.id, playerId);
+
+    // M11-E post-acceptance UX:
+    // Reset the scorer selector only after the goal is successfully committed.
+    // The empty value corresponds to "Team Goal / Unknown Scorer".
+    if (select) select.value = "";
+
     showOperatorMessage(`${team.name} goal recorded.`, "success", 3000);
   } catch (error) {
     showOperatorMessage(`Goal was not recorded: ${error?.message || error}`, "error", 7000);
@@ -648,6 +654,20 @@ function applyClockUpdate(payload) {
   renderClock();
 }
 
+async function resyncAuthoritativeClock() {
+  try {
+    const clock = await getClock(gameIdFromPage());
+    state.clock = clock;
+    updateServerOffset(clock);
+    renderClock();
+  } catch (error) {
+    // A temporary precision-resync failure must not interrupt match control.
+    // Socket.IO/recovery remains responsible for connection authority.
+    console.error("M11-F clock precision resync failed", error);
+  }
+}
+
+
 async function manualAuthoritativeRefresh() {
   if (
     connectionController?.socket?.connected
@@ -681,6 +701,11 @@ byId("away-goal-button")?.addEventListener("click", () => runScoringAction("away
 
 // Local presentation only. No per-second REST polling and no clock:tick.
 setInterval(renderClock, 250);
+
+// M11-F cross-display precision:
+// Re-anchor the Control Center to the same authoritative clock cadence used
+// by the broadcast overlay. This is a clock-only GET, not a full-state poll.
+setInterval(resyncAuthoritativeClock, 5000);
 
 await fetchAuthoritativeState({ showLoading: true });
 
