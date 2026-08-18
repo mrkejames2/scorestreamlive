@@ -66,14 +66,12 @@ do
   [ "$code" = "200" ] && pass "$path" || fail "$path HTTP ${code}"
 done
 
-# Focused cross-display clock architecture certification.
 if [ -x "./scripts/validate_m11f_clock_sync.sh" ]; then
   run_harness "M11-F cross-display clock sync" "./scripts/validate_m11f_clock_sync.sh"
 else
   fail "M11-F cross-display clock sync validator missing"
 fi
 
-# Full M11 cumulative regression.
 run_harness "M11-F cumulative regression" "./scripts/validate_m11f.sh"
 
 echo ""
@@ -118,13 +116,16 @@ grep -Fq 'background: transparent' <<<"$OVERLAY_CSS" \
   && pass "Transparent broadcast canvas preserved" \
   || fail "Transparent broadcast canvas missing"
 
-if grep -Eq 'socket\.on\(["'\'']clock:tick' <<<"$CONTROL_JS" "$OVERLAY_JS"; then
+# Combine source text through stdin. Do not pass JavaScript contents as grep file arguments.
+if printf '%s\n%s\n' "$CONTROL_JS" "$OVERLAY_JS" \
+  | grep -Eq 'socket\.on\(["'"'"']clock:tick'; then
   fail "clock:tick consumer detected"
 else
   pass "No clock:tick consumer"
 fi
 
-if grep -Eq 'method:\s*["'\'']POST["'\'']' <<<"$OVERLAY_JS"; then
+if printf '%s\n' "$OVERLAY_JS" \
+  | grep -Eq 'method:[[:space:]]*["'"'"']POST["'"'"']'; then
   fail "Overlay mutation implementation detected"
 else
   pass "Overlay remains read-only"
