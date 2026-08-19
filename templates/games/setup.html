@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>ScoreStreamLive — Game Setup</title>
+  <link rel="stylesheet" href="/static/css/game-setup.css">
+</head>
+<body data-game-id="{{ game_id }}">
+  <main class="setup-shell">
+    <header class="setup-header">
+      <div>
+        <div class="eyebrow">SCORESTREAMLIVE · M12-E</div>
+        <h1 id="game-name">Game Setup</h1>
+        <p class="subhead">Review both rosters and add players before match day.</p>
+      </div>
+
+      <div class="header-actions">
+        <span id="setup-status" class="status-chip" data-state="loading">LOADING</span>
+        <a class="button button-secondary" href="/games">Back to Games</a>
+      </div>
+    </header>
+
+    <section id="setup-error" class="notice notice-error hidden" role="alert"></section>
+
+    <section id="game-summary" class="game-summary hidden" aria-label="Game teams">
+      <article id="home-summary" class="team-summary">
+        <div id="home-brand" class="team-brand" aria-hidden="true">
+          <span id="home-brand-fallback" class="team-brand-fallback">H</span>
+          <img id="home-brand-logo" class="team-brand-logo hidden" alt="">
+        </div>
+        <div class="team-summary-copy">
+          <span class="side-label">HOME</span>
+          <strong id="home-team-name" class="team-summary-name">Home</strong>
+          <span id="home-roster-count" class="roster-count">0 players</span>
+        </div>
+      </article>
+
+      <div class="versus">VS</div>
+
+      <article id="away-summary" class="team-summary team-summary-away">
+        <div class="team-summary-copy">
+          <span class="side-label">AWAY</span>
+          <strong id="away-team-name" class="team-summary-name">Away</strong>
+          <span id="away-roster-count" class="roster-count">0 players</span>
+        </div>
+        <div id="away-brand" class="team-brand" aria-hidden="true">
+          <span id="away-brand-fallback" class="team-brand-fallback">A</span>
+          <img id="away-brand-logo" class="team-brand-logo hidden" alt="">
+        </div>
+      </article>
+    </section>
+
+    <section id="roster-grid" class="roster-grid hidden">
+      <article id="home-roster-card" class="roster-card">
+        <div class="roster-card-heading">
+          <div>
+            <span class="side-label">HOME ROSTER</span>
+            <h2 id="home-roster-title">Home</h2>
+          </div>
+          <strong id="home-card-count" class="count-badge">0</strong>
+        </div>
+
+        <form id="home-player-form" class="player-form" data-side="home" novalidate>
+          <div class="player-form-grid">
+            <label>
+              <span>First Name</span>
+              <input id="home-player-first-name" type="text" maxlength="255" autocomplete="off" required>
+            </label>
+            <label>
+              <span>Last Name</span>
+              <input id="home-player-last-name" type="text" maxlength="255" autocomplete="off" required>
+            </label>
+            <label class="jersey-field">
+              <span>Jersey # <small>Optional</small></span>
+              <input id="home-player-jersey" type="number" min="0" max="999" inputmode="numeric">
+            </label>
+          </div>
+          <div id="home-player-error" class="form-error hidden" role="alert"></div>
+          <button id="home-add-player" class="button button-primary" type="submit">+ Add Home Player</button>
+        </form>
+
+        <div id="home-roster-empty" class="roster-empty">No players yet.</div>
+        <div id="home-roster-list" class="roster-list" aria-live="polite"></div>
+      </article>
+
+      <article id="away-roster-card" class="roster-card">
+        <div class="roster-card-heading">
+          <div>
+            <span class="side-label">AWAY ROSTER</span>
+            <h2 id="away-roster-title">Away</h2>
+          </div>
+          <strong id="away-card-count" class="count-badge">0</strong>
+        </div>
+
+        <form id="away-player-form" class="player-form" data-side="away" novalidate>
+          <div class="player-form-grid">
+            <label>
+              <span>First Name</span>
+              <input id="away-player-first-name" type="text" maxlength="255" autocomplete="off" required>
+            </label>
+            <label>
+              <span>Last Name</span>
+              <input id="away-player-last-name" type="text" maxlength="255" autocomplete="off" required>
+            </label>
+            <label class="jersey-field">
+              <span>Jersey # <small>Optional</small></span>
+              <input id="away-player-jersey" type="number" min="0" max="999" inputmode="numeric">
+            </label>
+          </div>
+          <div id="away-player-error" class="form-error hidden" role="alert"></div>
+          <button id="away-add-player" class="button button-primary" type="submit">+ Add Away Player</button>
+        </form>
+
+        <div id="away-roster-empty" class="roster-empty">No players yet.</div>
+        <div id="away-roster-list" class="roster-list" aria-live="polite"></div>
+      </article>
+    </section>
+
+    <footer class="setup-footer">
+      <span>Milestone {{ milestone }}</span>
+      <span>Roster Management for Setup</span>
+    </footer>
+  </main>
+
+  <template id="player-row-template">
+    <div class="player-row">
+      <span class="jersey-number">—</span>
+      <span class="player-name"></span>
+    </div>
+  </template>
+
+  <script type="module" src="/static/js/games/setup.js"></script>
+</body>
+</html>
