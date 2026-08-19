@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>ScoreStreamLive — Game Detail</title>
+  <link rel="stylesheet" href="/static/css/game-detail.css">
+</head>
+<body data-game-id="{{ game_id }}">
+  <main class="detail-shell">
+    <header class="detail-header">
+      <div>
+        <div class="eyebrow">SCORESTREAMLIVE · M12-F</div>
+        <h1 id="game-name">Game</h1>
+        <p class="subhead">Authoritative match status, roster readiness, and game-day launch actions.</p>
+      </div>
+      <div class="header-actions">
+        <span id="detail-status" class="status-chip" data-state="loading">LOADING</span>
+        <a class="button button-secondary" href="/games">Back to Games</a>
+      </div>
+    </header>
+
+    <section id="detail-error" class="notice notice-error hidden" role="alert"></section>
+    <section id="copy-notice" class="notice notice-success hidden" role="status"></section>
+
+    <section id="match-hero" class="match-hero hidden">
+      <article id="home-team-card" class="team-card team-card-home">
+        <div id="home-brand" class="team-brand" aria-hidden="true">
+          <span id="home-brand-fallback" class="team-brand-fallback">H</span>
+          <img id="home-brand-logo" class="team-brand-logo hidden" alt="">
+        </div>
+        <div class="team-copy">
+          <span class="side-label">HOME</span>
+          <strong id="home-team-name" class="team-name">Home</strong>
+          <span id="home-roster-summary" class="roster-summary">0 players</span>
+        </div>
+        <strong id="home-score" class="hero-score">0</strong>
+      </article>
+
+      <section class="match-center" aria-label="Current game state">
+        <span id="phase-display" class="phase-chip">NOT INITIALIZED</span>
+        <strong id="clock-display" class="clock-display">—:—</strong>
+        <span id="clock-status" class="clock-status">Clock Not Initialized</span>
+      </section>
+
+      <article id="away-team-card" class="team-card team-card-away">
+        <strong id="away-score" class="hero-score">0</strong>
+        <div class="team-copy team-copy-away">
+          <span class="side-label">AWAY</span>
+          <strong id="away-team-name" class="team-name">Away</strong>
+          <span id="away-roster-summary" class="roster-summary">0 players</span>
+        </div>
+        <div id="away-brand" class="team-brand" aria-hidden="true">
+          <span id="away-brand-fallback" class="team-brand-fallback">A</span>
+          <img id="away-brand-logo" class="team-brand-logo hidden" alt="">
+        </div>
+      </article>
+    </section>
+
+    <section id="launch-panel" class="launch-panel hidden">
+      <div class="launch-heading">
+        <div>
+          <span class="eyebrow">GAME-DAY LAUNCH HUB</span>
+          <h2>Ready when you are</h2>
+          <p>Use the Control Center to operate the match and the Broadcast Overlay for OBS, Streamlabs, or browser capture.</p>
+        </div>
+      </div>
+
+      <div class="primary-launch-grid">
+        <a id="control-link" class="launch-card launch-card-primary">
+          <span class="launch-kicker">OPERATE MATCH</span>
+          <strong>Open Control Center</strong>
+          <span>Clock, lifecycle, scoring, and match-day controls.</span>
+        </a>
+
+        <a id="overlay-link" class="launch-card" target="_blank" rel="noopener">
+          <span class="launch-kicker">BROADCAST</span>
+          <strong>Open Broadcast Overlay</strong>
+          <span>Viewer-facing branded scoreboard in a new tab.</span>
+        </a>
+      </div>
+
+      <div class="secondary-actions">
+        <a id="roster-link" class="button button-secondary">Manage Rosters</a>
+        <button id="copy-overlay-url" class="button button-secondary" type="button">Copy Overlay URL</button>
+        <button id="refresh-detail" class="button button-secondary" type="button">Refresh State</button>
+      </div>
+    </section>
+
+    <section id="readiness-grid" class="readiness-grid hidden">
+      <article class="readiness-card">
+        <span class="readiness-label">Home Roster</span>
+        <strong id="home-roster-count">0</strong>
+        <span>players</span>
+      </article>
+      <article class="readiness-card">
+        <span class="readiness-label">Away Roster</span>
+        <strong id="away-roster-count">0</strong>
+        <span>players</span>
+      </article>
+      <article class="readiness-card">
+        <span class="readiness-label">Lifecycle</span>
+        <strong id="lifecycle-readiness">Not Initialized</strong>
+        <span id="lifecycle-version">—</span>
+      </article>
+      <article class="readiness-card">
+        <span class="readiness-label">Clock</span>
+        <strong id="clock-readiness">Not Initialized</strong>
+        <span id="clock-mode">—</span>
+      </article>
+    </section>
+
+    <footer class="detail-footer">
+      <span>Milestone {{ milestone }}</span>
+      <span>Game Detail / Launch Hub</span>
+    </footer>
+  </main>
+
+  <script type="module" src="/static/js/games/detail.js"></script>
+</body>
+</html>

@@ -485,6 +485,9 @@ function renderCard(item) {
 
   fragment.querySelector(".game-id").textContent = game.id;
 
+  fragment.querySelector(".hub-link").href =
+    `/games/${game.id}`;
+
   fragment.querySelector(".setup-link").href =
     `/games/${game.id}/setup`;
 
