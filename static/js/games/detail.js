@@ -123,6 +123,24 @@ function clockStatusLabel(clock) {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+function isResumableGame() {
+  if (state.lifecycle?.phase === "full_time") return false;
+
+  return (
+    ["first_half", "halftime", "second_half"].includes(state.lifecycle?.phase)
+    || state.clock?.status === "running"
+    || state.game?.status === "live"
+  );
+}
+
+function renderRecoveryProof() {
+  const proof = byId("recovery-proof");
+  const loadedAt = byId("recovery-loaded-at");
+
+  proof.classList.remove("hidden");
+  loadedAt.textContent = `Loaded ${new Date().toLocaleTimeString()}`;
+}
+
 function render() {
   const { game, homeTeam, awayTeam, homeRoster, awayRoster, lifecycle, clock } = state;
 
@@ -158,12 +176,15 @@ function render() {
   renderTeamBrand("away", awayTeam);
 
   byId("control-link").href = `/control/games/${game.id}`;
+  byId("control-link").querySelector("strong").textContent =
+    isResumableGame() ? "Resume Control Center" : "Open Control Center";
   byId("overlay-link").href = `/overlay/games/${game.id}`;
   byId("roster-link").href = `/games/${game.id}/setup`;
 
   byId("match-hero").classList.remove("hidden");
   byId("launch-panel").classList.remove("hidden");
   byId("readiness-grid").classList.remove("hidden");
+  renderRecoveryProof();
 }
 
 async function loadState() {

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>ScoreStreamLive — Game Detail</title>
   <link rel="stylesheet" href="/static/css/game-detail.css">
+  <link rel="stylesheet" href="/static/css/game-detail-g.css">
 </head>
 <body data-game-id="{{ game_id }}">
   <main class="detail-shell">
@@ -22,6 +23,14 @@
 
     <section id="detail-error" class="notice notice-error hidden" role="alert"></section>
     <section id="copy-notice" class="notice notice-success hidden" role="status"></section>
+
+    <section id="recovery-proof" class="recovery-proof hidden" aria-live="polite">
+      <div class="recovery-proof-copy">
+        <strong>Authoritative State Restored</strong>
+        <span>This page was reconstructed from server APIs. No saved browser session is required.</span>
+      </div>
+      <span id="recovery-loaded-at" class="recovery-loaded-at"></span>
+    </section>
 
     <section id="match-hero" class="match-hero hidden">
       <article id="home-team-card" class="team-card team-card-home">

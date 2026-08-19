@@ -429,6 +429,19 @@ function renderCard(item) {
 
   card.dataset.gameId = game.id;
 
+  const active = isActive(game, lifecycle, clock);
+  const completed = isCompleted(game, lifecycle);
+
+  card.dataset.resumeState = completed
+    ? "completed"
+    : active
+      ? "active"
+      : "ready";
+
+  const resumeIndicator = fragment.querySelector(".resume-indicator");
+  resumeIndicator.classList.toggle("hidden", !active && !completed);
+  resumeIndicator.textContent = completed ? "COMPLETED" : "RESUMABLE";
+
   card.style.setProperty(
     "--home-primary",
     normalizedTeamColor(homeTeam?.primary_color, "#2A77FF"),
@@ -485,8 +498,13 @@ function renderCard(item) {
 
   fragment.querySelector(".game-id").textContent = game.id;
 
-  fragment.querySelector(".hub-link").href =
-    `/games/${game.id}`;
+  const hubLink = fragment.querySelector(".hub-link");
+  hubLink.href = `/games/${game.id}`;
+  hubLink.textContent = completed
+    ? "Review Game"
+    : active
+      ? "Resume Game"
+      : "Open Game";
 
   fragment.querySelector(".setup-link").href =
     `/games/${game.id}/setup`;

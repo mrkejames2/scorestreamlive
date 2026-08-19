@@ -1,0 +1,51 @@
+/* ScoreStreamLive M12-G Resume / Recovery UX */
+
+.game-card[data-resume-state="active"] {
+  box-shadow:
+    inset 4px 0 0 #73d9a7,
+    0 0 0 1px rgba(115,217,167,.06);
+}
+
+.game-card[data-resume-state="completed"] {
+  opacity: .92;
+}
+
+.resume-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 25px;
+  padding: 5px 9px;
+  border: 1px solid rgba(115,217,167,.22);
+  border-radius: 999px;
+  background: rgba(32,134,84,.16);
+  color: #8ee1b7;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.game-card[data-resume-state="completed"] .resume-indicator {
+  border-color: rgba(255,255,255,.11);
+  background: rgba(255,255,255,.055);
+  color: rgba(238,244,255,.58);
+}
+
+.recovery-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  color: rgba(238,244,255,.43);
+  font-size: 11px;
+}
+
+.recovery-note::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #73d9a7;
+  box-shadow: 0 0 0 3px rgba(115,217,167,.09);
+}
