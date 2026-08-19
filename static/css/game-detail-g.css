@@ -1,0 +1,49 @@
+/* ScoreStreamLive M12-G Game Recovery presentation */
+
+.recovery-proof {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+  padding: 12px 15px;
+  border: 1px solid rgba(115,217,167,.14);
+  border-radius: 12px;
+  background: rgba(24,113,64,.10);
+}
+
+.recovery-proof-copy {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(238,244,255,.68);
+  font-size: 12px;
+}
+
+.recovery-proof-copy::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #73d9a7;
+  box-shadow: 0 0 0 4px rgba(115,217,167,.08);
+}
+
+.recovery-proof strong {
+  color: #a7ebc5;
+}
+
+.recovery-loaded-at {
+  color: rgba(238,244,255,.39);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+@media (max-width: 620px) {
+  .recovery-proof {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+}

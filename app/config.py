@@ -16,6 +16,16 @@ def _get_db_port() -> int:
         return 5432
 
 
+def _get_team_logo_max_bytes() -> int:
+    """Safely parse the maximum accepted Team logo upload size."""
+    try:
+        value = int(os.getenv("TEAM_LOGO_MAX_BYTES", "2097152"))
+    except (ValueError, TypeError):
+        return 2 * 1024 * 1024
+
+    return value if value > 0 else 2 * 1024 * 1024
+
+
 @dataclass(frozen=True)
 class Settings:
     """Application settings loaded from environment variables."""
@@ -30,6 +40,17 @@ class Settings:
     DB_USER: str = os.getenv("DB_USER", "scorestreamlive")
     DB_PASSWORD: str = os.getenv("DB_PASSWORD", "change-me")
     SOCKET_CORS_ORIGINS: str = os.getenv("SOCKET_CORS_ORIGINS", "")
+
+    # M12-D2 Team-logo storage.
+    #
+    # This path is intentionally configurable. Local Docker uses a named volume.
+    # A future production object-storage/disk adapter can preserve the same
+    # public logo_url contract.
+    TEAM_LOGO_STORAGE_DIR: str = os.getenv(
+        "TEAM_LOGO_STORAGE_DIR",
+        "static/uploads/team-logos",
+    )
+    TEAM_LOGO_MAX_BYTES: int = _get_team_logo_max_bytes()
 
 
 settings = Settings()

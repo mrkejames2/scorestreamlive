@@ -337,29 +337,55 @@ CODE=$(echo "$RAW" | status_from)
 # ============================================================
 # 12. Soccer added-time helper boundaries
 # ============================================================
-SOCCER=$(docker compose exec -T app python3 - <<'PY'
-from app.services.game_clock_service import calculate_soccer_added_time_minute
-cases = [2699, 2700, 2759, 2760, 2819, 2820]
-for value in cases:
-    result = calculate_soccer_added_time_minute(value, 2700)
-    print(f"{value}:{'None' if result is None else result}")
-PY
+set +e
+
+docker compose exec -T app python3 - <<'PY'
+import sys
+
+from app.services.game_clock_service import (
+    calculate_soccer_added_time_minute,
 )
 
-for expected in \
-    "2699:None" \
-    "2700:1" \
-    "2759:1" \
-    "2760:2" \
-    "2819:2" \
-    "2820:3"
-do
-    if echo "$SOCCER" | grep -q "^${expected}$"; then
-        pass "Soccer added-time boundary ${expected}"
-    else
-        fail "Soccer added-time boundary ${expected}"
-    fi
-done
+cases = [
+    (2699, 2700, None),
+    (2700, 2700, 1),
+    (2759, 2700, 1),
+    (2760, 2700, 2),
+    (2819, 2700, 2),
+    (2820, 2700, 3),
+]
+
+failed = 0
+
+for elapsed, duration, expected in cases:
+    actual = calculate_soccer_added_time_minute(
+        elapsed,
+        duration,
+    )
+
+    if actual == expected:
+        print(
+            f"[PASS] Soccer added-time boundary "
+            f"{elapsed}:{'None' if expected is None else expected}"
+        )
+    else:
+        print(
+            f"[FAIL] Soccer added-time boundary "
+            f"{elapsed}: expected={expected} actual={actual}"
+        )
+        failed += 1
+
+sys.exit(1 if failed else 0)
+PY
+
+SOCCER_RC=$?
+set -e
+
+if [ "$SOCCER_RC" -eq 0 ]; then
+    PASS=$((PASS + 6))
+else
+    FAIL=$((FAIL + 1))
+fi
 
 # ============================================================
 # 13. Simultaneous same-version controllers

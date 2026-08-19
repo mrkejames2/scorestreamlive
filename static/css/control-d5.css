@@ -1,0 +1,220 @@
+/* ScoreStreamLive M12-D5 Branded Control Center */
+
+body {
+  --home-team-primary: #2a77ff;
+  --home-team-secondary: #ffffff;
+  --away-team-primary: #2a77ff;
+  --away-team-secondary: #ffffff;
+}
+
+.branded-control-scoreboard {
+  position: sticky;
+  overflow: hidden;
+}
+
+.branded-control-scoreboard::before,
+.branded-control-scoreboard::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 4px;
+  pointer-events: none;
+}
+
+.branded-control-scoreboard::before {
+  left: 0;
+  background: var(--home-team-primary);
+}
+
+.branded-control-scoreboard::after {
+  right: 0;
+  background: var(--away-team-primary);
+}
+
+.branded-team-panel {
+  --team-primary: #2a77ff;
+  --team-secondary: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+.branded-team-panel::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: var(--team-primary);
+  opacity: .95;
+}
+
+.branded-team-panel-home::after { left: 0; }
+.branded-team-panel-away::after { right: 0; }
+
+.control-team-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.control-team-brand-row-away {
+  justify-content: flex-end;
+}
+
+.control-team-brand-copy {
+  min-width: 0;
+}
+
+.control-team-brand-row-away .control-team-brand-copy {
+  text-align: right;
+}
+
+.control-team-logo-shell,
+.scoring-team-logo-shell {
+  --team-primary: #2a77ff;
+  --team-secondary: #ffffff;
+  position: relative;
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  border: 2px solid color-mix(in srgb, var(--team-primary) 70%, white 10%);
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--team-primary) 82%, #09121f),
+      color-mix(in srgb, var(--team-primary) 42%, #07101d)
+    );
+  box-shadow:
+    0 8px 24px rgba(0,0,0,.22),
+    inset 0 0 0 2px rgba(255,255,255,.035);
+}
+
+.control-team-logo-shell::after,
+.scoring-team-logo-shell::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background: var(--team-secondary);
+}
+
+.control-team-logo-shell {
+  width: 82px;
+  height: 82px;
+  border-radius: 18px;
+}
+
+.control-team-logo,
+.scoring-team-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: rgba(255,255,255,.96);
+}
+
+.control-team-logo { padding: 7px; }
+
+.control-team-logo-fallback,
+.scoring-team-logo-fallback {
+  position: relative;
+  z-index: 1;
+  color: var(--team-secondary);
+  font-weight: 950;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(0,0,0,.45);
+}
+
+.control-team-logo-fallback {
+  padding: 0 5px;
+  font-size: 20px;
+  letter-spacing: .02em;
+}
+
+.control-team-short-name {
+  min-height: 17px;
+  margin-top: 6px;
+  color: var(--team-secondary);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  opacity: .78;
+}
+
+.branded-scoring-card {
+  --team-primary: #2a77ff;
+  --team-secondary: #ffffff;
+  position: relative;
+  overflow: hidden;
+  border-top: 3px solid color-mix(in srgb, var(--team-primary) 82%, white 4%);
+}
+
+.branded-scoring-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--team-primary);
+  opacity: .65;
+}
+
+.branded-scoring-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.scoring-team-logo-shell {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+}
+
+.scoring-team-logo { padding: 3px; }
+
+.scoring-team-logo-fallback {
+  padding: 0 2px;
+  font-size: 10px;
+}
+
+.branded-scoring-card .scoring-side-label {
+  color: var(--team-secondary);
+}
+
+@media (max-width: 800px) {
+  .control-team-logo-shell {
+    width: 68px;
+    height: 68px;
+    border-radius: 15px;
+  }
+}
+
+@media (max-width: 520px) {
+  .control-team-brand-row { gap: 8px; }
+
+  .control-team-logo-shell {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+  }
+
+  .control-team-logo-fallback { font-size: 13px; }
+
+  .control-team-short-name {
+    margin-top: 3px;
+    font-size: 10px;
+  }
+
+  .scoring-team-logo-shell {
+    width: 32px;
+    height: 32px;
+  }
+
+  .branded-scoring-heading { gap: 7px; }
+}

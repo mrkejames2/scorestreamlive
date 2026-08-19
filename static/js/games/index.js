@@ -3,6 +3,12 @@ const byId = (id) => document.getElementById(id);
 const MAX_VISIBLE_GAMES = 25;
 const MAX_CONCURRENT_GAMES = 6;
 const MAX_TEAM_RESULTS = 12;
+const MAX_LOGO_BYTES = 2 * 1024 * 1024;
+const ALLOWED_LOGO_TYPES = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+]);
 
 const els = {
   status: byId("games-status"),
@@ -12,6 +18,7 @@ const els = {
   cancelNewGame: byId("cancel-new-game"),
   newGameForm: byId("new-game-form"),
   gameName: byId("game-name"),
+
   homeSearch: byId("home-team-search"),
   awaySearch: byId("away-team-search"),
   homeId: byId("home-team-id"),
@@ -20,9 +27,11 @@ const els = {
   awaySelected: byId("away-team-selected"),
   homeResults: byId("home-team-results"),
   awayResults: byId("away-team-results"),
+
   createSubmit: byId("create-game-submit"),
   newGameError: byId("new-game-error"),
   newGameSuccess: byId("new-game-success"),
+
   list: byId("games-list"),
   empty: byId("games-empty"),
   error: byId("games-error"),
@@ -38,7 +47,43 @@ const state = {
   selectedHomeId: null,
   selectedAwayId: null,
   creatingGame: false,
+  creatingTeamSide: null,
+  previewUrls: {
+    home: null,
+    away: null,
+  },
 };
+
+function sideEls(side) {
+  const prefix = side === "home" ? "home" : "away";
+
+  return {
+    picker: byId(`${prefix}-team-label`)?.closest(".team-picker"),
+    search: byId(`${prefix}-team-search`),
+    id: byId(`${prefix}-team-id`),
+    selected: byId(`${prefix}-team-selected`),
+    selectedText: byId(`${prefix}-selected-brand-text`),
+    selectedBrandIcon: byId(`${prefix}-selected-brand-icon`),
+    selectedBrandLogo: byId(`${prefix}-selected-brand-logo`),
+    selectedBrandFallback: byId(`${prefix}-selected-brand-fallback`),
+    results: byId(`${prefix}-team-results`),
+    createButton: byId(`${prefix}-create-team-button`),
+    panel: byId(`${prefix}-create-team-panel`),
+    cancelButton: byId(`${prefix}-cancel-team-button`),
+    saveButton: byId(`${prefix}-save-team-button`),
+    name: byId(`${prefix}-new-team-name`),
+    shortName: byId(`${prefix}-new-team-short-name`),
+    primaryColor: byId(`${prefix}-new-team-primary-color`),
+    secondaryColor: byId(`${prefix}-new-team-secondary-color`),
+    primaryValue: byId(`${prefix}-primary-color-value`),
+    secondaryValue: byId(`${prefix}-secondary-color-value`),
+    logo: byId(`${prefix}-new-team-logo`),
+    previewShell: byId(`${prefix}-logo-preview-shell`),
+    preview: byId(`${prefix}-logo-preview`),
+    logoFileName: byId(`${prefix}-logo-file-name`),
+    error: byId(`${prefix}-team-create-error`),
+  };
+}
 
 function setStatus(label, status) {
   els.status.textContent = label;
@@ -84,7 +129,7 @@ async function api(path, options = {}) {
           ? errorBody.detail
           : JSON.stringify(errorBody?.detail || "");
     } catch (_) {
-      // Fall through to generic status text.
+      // Fall through to the generic HTTP message.
     }
 
     throw new Error(
@@ -95,6 +140,165 @@ async function api(path, options = {}) {
   }
 
   return response.json();
+}
+
+async function uploadTeamLogo(teamId, file) {
+  const formData = new FormData();
+  formData.append("logo", file);
+
+  const response = await fetch(`/api/teams/${teamId}/logo`, {
+    method: "POST",
+    headers: {
+      "Accept": "application/json",
+    },
+    body: formData,
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    let detail = "";
+
+    try {
+      const body = await response.json();
+      detail =
+        typeof body?.detail === "string"
+          ? body.detail
+          : JSON.stringify(body?.detail || "");
+    } catch (_) {
+      // Keep the generic HTTP error below.
+    }
+
+    throw new Error(
+      detail
+        ? `Logo upload returned HTTP ${response.status}: ${detail}`
+        : `Logo upload returned HTTP ${response.status}`,
+    );
+  }
+
+  return response.json();
+}
+
+
+function teamInitials(team, fallback = "TEAM") {
+  const source = String(
+    team?.short_name
+    || team?.name
+    || fallback,
+  ).trim();
+
+  if (!source) return "T";
+
+  const words = source
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (words.length >= 2) {
+    return `${words[0][0]}${words[1][0]}`.toUpperCase();
+  }
+
+  return source.slice(0, 3).toUpperCase();
+}
+
+function normalizedTeamColor(value, fallback) {
+  const raw = String(value || "").trim();
+
+  return /^#[0-9A-Fa-f]{6}$/.test(raw)
+    ? raw.toUpperCase()
+    : fallback;
+}
+
+function setBrandIcon(icon, logo, fallback, team, fallbackText = "TEAM") {
+  if (!icon || !logo || !fallback) return;
+
+  const primary = normalizedTeamColor(team?.primary_color, "#2A77FF");
+  const secondary = normalizedTeamColor(team?.secondary_color, "#FFFFFF");
+
+  icon.style.setProperty("--team-primary", primary);
+  icon.style.setProperty("--team-secondary", secondary);
+  fallback.textContent = teamInitials(team, fallbackText);
+
+  const logoUrl = String(team?.logo_url || "").trim();
+
+  if (logoUrl) {
+    logo.src = logoUrl;
+    logo.alt = `${team?.name || team?.short_name || fallbackText} logo`;
+    logo.classList.remove("hidden");
+    fallback.classList.add("hidden");
+
+    logo.onerror = () => {
+      logo.classList.add("hidden");
+      fallback.classList.remove("hidden");
+    };
+  } else {
+    logo.removeAttribute("src");
+    logo.alt = "";
+    logo.classList.add("hidden");
+    fallback.classList.remove("hidden");
+  }
+}
+
+function applySelectedTeamBrand(side, teamId) {
+  const controls = sideEls(side);
+  const team = state.teamMap.get(String(teamId));
+
+  if (!team) {
+    controls.selectedText.textContent = "Not selected";
+    setBrandIcon(
+      controls.selectedBrandIcon,
+      controls.selectedBrandLogo,
+      controls.selectedBrandFallback,
+      null,
+      side === "home" ? "HOME" : "AWAY",
+    );
+    return;
+  }
+
+  controls.selectedText.textContent = selectedTeamLabel(teamId);
+
+  setBrandIcon(
+    controls.selectedBrandIcon,
+    controls.selectedBrandLogo,
+    controls.selectedBrandFallback,
+    team,
+    side === "home" ? "HOME" : "AWAY",
+  );
+}
+
+function teamBrandNode(team) {
+  const shell = document.createElement("span");
+  shell.className = "team-brand-icon team-result-brand-icon";
+
+  const fallback = document.createElement("span");
+  fallback.className = "team-brand-fallback";
+
+  const logo = document.createElement("img");
+  logo.className = "team-brand-logo hidden";
+  logo.alt = "";
+
+  shell.append(fallback, logo);
+  setBrandIcon(shell, logo, fallback, team);
+
+  return shell;
+}
+
+function teamColorSwatches(team) {
+  const swatches = document.createElement("span");
+  swatches.className = "team-color-swatches";
+  swatches.setAttribute("aria-hidden", "true");
+
+  const primary = document.createElement("span");
+  primary.className = "team-color-swatch";
+  primary.style.background =
+    normalizedTeamColor(team?.primary_color, "#2A77FF");
+
+  const secondary = document.createElement("span");
+  secondary.className = "team-color-swatch";
+  secondary.style.background =
+    normalizedTeamColor(team?.secondary_color, "#FFFFFF");
+
+  swatches.append(primary, secondary);
+
+  return swatches;
 }
 
 function phaseLabel(value) {
@@ -188,7 +392,7 @@ async function safeGetOptional(path, label) {
     return await api(path, { allow404: true });
   } catch (error) {
     console.warn(
-      `M12-C optional ${label} lookup failed: ${path}`,
+      `M12-D4 optional ${label} lookup failed: ${path}`,
       error,
     );
 
@@ -225,6 +429,36 @@ function renderCard(item) {
 
   card.dataset.gameId = game.id;
 
+  const active = isActive(game, lifecycle, clock);
+  const completed = isCompleted(game, lifecycle);
+
+  card.dataset.resumeState = completed
+    ? "completed"
+    : active
+      ? "active"
+      : "ready";
+
+  const resumeIndicator = fragment.querySelector(".resume-indicator");
+  resumeIndicator.classList.toggle("hidden", !active && !completed);
+  resumeIndicator.textContent = completed ? "COMPLETED" : "RESUMABLE";
+
+  card.style.setProperty(
+    "--home-primary",
+    normalizedTeamColor(homeTeam?.primary_color, "#2A77FF"),
+  );
+  card.style.setProperty(
+    "--home-secondary",
+    normalizedTeamColor(homeTeam?.secondary_color, "#FFFFFF"),
+  );
+  card.style.setProperty(
+    "--away-primary",
+    normalizedTeamColor(awayTeam?.primary_color, "#2A77FF"),
+  );
+  card.style.setProperty(
+    "--away-secondary",
+    normalizedTeamColor(awayTeam?.secondary_color, "#FFFFFF"),
+  );
+
   fragment.querySelector(".game-name").textContent =
     game.name || "Untitled Game";
 
@@ -246,7 +480,34 @@ function renderCard(item) {
   fragment.querySelector(".away-score").textContent =
     String(game.away_score ?? 0);
 
+  setBrandIcon(
+    fragment.querySelector(".game-team-brand-home .team-brand-icon"),
+    fragment.querySelector(".home-team-logo"),
+    fragment.querySelector(".home-team-fallback"),
+    homeTeam,
+    "HOME",
+  );
+
+  setBrandIcon(
+    fragment.querySelector(".game-team-brand-away .team-brand-icon"),
+    fragment.querySelector(".away-team-logo"),
+    fragment.querySelector(".away-team-fallback"),
+    awayTeam,
+    "AWAY",
+  );
+
   fragment.querySelector(".game-id").textContent = game.id;
+
+  const hubLink = fragment.querySelector(".hub-link");
+  hubLink.href = `/games/${game.id}`;
+  hubLink.textContent = completed
+    ? "Review Game"
+    : active
+      ? "Resume Game"
+      : "Open Game";
+
+  fragment.querySelector(".setup-link").href =
+    `/games/${game.id}/setup`;
 
   fragment.querySelector(".control-link").href =
     `/control/games/${game.id}`;
@@ -289,7 +550,7 @@ async function mapWithConcurrency(items, limit, worker) {
           await worker(items[index], index);
       } catch (error) {
         console.error(
-          `M12-C hydration failed for item ${index}`,
+          `M12-D4 hydration failed for item ${index}`,
           error,
         );
 
@@ -364,7 +625,7 @@ function teamResultButton(team, side) {
   const button = document.createElement("button");
 
   button.type = "button";
-  button.className = "team-search-result";
+  button.className = "team-search-result team-search-result-branded";
   button.dataset.teamId = team.id;
   button.setAttribute("role", "option");
   button.setAttribute(
@@ -372,15 +633,35 @@ function teamResultButton(team, side) {
     String(String(selectedTeamId(side)) === String(team.id)),
   );
 
+  button.style.setProperty(
+    "--team-primary",
+    normalizedTeamColor(team?.primary_color, "#2A77FF"),
+  );
+  button.style.setProperty(
+    "--team-secondary",
+    normalizedTeamColor(team?.secondary_color, "#FFFFFF"),
+  );
+
+  const brand = teamBrandNode(team);
+
+  const copy = document.createElement("span");
+  copy.className = "team-result-copy";
+
   const name = document.createElement("span");
   name.className = "team-result-name";
   name.textContent = team.name || team.short_name || "Unnamed Team";
 
+  const detail = document.createElement("span");
+  detail.className = "team-result-detail";
+
   const shortName = document.createElement("span");
   shortName.className = "team-result-short";
-  shortName.textContent = team.short_name || "";
+  shortName.textContent = team.short_name || "No abbreviation";
 
-  button.append(name, shortName);
+  detail.append(shortName, teamColorSwatches(team));
+  copy.append(name, detail);
+
+  button.append(brand, copy);
 
   button.addEventListener("click", () => {
     selectTeam(side, team.id);
@@ -390,18 +671,11 @@ function teamResultButton(team, side) {
 }
 
 function renderTeamResults(side) {
-  const input = side === "home"
-    ? els.homeSearch
-    : els.awaySearch;
-
-  const results = side === "home"
-    ? els.homeResults
-    : els.awayResults;
-
-  const teams = filteredTeams(input.value);
+  const controls = sideEls(side);
+  const teams = filteredTeams(controls.search.value);
   const otherId = otherSelectedTeamId(side);
 
-  results.replaceChildren();
+  controls.results.replaceChildren();
 
   const visible = teams.filter(
     (team) => String(team.id) !== String(otherId || ""),
@@ -410,13 +684,13 @@ function renderTeamResults(side) {
   if (visible.length === 0) {
     const empty = document.createElement("div");
     empty.className = "team-search-empty";
-    empty.textContent = "No matching teams.";
-    results.appendChild(empty);
+    empty.textContent = "No matching teams. Create one below.";
+    controls.results.appendChild(empty);
     return;
   }
 
   for (const team of visible) {
-    results.appendChild(teamResultButton(team, side));
+    controls.results.appendChild(teamResultButton(team, side));
   }
 }
 
@@ -440,20 +714,38 @@ function selectTeam(side, teamId) {
     return;
   }
 
+  const controls = sideEls(side);
+
   if (side === "home") {
     state.selectedHomeId = String(teamId);
     els.homeId.value = String(teamId);
-    els.homeSelected.textContent = selectedTeamLabel(teamId);
   } else {
     state.selectedAwayId = String(teamId);
     els.awayId.value = String(teamId);
-    els.awaySelected.textContent = selectedTeamLabel(teamId);
   }
+
+  applySelectedTeamBrand(side, teamId);
 
   clearNewGameMessages();
 
   renderTeamResults("home");
   renderTeamResults("away");
+}
+
+function addTeamToLocalState(team) {
+  const id = String(team.id);
+
+  const existingIndex = state.teams.findIndex(
+    (candidate) => String(candidate.id) === id,
+  );
+
+  if (existingIndex >= 0) {
+    state.teams[existingIndex] = team;
+  } else {
+    state.teams.unshift(team);
+  }
+
+  state.teamMap.set(id, team);
 }
 
 function clearTeamSelection() {
@@ -463,8 +755,8 @@ function clearTeamSelection() {
   els.homeId.value = "";
   els.awayId.value = "";
 
-  els.homeSelected.textContent = "Not selected";
-  els.awaySelected.textContent = "Not selected";
+  applySelectedTeamBrand("home", null);
+  applySelectedTeamBrand("away", null);
 
   els.homeSearch.value = "";
   els.awaySearch.value = "";
@@ -499,6 +791,248 @@ function setCreatingGame(value) {
     value ? "Creating + Initializing..." : "Create Game";
 }
 
+function revokePreview(side) {
+  const url = state.previewUrls[side];
+
+  if (url) {
+    URL.revokeObjectURL(url);
+    state.previewUrls[side] = null;
+  }
+}
+
+function clearTeamCreateForm(side) {
+  const controls = sideEls(side);
+
+  revokePreview(side);
+
+  controls.name.value = "";
+  controls.shortName.value = "";
+  controls.primaryColor.value = "#2a77ff";
+  controls.secondaryColor.value = "#ffffff";
+  controls.primaryValue.textContent = "#2A77FF";
+  controls.secondaryValue.textContent = "#FFFFFF";
+  controls.logo.value = "";
+  controls.preview.removeAttribute("src");
+  controls.preview.alt = "";
+  controls.logoFileName.textContent = "";
+  controls.previewShell.classList.add("hidden");
+  controls.error.textContent = "";
+  controls.error.classList.add("hidden");
+  controls.saveButton.disabled = false;
+  controls.saveButton.textContent =
+    side === "home"
+      ? "Create + Select Home Team"
+      : "Create + Select Away Team";
+}
+
+function openTeamCreate(side) {
+  if (state.creatingGame || state.creatingTeamSide) return;
+
+  const otherSide = side === "home" ? "away" : "home";
+  const otherControls = sideEls(otherSide);
+
+  otherControls.panel.classList.add("hidden");
+  otherControls.picker.dataset.creating = "false";
+
+  clearTeamCreateForm(side);
+
+  const controls = sideEls(side);
+  controls.panel.classList.remove("hidden");
+  controls.picker.dataset.creating = "true";
+  state.creatingTeamSide = side;
+
+  const seed = controls.search.value.trim();
+  if (seed) {
+    controls.name.value = seed;
+  }
+
+  window.requestAnimationFrame(() => {
+    controls.name.focus();
+  });
+}
+
+function closeTeamCreate(side) {
+  if (state.creatingTeamSide !== side) return;
+
+  clearTeamCreateForm(side);
+
+  const controls = sideEls(side);
+  controls.panel.classList.add("hidden");
+  controls.picker.dataset.creating = "false";
+  state.creatingTeamSide = null;
+
+  renderTeamResults(side);
+}
+
+function updateColorLabel(side, field) {
+  const controls = sideEls(side);
+
+  if (field === "primary") {
+    controls.primaryValue.textContent =
+      controls.primaryColor.value.toUpperCase();
+  } else {
+    controls.secondaryValue.textContent =
+      controls.secondaryColor.value.toUpperCase();
+  }
+}
+
+function updateLogoPreview(side) {
+  const controls = sideEls(side);
+  const file = controls.logo.files?.[0] || null;
+
+  revokePreview(side);
+
+  if (!file) {
+    controls.previewShell.classList.add("hidden");
+    controls.preview.removeAttribute("src");
+    controls.preview.alt = "";
+    controls.logoFileName.textContent = "";
+    return;
+  }
+
+  const url = URL.createObjectURL(file);
+  state.previewUrls[side] = url;
+
+  controls.preview.src = url;
+  controls.preview.alt = `${side === "home" ? "Home" : "Away"} Team logo preview`;
+  controls.logoFileName.textContent =
+    `${file.name} · ${Math.ceil(file.size / 1024)} KB`;
+  controls.previewShell.classList.remove("hidden");
+}
+
+function validateLogo(file) {
+  if (!file) return null;
+
+  if (!ALLOWED_LOGO_TYPES.has(file.type)) {
+    return "Logo must be PNG, JPEG, or WebP.";
+  }
+
+  if (file.size > MAX_LOGO_BYTES) {
+    return "Logo must be 2 MB or smaller.";
+  }
+
+  return null;
+}
+
+function validateNewTeam(side) {
+  const controls = sideEls(side);
+  const name = controls.name.value.trim();
+  const shortName = controls.shortName.value.trim();
+  const file = controls.logo.files?.[0] || null;
+
+  if (!name) {
+    return "Team Name is required.";
+  }
+
+  if (name.length > 255) {
+    return "Team Name must be 255 characters or fewer.";
+  }
+
+  if (shortName.length > 100) {
+    return "Short Name must be 100 characters or fewer.";
+  }
+
+  return validateLogo(file);
+}
+
+function setCreatingTeam(side, value) {
+  const controls = sideEls(side);
+  const other = side === "home" ? "away" : "home";
+  const otherControls = sideEls(other);
+
+  controls.saveButton.disabled = value;
+  controls.cancelButton.disabled = value;
+  controls.saveButton.textContent = value
+    ? "Creating Team..."
+    : side === "home"
+      ? "Create + Select Home Team"
+      : "Create + Select Away Team";
+
+  els.createSubmit.disabled = value || state.creatingGame;
+  els.cancelNewGame.disabled = value || state.creatingGame;
+  els.newGameButton.disabled = value || state.creatingGame;
+  otherControls.createButton.disabled = value;
+}
+
+async function createInlineTeam(side) {
+  if (state.creatingGame || state.creatingTeamSide !== side) return;
+
+  const controls = sideEls(side);
+  const validationError = validateNewTeam(side);
+
+  if (validationError) {
+    controls.error.textContent = validationError;
+    controls.error.classList.remove("hidden");
+    return;
+  }
+
+  controls.error.classList.add("hidden");
+  setCreatingTeam(side, true);
+
+  let team = null;
+
+  try {
+    team = await api("/api/teams", {
+      method: "POST",
+      payload: {
+        name: controls.name.value.trim(),
+        short_name: controls.shortName.value.trim() || null,
+        primary_color: controls.primaryColor.value.toUpperCase(),
+        secondary_color: controls.secondaryColor.value.toUpperCase(),
+      },
+    });
+
+    const logo = controls.logo.files?.[0] || null;
+
+    if (logo) {
+      team = await uploadTeamLogo(team.id, logo);
+    }
+
+    addTeamToLocalState(team);
+    selectTeam(side, team.id);
+
+    const label = team.short_name
+      ? `${team.name} (${team.short_name})`
+      : team.name;
+
+    closeTeamCreate(side);
+
+    const selectedControls = sideEls(side);
+    selectedControls.search.value = "";
+    applySelectedTeamBrand(side, team.id);
+
+    showNewGameSuccess(
+      `${side === "home" ? "Home" : "Away"} Team created and selected: ${label}.`,
+    );
+
+    renderTeamResults("home");
+    renderTeamResults("away");
+  } catch (error) {
+    console.error(`M12-D4 ${side} Team creation failed`, error);
+
+    controls.error.textContent =
+      team?.id
+        ? `Team "${team.name}" was created, but branding upload did not complete. ${error?.message || ""}`
+        : error?.message || "Team creation failed.";
+
+    controls.error.classList.remove("hidden");
+
+    // A Team may have been committed before logo upload failed. Refresh the
+    // authoritative Team collection so the UI never hides that committed Team.
+    try {
+      const teams = await api("/api/teams");
+      state.teams = teams;
+      state.teamMap = buildTeamMap(teams);
+      renderTeamResults("home");
+      renderTeamResults("away");
+    } catch (refreshError) {
+      console.error("M12-D4 Team recovery refresh failed", refreshError);
+    }
+  } finally {
+    setCreatingTeam(side, false);
+  }
+}
+
 function openNewGamePanel() {
   clearNewGameMessages();
   els.newGamePanel.classList.remove("hidden");
@@ -511,7 +1045,10 @@ function openNewGamePanel() {
 }
 
 function closeNewGamePanel() {
-  if (state.creatingGame) return;
+  if (state.creatingGame || state.creatingTeamSide) return;
+
+  closeTeamCreate("home");
+  closeTeamCreate("away");
 
   els.newGamePanel.classList.add("hidden");
   els.newGameForm.reset();
@@ -627,7 +1164,7 @@ async function initializeCreatedGame(game) {
 async function createGame(event) {
   event.preventDefault();
 
-  if (state.creatingGame) return;
+  if (state.creatingGame || state.creatingTeamSide) return;
 
   const validationError = validateNewGame();
 
@@ -664,7 +1201,7 @@ async function createGame(event) {
       preserveCreationMessages: true,
     });
   } catch (error) {
-    console.error("M12-C Game creation / initialization failed", error);
+    console.error("M12-D4 Game creation / initialization failed", error);
 
     if (game?.id) {
       showNewGameError(
@@ -707,6 +1244,13 @@ async function loadGames(options = {}) {
 
     state.teams = teams;
     state.teamMap = buildTeamMap(teams);
+
+    if (state.selectedHomeId) {
+      applySelectedTeamBrand("home", state.selectedHomeId);
+    }
+    if (state.selectedAwayId) {
+      applySelectedTeamBrand("away", state.selectedAwayId);
+    }
 
     const sortedGames = [...games].sort(
       (a, b) => gameSortValue(b) - gameSortValue(a),
@@ -762,7 +1306,7 @@ async function loadGames(options = {}) {
       renderTeamResults("away");
     }
   } catch (error) {
-    console.error("M12-C Game Management load failed", error);
+    console.error("M12-D4 Game Management load failed", error);
 
     els.error.textContent =
       "Game Management could not load the game list. "
@@ -773,6 +1317,38 @@ async function loadGames(options = {}) {
   } finally {
     els.refresh.disabled = false;
   }
+}
+
+function installSideHandlers(side) {
+  const controls = sideEls(side);
+
+  controls.search.addEventListener("input", () => {
+    renderTeamResults(side);
+  });
+
+  controls.createButton.addEventListener("click", () => {
+    openTeamCreate(side);
+  });
+
+  controls.cancelButton.addEventListener("click", () => {
+    closeTeamCreate(side);
+  });
+
+  controls.saveButton.addEventListener("click", () => {
+    void createInlineTeam(side);
+  });
+
+  controls.primaryColor.addEventListener("input", () => {
+    updateColorLabel(side, "primary");
+  });
+
+  controls.secondaryColor.addEventListener("input", () => {
+    updateColorLabel(side, "secondary");
+  });
+
+  controls.logo.addEventListener("change", () => {
+    updateLogoPreview(side);
+  });
 }
 
 els.refresh.addEventListener("click", () => {
@@ -791,12 +1367,7 @@ els.newGameForm.addEventListener("submit", (event) => {
   void createGame(event);
 });
 
-els.homeSearch.addEventListener("input", () => {
-  renderTeamResults("home");
-});
-
-els.awaySearch.addEventListener("input", () => {
-  renderTeamResults("away");
-});
+installSideHandlers("home");
+installSideHandlers("away");
 
 void loadGames();
