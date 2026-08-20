@@ -7,36 +7,49 @@
   <link rel="stylesheet" href="/static/css/teams.css">
 </head>
 <body>
+<a class="skip-link" href="#teams-list">Skip to teams</a>
 <main class="teams-shell">
   <header class="teams-header">
     <div>
-      <div class="eyebrow">SCORESTREAMLIVE · M13-C</div>
+      <div class="eyebrow">SCORESTREAMLIVE · M13-F</div>
       <h1>Teams</h1>
-      <p class="subhead">Create and maintain reusable team identity and branding, then open a Team to review its derived roster.</p>
+      <p class="subhead">Create, brand, and manage reusable Teams and their rosters from desktop, tablet, or phone.</p>
     </div>
     <div class="header-actions">
-      <span id="teams-status" class="status-chip" data-state="loading">LOADING</span>
+      <span id="teams-status" class="status-chip" data-state="loading" aria-live="polite">LOADING</span>
       <button id="create-team" class="button button-primary" type="button">+ Create Team</button>
       <button id="refresh-teams" class="button button-secondary" type="button">Refresh</button>
       <a class="button button-secondary" href="/games">Games</a>
     </div>
   </header>
 
-  <section class="summary-grid">
+  <section class="summary-grid" aria-label="Team summary">
     <article class="summary-card"><span class="summary-label">Teams</span><strong id="summary-total" class="summary-value">—</strong></article>
     <article class="summary-card"><span class="summary-label">With Logos</span><strong id="summary-logos" class="summary-value">—</strong></article>
     <article class="summary-card"><span class="summary-label">Branded</span><strong id="summary-branded" class="summary-value">—</strong></article>
   </section>
 
   <section class="teams-panel">
-    <div class="panel-heading"><div><h2>Team Management</h2><p>Team mutations use the existing REST API. Open any Team to view its read-only roster.</p></div></div>
+    <div class="panel-heading">
+      <div>
+        <h2>Team Management</h2>
+        <p>Create or edit Team identity, then open a Team to manage its roster.</p>
+      </div>
+    </div>
+
     <div id="teams-error" class="notice notice-error hidden" role="alert"></div>
-    <div id="teams-success" class="notice notice-success hidden" role="status"></div>
-    <div id="teams-empty" class="empty-state hidden"><h3>No teams yet</h3><p>Create your first reusable Team.</p><button class="button button-primary empty-create-team" type="button">+ Create Team</button></div>
-    <div id="teams-list" class="teams-grid" aria-live="polite"></div>
+    <div id="teams-success" class="notice notice-success hidden" role="status" aria-live="polite"></div>
+
+    <div id="teams-empty" class="empty-state hidden">
+      <h3>No teams yet</h3>
+      <p>Create your first reusable Team.</p>
+      <button class="button button-primary empty-create-team" type="button">+ Create Team</button>
+    </div>
+
+    <div id="teams-list" class="teams-grid" aria-live="polite" aria-busy="true" tabindex="-1"></div>
   </section>
 
-  <footer class="teams-footer"><span>Milestone M13-C</span><span>Team Detail &amp; Roster View</span></footer>
+  <footer class="teams-footer"><span>Milestone M13-F</span><span>Management UX / Mobile Polish</span></footer>
 </main>
 
 <template id="team-card-template">
@@ -45,7 +58,8 @@
     <div class="team-card-body">
       <div class="team-brand-shell"><span class="team-brand-fallback">T</span><img class="team-brand-logo hidden" alt=""></div>
       <div class="team-identity">
-        <h3 class="team-name"></h3><div class="team-short-name"></div>
+        <h3 class="team-name"></h3>
+        <div class="team-short-name"></div>
         <div class="branding-row">
           <span class="color-swatch primary-swatch"></span><code class="primary-color">Not set</code>
           <span class="color-swatch secondary-swatch"></span><code class="secondary-color">Not set</code>
@@ -54,7 +68,7 @@
       </div>
     </div>
     <div class="team-card-actions">
-      <span class="future-note">Roster is read-only in M13-C</span>
+      <span class="future-note">Manage identity or open the roster</span>
       <div class="team-action-group">
         <a class="button button-primary view-team-link">View Team</a>
         <button class="button button-secondary manage-team-button" type="button">Edit Team</button>
@@ -73,11 +87,11 @@
     <form id="team-form">
       <input id="team-id" type="hidden">
       <div class="form-grid">
-        <label class="field field-wide"><span>Team Name *</span><input id="team-name" maxlength="255" required placeholder="Heritage Hawks"></label>
-        <label class="field"><span>Short Name</span><input id="team-short-name" maxlength="100" placeholder="HAWKS"></label>
+        <label class="field field-wide"><span>Team Name *</span><input id="team-name" maxlength="255" required placeholder="Heritage Hawks" autocomplete="off"></label>
+        <label class="field"><span>Short Name</span><input id="team-short-name" maxlength="100" placeholder="HAWKS" autocomplete="off"></label>
         <label class="field"><span>Logo</span><input id="team-logo" type="file" accept="image/png,image/jpeg,image/webp"><small>PNG, JPEG, or WebP.</small></label>
-        <label class="field"><span>Primary Color</span><div class="color-input-row"><input id="team-primary-picker" type="color" value="#2A77FF"><input id="team-primary" maxlength="7" placeholder="#2A77FF"></div></label>
-        <label class="field"><span>Secondary Color</span><div class="color-input-row"><input id="team-secondary-picker" type="color" value="#FFFFFF"><input id="team-secondary" maxlength="7" placeholder="#FFFFFF"></div></label>
+        <label class="field"><span>Primary Color</span><div class="color-input-row"><input id="team-primary-picker" type="color" value="#2A77FF" aria-label="Primary color picker"><input id="team-primary" maxlength="7" placeholder="#2A77FF" autocomplete="off"></div></label>
+        <label class="field"><span>Secondary Color</span><div class="color-input-row"><input id="team-secondary-picker" type="color" value="#FFFFFF" aria-label="Secondary color picker"><input id="team-secondary" maxlength="7" placeholder="#FFFFFF" autocomplete="off"></div></label>
       </div>
       <div id="form-error" class="notice notice-error hidden" role="alert"></div>
       <div class="brand-preview">
@@ -94,4 +108,5 @@
 </div>
 
 <script type="module" src="/static/js/teams/index.js"></script>
-</body></html>
+</body>
+</html>
