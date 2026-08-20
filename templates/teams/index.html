@@ -7,119 +7,88 @@
   <link rel="stylesheet" href="/static/css/teams.css">
 </head>
 <body>
-  <main class="teams-shell">
-    <header class="teams-header">
-      <div>
-        <div class="eyebrow">SCORESTREAMLIVE · M13-A</div>
-        <h1>Teams</h1>
-        <p class="subhead">
-          Browse reusable teams and their persisted branding. Team editing and full roster
-          management arrive in later Milestone 13 checkpoints.
-        </p>
-      </div>
+<main class="teams-shell">
+  <header class="teams-header">
+    <div>
+      <div class="eyebrow">SCORESTREAMLIVE · M13-B</div>
+      <h1>Teams</h1>
+      <p class="subhead">Create and maintain reusable team identity and branding. Roster management remains deferred to later Milestone 13 checkpoints.</p>
+    </div>
+    <div class="header-actions">
+      <span id="teams-status" class="status-chip" data-state="loading">LOADING</span>
+      <button id="create-team" class="button button-primary" type="button">+ Create Team</button>
+      <button id="refresh-teams" class="button button-secondary" type="button">Refresh</button>
+      <a class="button button-secondary" href="/games">Games</a>
+    </div>
+  </header>
 
-      <div class="header-actions">
-        <span id="teams-status" class="status-chip" data-state="loading">LOADING</span>
-        <button
-          id="create-team"
-          class="button button-primary"
-          type="button"
-          disabled
-          title="Team creation moves to the first-class Team UI in M13-B."
-        >
-          + Create Team
-        </button>
-        <button id="refresh-teams" class="button button-secondary" type="button">
-          Refresh
-        </button>
-        <a class="button button-secondary" href="/games">Games</a>
-      </div>
-    </header>
+  <section class="summary-grid">
+    <article class="summary-card"><span class="summary-label">Teams</span><strong id="summary-total" class="summary-value">—</strong></article>
+    <article class="summary-card"><span class="summary-label">With Logos</span><strong id="summary-logos" class="summary-value">—</strong></article>
+    <article class="summary-card"><span class="summary-label">Branded</span><strong id="summary-branded" class="summary-value">—</strong></article>
+  </section>
 
-    <section class="summary-grid" aria-label="Team management summary">
-      <article class="summary-card">
-        <span class="summary-label">Teams</span>
-        <strong id="summary-total" class="summary-value">—</strong>
-      </article>
-      <article class="summary-card">
-        <span class="summary-label">With Logos</span>
-        <strong id="summary-logos" class="summary-value">—</strong>
-      </article>
-      <article class="summary-card">
-        <span class="summary-label">Branded</span>
-        <strong id="summary-branded" class="summary-value">—</strong>
-      </article>
-    </section>
+  <section class="teams-panel">
+    <div class="panel-heading"><div><h2>Team Management</h2><p>Team mutations use the existing REST API. Successful saves are reloaded from committed persistent state.</p></div></div>
+    <div id="teams-error" class="notice notice-error hidden" role="alert"></div>
+    <div id="teams-success" class="notice notice-success hidden" role="status"></div>
+    <div id="teams-empty" class="empty-state hidden"><h3>No teams yet</h3><p>Create your first reusable Team.</p><button class="button button-primary empty-create-team" type="button">+ Create Team</button></div>
+    <div id="teams-list" class="teams-grid" aria-live="polite"></div>
+  </section>
 
-    <section class="teams-panel">
-      <div class="panel-heading">
-        <div>
-          <h2>Team Management</h2>
-          <p>
-            Teams shown here come directly from the existing authoritative Team API.
-            Roster detail is intentionally deferred to the Team detail workflow in M13-C.
-          </p>
+  <footer class="teams-footer"><span>Milestone M13-B</span><span>Team Create / Edit / Branding</span></footer>
+</main>
+
+<template id="team-card-template">
+  <article class="team-card">
+    <div class="team-accent"></div>
+    <div class="team-card-body">
+      <div class="team-brand-shell"><span class="team-brand-fallback">T</span><img class="team-brand-logo hidden" alt=""></div>
+      <div class="team-identity">
+        <h3 class="team-name"></h3><div class="team-short-name"></div>
+        <div class="branding-row">
+          <span class="color-swatch primary-swatch"></span><code class="primary-color">Not set</code>
+          <span class="color-swatch secondary-swatch"></span><code class="secondary-color">Not set</code>
         </div>
+        <div class="team-meta"><span class="detail-label">Team ID</span><code class="team-id"></code></div>
       </div>
+    </div>
+    <div class="team-card-actions">
+      <span class="future-note">Roster detail opens in M13-C</span>
+      <button class="button button-secondary manage-team-button" type="button">Edit Team</button>
+    </div>
+  </article>
+</template>
 
-      <div id="teams-error" class="notice notice-error hidden" role="alert"></div>
-
-      <div id="teams-empty" class="empty-state hidden">
-        <h3>No teams yet</h3>
-        <p>Create/select teams from the existing Game Setup workflow until M13-B adds first-class Team creation here.</p>
-        <a class="button button-primary" href="/games">Go to Games</a>
+<div id="team-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="team-modal-title">
+  <div class="modal-backdrop" data-close-modal></div>
+  <section class="modal-card">
+    <div class="modal-heading">
+      <div><div class="eyebrow">TEAM MANAGEMENT</div><h2 id="team-modal-title">Create Team</h2></div>
+      <button class="icon-button" type="button" data-close-modal aria-label="Close">×</button>
+    </div>
+    <form id="team-form">
+      <input id="team-id" type="hidden">
+      <div class="form-grid">
+        <label class="field field-wide"><span>Team Name *</span><input id="team-name" maxlength="255" required placeholder="Heritage Hawks"></label>
+        <label class="field"><span>Short Name</span><input id="team-short-name" maxlength="100" placeholder="HAWKS"></label>
+        <label class="field"><span>Logo</span><input id="team-logo" type="file" accept="image/png,image/jpeg,image/webp"><small>PNG, JPEG, or WebP.</small></label>
+        <label class="field"><span>Primary Color</span><div class="color-input-row"><input id="team-primary-picker" type="color" value="#2A77FF"><input id="team-primary" maxlength="7" placeholder="#2A77FF"></div></label>
+        <label class="field"><span>Secondary Color</span><div class="color-input-row"><input id="team-secondary-picker" type="color" value="#FFFFFF"><input id="team-secondary" maxlength="7" placeholder="#FFFFFF"></div></label>
       </div>
-
-      <div id="teams-list" class="teams-grid" aria-live="polite"></div>
-    </section>
-
-    <footer class="teams-footer">
-      <span>Milestone {{ milestone }}</span>
-      <span>Team Management Home</span>
-    </footer>
-  </main>
-
-  <template id="team-card-template">
-    <article class="team-card">
-      <div class="team-accent" aria-hidden="true"></div>
-
-      <div class="team-card-body">
-        <div class="team-brand-shell" aria-hidden="true">
-          <span class="team-brand-fallback">T</span>
-          <img class="team-brand-logo hidden" alt="">
-        </div>
-
-        <div class="team-identity">
-          <div class="team-title-row">
-            <div>
-              <h3 class="team-name"></h3>
-              <div class="team-short-name"></div>
-            </div>
-          </div>
-
-          <div class="branding-row" aria-label="Team colors">
-            <span class="color-swatch primary-swatch" title="Primary color"></span>
-            <code class="primary-color">Not set</code>
-            <span class="color-swatch secondary-swatch" title="Secondary color"></span>
-            <code class="secondary-color">Not set</code>
-          </div>
-
-          <div class="team-meta">
-            <span class="detail-label">Team ID</span>
-            <code class="team-id"></code>
-          </div>
-        </div>
+      <div id="form-error" class="notice notice-error hidden" role="alert"></div>
+      <div class="brand-preview">
+        <div id="preview-accent" class="preview-accent"></div>
+        <div id="preview-logo-shell" class="preview-logo-shell"><span id="preview-letter">T</span><img id="preview-logo" class="hidden" alt="Team logo preview"></div>
+        <div><strong id="preview-name">Team Name</strong><span id="preview-short">SHORT NAME</span></div>
       </div>
-
-      <div class="team-card-actions">
-        <span class="future-note">Team detail/edit opens in M13-B/C</span>
-        <button class="button button-secondary manage-team-button" type="button" disabled>
-          Manage Team
-        </button>
+      <div class="modal-actions">
+        <button class="button button-secondary" type="button" data-close-modal>Cancel</button>
+        <button id="save-team" class="button button-primary" type="submit">Save Team</button>
       </div>
-    </article>
-  </template>
+    </form>
+  </section>
+</div>
 
-  <script type="module" src="/static/js/teams/index.js"></script>
-</body>
-</html>
+<script type="module" src="/static/js/teams/index.js"></script>
+</body></html>

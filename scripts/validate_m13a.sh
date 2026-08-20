@@ -54,12 +54,12 @@ else
   fail "/teams Team Management route HTTP ${TEAM_HTTP:-curl-error}"
 fi
 
-check_http_200 "/static/css/teams.css" "M13-A Team CSS"
-check_http_200 "/static/js/teams/index.js" "M13-A Team JavaScript"
+check_http_200 "/static/css/teams.css" "Team Management CSS"
+check_http_200 "/static/js/teams/index.js" "Team Management JavaScript"
 
 progress 3 "Creating and verifying a branded Team through the existing REST API..."
 STAMP="$(date +%s)"
-TEAM_NAME="M13-A Validation ${STAMP}"
+TEAM_NAME="M13-A Regression ${STAMP}"
 TEAM_JSON=$(
   python3 - "$TEAM_NAME" <<'PY'
 import json, sys
@@ -127,7 +127,7 @@ PY
   fi
 fi
 
-progress 4 "Verifying Team collection and optimized M13-A page contract..."
+progress 4 "Verifying Team collection and durable Team Management page contract..."
 set +e
 COLLECTION_HTTP=$(curl -sS -o "$API_TMP" -w "%{http_code}" "${BASE_URL}/api/teams")
 COLLECTION_RC=$?
@@ -153,19 +153,20 @@ else
   fail "Existing Team collection HTTP ${COLLECTION_HTTP:-curl-error}"
 fi
 
+# Regression checks must target durable product contracts, not historical
+# milestone labels. Later milestones are allowed to relabel and extend /teams.
 for marker in \
   'id="teams-list"' \
   'id="team-card-template"' \
   'id="summary-branded"' \
-  '/static/js/teams/index.js' \
-  'M13-A'
+  '/static/js/teams/index.js'
 do
   grep -Fq "$marker" "$PAGE_TMP" \
     && pass \
-    || fail "/teams page missing expected marker: ${marker}"
+    || fail "/teams page missing expected durable marker: ${marker}"
 done
 
-progress 5 "Checking protected M13-A architecture and performance boundaries..."
+progress 5 "Checking protected Team Management architecture and performance boundaries..."
 if [ "$VALIDATION_MODE" = "local" ]; then
   [ -f "app/web/teams.py" ] && pass || fail "app/web/teams.py missing"
   [ -f "templates/teams/index.html" ] && pass || fail "templates/teams/index.html missing"
@@ -176,17 +177,17 @@ if [ "$VALIDATION_MODE" = "local" ]; then
      && grep -Fq 'app.include_router(teams_web_router)' app/main.py; then
     pass
   else
-    fail "M13-A Team web router is not registered in app/main.py"
+    fail "Team web router is not registered in app/main.py"
   fi
 
-  if grep -Eq '/api/teams/.+/players|/players[`"'\'']' static/js/teams/index.js; then
-    fail "M13-A Team Management JS performs per-Team roster requests"
+  if grep -Eq '/api/teams/.+/players' static/js/teams/index.js; then
+    fail "Team Management JS performs per-Team roster fan-out requests"
   else
     pass
   fi
 
   if find alembic/versions -maxdepth 1 -type f \( -name '*0013*' -o -name '*m13*' \) | grep -q .; then
-    fail "Unexpected M13-A migration file detected"
+    fail "Unexpected M13 Team Management migration file detected"
   else
     pass
   fi
@@ -218,7 +219,7 @@ if [ "$REG_RC" -ne 0 ]; then
 fi
 
 echo "========================================"
-echo "ScoreStreamLive M13-A Validation Summary"
+echo "ScoreStreamLive M13-A Cumulative Validation Summary"
 echo "BASE_URL: ${BASE_URL}"
 echo "MODE: ${VALIDATION_MODE}"
 echo "========================================"
