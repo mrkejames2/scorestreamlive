@@ -1,0 +1,220 @@
+ScoreStreamLive — New Milestone Session Bootstrap
+
+We are beginning the next major milestone of my existing ScoreStreamLive project.
+
+This is a continuation of an established application, not a new project. Do not redesign or re-architect the application based only on this prompt or on assumptions from previous ChatGPT conversations.
+
+FIRST: Re-educate yourself from the repository
+
+You have access to my GitHub repository:
+
+mrkejames2/scorestreamlive
+
+Before proposing architecture, writing code, creating branches, or giving me implementation commands, inspect the current main branch and read the project's persistent documentation.
+
+At minimum, read:
+
+docs/ai/GOLDEN_RULE.md
+docs/ai/AI_SESSION_BOOTSTRAP.md
+docs/ai/DEVELOPMENT_WORKFLOW.md
+docs/AI_HANDOFF.md
+docs/CURRENT_MILESTONE_STATUS.md
+docs/IMPLEMENTATION_MAP.md
+docs/ARCHITECTURE.md
+docs/ROADMAP.md
+docs/MILESTONES.md
+BACKLOG.MD
+
+Also read any domain documentation relevant to the milestone we are about to implement, such as:
+
+docs/TEAMS.md
+docs/PLAYERS.md
+docs/GAMES.md
+docs/SCORING.md
+docs/CLOCK.md
+docs/LIFECYCLE.md
+docs/SOCKET_IO.md
+docs/DEPLOYMENT.md
+docs/DECISIONS.md
+
+Inspect the actual repository implementation and relevant Alembic migrations whenever necessary to verify what the documentation says.
+
+The repository and migrations are authoritative. Chat history and AI memory are not.
+
+If documentation conflicts with the actual repository, identify the conflict rather than silently assuming which behavior exists.
+
+DEVELOPMENT PRINCIPLES
+
+Preserve the architecture that has already passed automated regression, human acceptance, and production validation.
+
+Our fundamental model is:
+
+PostgreSQL = authoritative persistent state
+REST = persistent mutation boundary
+Socket.IO = committed-state notification
+
+Successful real-time events must represent committed state.
+
+Do not introduce new infrastructure, architectural patterns, abstractions, or major refactors unless the active milestone actually requires them.
+
+Prefer the smallest coherent change that satisfies the approved milestone.
+
+Do not implement future roadmap items early simply because they would be convenient.
+
+When I suggest an enhancement that should not interrupt the current milestone, I may say:
+
+“Add to Backlog”
+
+That means it should be recorded in BACKLOG.MD and deferred unless I explicitly change the current milestone scope.
+
+OUR MILESTONE WORKFLOW
+
+We use one ChatGPT conversation per major milestone.
+
+Each major milestone should be divided into small, clearly defined sub-milestones such as:
+
+M13-A → M13-B → M13-C → ... → Final Acceptance
+
+Do not implement the entire major milestone at once.
+
+For every sub-milestone:
+
+Confirm the goal and architectural boundary.
+Identify what existing components must remain untouched.
+Create/continue the appropriate milestone branch.
+Implement only that sub-milestone.
+Run targeted automated validation.
+Run cumulative regression against previously accepted functionality.
+Perform human acceptance when UI/behavior requires it.
+Do not advance until the sub-milestone passes.
+Checkpoint it with Git commit/push.
+Start the next sub-milestone from that accepted checkpoint.
+
+Do not merge every sub-milestone into main.
+
+The accepted sub-milestone branches form a chain. After the final major-milestone acceptance gate passes, merge the final branch into main.
+
+VALIDATION WORKFLOW
+
+Preserve and extend the existing cumulative validation system.
+
+Validation scripts should give visible progress, for example:
+
+[1/10] Checking application health...
+
+Long nested regression suites should normally run silently.
+
+I do not want thousands of lines of successful regression output copied into ChatGPT.
+
+The final result should look approximately like:
+
+M13-C ............... PASS 32 passed / 0 failed
+M13-B cumulative .... PASS
+
+OVERALL ............. PASS
+
+Failed Components: None
+
+If something fails, summarize the totals and list the failed components only so I can provide manageable logs.
+
+Preserve the distinction between:
+
+VALIDATION_MODE=local
+
+and
+
+VALIDATION_MODE=production
+
+Local-only Docker/restart tests must not create false production failures.
+
+Read the repository documentation for the current validation contract rather than assuming commands from this prompt remain current.
+
+HUMAN ACCEPTANCE
+
+Automated acceptance and human acceptance are separate gates.
+
+For UI/product work, give me a concise human acceptance checklist explaining exactly what I should open, click, change, observe, refresh, and verify.
+
+Wait for me to report:
+
+<SUB-MILESTONE> HUMAN ACCEPTANCE = PASS
+
+before treating that human gate as complete.
+
+DOCUMENTATION IS PART OF THE MILESTONE
+
+We previously experienced documentation drift. Do not allow that to happen again.
+
+Documentation synchronization is now a required major-milestone release gate, not optional cleanup.
+
+Before declaring a major milestone complete, review and update all applicable persistent documentation, including at minimum:
+
+docs/AI_HANDOFF.md
+docs/CURRENT_MILESTONE_STATUS.md
+docs/IMPLEMENTATION_MAP.md
+docs/ROADMAP.md
+docs/MILESTONES.md
+docs/ARCHITECTURE.md
+affected domain documents
+docs/DECISIONS.md if architectural decisions changed
+docs/DEPLOYMENT.md if deployment behavior changed
+docs/ai/GOLDEN_RULE.md
+BACKLOG.MD
+
+The goal is that a completely new ChatGPT conversation can reconstruct the current project state from the repository alone.
+
+MAJOR MILESTONE CLOSURE
+
+A major milestone is not complete merely because the feature works.
+
+The expected closure sequence is:
+
+Implementation complete
+↓
+Automated regression PASS
+↓
+Human acceptance PASS
+↓
+Documentation synchronized
+↓
+Final milestone checkpoint
+↓
+Merge final milestone branch → main
+↓
+Push main
+↓
+Production deployment
+↓
+Production validation PASS
+↓
+Delete merged milestone branches
+↓
+Clean main baseline
+
+Only then should we declare the major milestone complete.
+
+START THIS SESSION
+
+Do not begin implementation yet.
+
+First, read the repository documentation and inspect the current repository state.
+
+Then give me a concise Milestone Startup Report containing:
+
+1. Current Baseline — What major milestone is complete and what is next?
+
+2. Current Architecture — Summarize the important architecture that must be preserved.
+
+3. Existing Capabilities — What functionality relevant to the upcoming milestone already exists?
+
+4. Upcoming Milestone Goal — Read the canonical roadmap and explain what the next milestone is intended to accomplish.
+
+5. Proposed Sub-Milestones — Show the A/B/C/etc. breakdown from the repository if already documented. If it is only high-level or provisional, clearly say so before refining it with me.
+
+6. Protected Boundaries — What should this milestone explicitly not change?
+
+7. Documentation Health — Tell me if you find any stale or contradictory documentation that should be corrected during this milestone.
+
+8. Starting Git State — Tell me what branch/state we should verify locally before creating the first milestone branch.
+
+Then stop and wait for my approval before we create the first branch or implement anything.

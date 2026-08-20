@@ -6,54 +6,33 @@ This file is persistent cross-session project memory for ScoreStreamLive.
 
 **AI chat history is disposable. The repository is authoritative.**
 
-At the beginning of a new major-milestone session, read the repository documentation and inspect the actual repository before proposing implementation.
-
 ## Current Release
 
 ```text
-M0–M12 COMPLETE
-M12 LOCAL RELEASE GATE — PASS
-M12 PRODUCTION RELEASE GATE — PASS
-M12 HUMAN ACCEPTANCE — PASS
-M13 NOT STARTED
+M0–M12 PRODUCTION COMPLETE
+M13 IMPLEMENTATION COMPLETE
+M13 LOCAL RELEASE GATE — PASS
+M13 HUMAN ACCEPTANCE — PASS
+M13 PRODUCTION RELEASE GATE — PENDING
 ```
 
-Repository baseline after M12:
-
-```text
-M12 merge: fc688f7
-Repository/docs cleanup: fb6cec5
-Branch of record: main
-```
+M13 must not be called fully complete until its final branch is merged to `main`, Render deploys it, production validation passes, merged milestone branches are removed, and `main` is clean.
 
 ## Environment
 
-Local development / validation:
-
 ```text
-http://192.168.12.133:8000
+Local:      http://192.168.12.133:8000
+Production: https://scorestreamlive.onrender.com
 ```
 
-Production:
-
-```text
-https://scorestreamlive.onrender.com
-```
-
-Validation supports explicit modes:
+Validation modes:
 
 ```text
 VALIDATION_MODE=local
 VALIDATION_MODE=production
 ```
 
-Production mode does not run Docker-only recovery checks.
-
-## Project
-
-ScoreStreamLive is a real-time sports game-management and broadcast-scoreboard platform.
-
-Development is soccer-first while preserving a generic sports engine where doing so does not weaken the soccer experience.
+Production mode must not fail because a Docker-only local recovery action is unavailable.
 
 ## Core Architecture
 
@@ -75,196 +54,134 @@ Browser / API Client
    PostgreSQL
 ```
 
-## Non-Negotiable Rules
+Non-negotiable rules:
 
-1. PostgreSQL is authoritative persistent state.
-2. REST is the persistent mutation boundary.
-3. Socket.IO communicates committed state.
-4. Successful domain events occur only after commit.
-5. Preserve validated architecture unless an approved architecture change requires otherwise.
-6. Preserve cumulative validation harnesses.
-7. Work in milestone/sub-milestone checkpoints.
-8. Repository + migrations outrank AI memory and prior conversation.
-9. Do not expand active milestone scope without explicit approval.
-10. Do not introduce distributed infrastructure before demonstrated need.
-11. Documentation synchronization is part of milestone closure.
+```text
+PostgreSQL = authoritative persistent state
+REST       = persistent mutation boundary
+Socket.IO  = committed-state notification
+```
 
-## Current Product Domains
+Successful real-time events describe committed state only.
+
+## Persistent Domains
 
 ```text
 Game
-├── Home Team
-│   └── Players (derived roster)
-├── Away Team
-│   └── Players (derived roster)
-├── Score
-├── ScoringEvents
-├── GameClock
-└── GameLifecycle
+Team
+Player
+ScoringEvent
+GameClock
+GameLifecycle
 ```
 
-Team branding is persisted and used by management, Control Center, and Broadcast Overlay surfaces.
-
-Roster remains derived:
+Roster is derived:
 
 ```text
 Players WHERE player.team_id = team.id
 ```
 
-No separate Roster table exists.
+There is no Roster table.
 
-## Scoring
+## M13 Product Layer
 
-Game owns authoritative current score. Scoring history is stored in `ScoringEvent`.
+M13 added first-class Team and Roster management around the existing domains and APIs.
 
-Successful scoring follows:
-
-```text
-validate
-↓
-ScoringEvent INSERT + atomic Game score mutation
-↓
-ONE COMMIT
-↓
-reload
-↓
-committed-state Socket.IO notifications
-```
-
-## Clock
-
-The server owns clock truth. Clients render from persisted state and timestamp anchors.
-
-No per-second database write, authoritative in-process timer loop, or one-second Socket.IO tick exists.
-
-Running clock truth survives refresh, disconnect/reconnect, and application restart.
-
-## Lifecycle
-
-Soccer lifecycle:
+Product surfaces:
 
 ```text
-pregame
-↓
-first_half
-↓
-halftime
-↓
-second_half
-↓
-full_time
+/teams
+/teams/{team_id}
 ```
 
-Lifecycle meaning and GameClock time remain separate persisted domains. Integrated transitions coordinate them transactionally.
-
-## Product Surfaces Through M12
+M13 capabilities:
 
 ```text
-Game Management Home
-Game creation/setup workflow
-Inline Team selection/creation
-Team branding/logos
-Roster setup / Player creation
-Game detail / launch hub
-Control Center
-Broadcast Overlay
-Existing Game resume / recovery UX
+Team Management Home
+Team create/edit
+Team primary/secondary colors
+Team logo upload/replacement
+Team Detail
+Derived roster display
+Player create/edit
+Roster search/sort and management UX
+Responsive/mobile management polish
+Persistence/recovery validation
 ```
 
-## Validation
+M13 did not introduce Player delete or Player transfer. Team membership remains immutable through Player update.
 
-Canonical current release gate:
+Team logo metadata is persisted on Team (`logo_url`). Image bytes are stored outside PostgreSQL using the existing Team logo storage contract and persistent Docker volume.
+
+## Existing Match Product
 
 ```text
-scripts/validate_m12h.sh
+/games
+/games/{game_id}/setup
+/games/{game_id}
+/control/games/{game_id}
+/overlay/games/{game_id}
 ```
 
-Local M12-H:
+Scoring, clock, lifecycle, Control Center, Overlay, and pre-game setup architecture remain intact.
+
+## M13 Validation
+
+Canonical release harness:
 
 ```text
-35 passed / 0 failed
-M12-G cumulative regression: PASS
-MILESTONE 12 LOCAL RELEASE GATE = PASS
+scripts/validate_m13h.sh
 ```
 
-Production M12-H:
+Latest local result:
 
 ```text
-35 passed / 0 failed
-M12-G cumulative: SKIPPED (local-only)
-MILESTONE 12 PRODUCTION RELEASE GATE = PASS
+M13-H ............... PASS   36 passed / 0 failed
+M13-G cumulative .... PASS
+MILESTONE 13 LOCAL RELEASE GATE = PASS
+M13-H HUMAN ACCEPTANCE = PASS
 ```
 
-Validation-script UX rules:
-
-```text
-show progress such as [1/12]
-keep cumulative regression output silent unless needed
-final output = passed/failed summary
-list failed components only
-```
+M13-G locally validates persistence across application and PostgreSQL container restarts. M13-H production mode must skip local-only restart operations while preserving production-safe persistence and cumulative validation.
 
 ## Development Workflow
 
-One major milestone per AI chat/session is preferred.
-
 ```text
-Read repository rules/state
+read repository
 ↓
-Approve milestone architecture and boundaries
+approve milestone boundaries
 ↓
-Create milestone sub-branch
+chained sub-milestones
 ↓
-Implement smallest approved sub-milestone
+automated + cumulative validation
 ↓
-Automated validation + cumulative regression
+human acceptance
 ↓
-Human acceptance
+checkpoint each accepted sub-milestone
 ↓
-Checkpoint / push
+final local release gate
 ↓
-Repeat through final sub-milestone
+documentation synchronization
 ↓
-Final local + human release gate
+merge final branch → main
 ↓
-Documentation synchronization
+production deployment + validation
 ↓
-Merge final milestone branch → main
-↓
-Production release validation
-↓
-Close milestone/session
+branch cleanup / clean main
 ```
 
-Deferred enhancement requests go into root `BACKLOG.MD` when the user says **Add to Backlog**. They do not automatically expand active milestone scope.
+Downloaded ZIP/README artifacts are operator transfer artifacts and should be removed before checkpointing unless intentionally part of the repository.
 
-## Documentation Closure
+## Deferred Work
 
-At the end of every major milestone, review and synchronize at minimum:
-
-```text
-docs/AI_HANDOFF.md
-docs/CURRENT_MILESTONE_STATUS.md
-docs/IMPLEMENTATION_MAP.md
-docs/MILESTONES.md
-docs/ARCHITECTURE.md
-affected domain docs
-docs/DECISIONS.md when architecture decisions changed
-docs/DEPLOYMENT.md when deployment changed
-docs/ai/GOLDEN_RULE.md
-BACKLOG.MD
-```
+See root `BACKLOG.MD`. In particular, validation data has accumulated heavily and requires both a safe test-data cleanup strategy and a deliberate full application-data reset procedure. Do not improvise destructive cleanup.
 
 ## Next
 
-```text
-M13 — Team & Roster Management UI
-```
-
-M13 high-level product goal:
+After M13 production closure:
 
 ```text
-Manage teams, players, colors, logos, and rosters through first-class UI.
+M14 — Game Library / Dashboard
 ```
 
-Do not redesign the validated match engine merely to implement management UI.
+M14 should make upcoming, live, and completed Games discoverable without redesigning the validated engine.

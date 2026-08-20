@@ -25,6 +25,7 @@ from app.sockets import sio
 from app.web.games import router as games_web_router
 from app.web.game_setup import router as game_setup_web_router
 from app.web.game_detail import router as game_detail_web_router
+from app.web.teams import router as teams_web_router
 
 configure_logging(settings.LOG_LEVEL)
 
@@ -103,6 +104,7 @@ app.include_router(control_router)
 app.include_router(games_web_router)
 app.include_router(game_setup_web_router)
 app.include_router(game_detail_web_router)
+app.include_router(teams_web_router)
 
 
 @app.middleware("http")

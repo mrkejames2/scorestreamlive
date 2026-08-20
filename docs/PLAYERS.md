@@ -2,11 +2,9 @@
 
 ## Status
 
-Production validated through Milestone 7.
+Production domain validated; M13 Player/Roster management UI locally accepted and pending production M13 release validation.
 
 ## Player
-
-Conceptual fields:
 
 ```text
 id
@@ -24,7 +22,7 @@ updated_at
 team_id
     required
     FK → Team
-    current architecture treats membership as immutable
+    membership remains immutable through Player update
 
 first_name
     required
@@ -36,7 +34,7 @@ jersey_number
     nullable
     integer
     0–999
-    duplicates allowed
+    duplicates allowed by the domain
 ```
 
 ## API
@@ -47,9 +45,7 @@ GET   /api/players/{player_id}
 PATCH /api/players/{player_id}
 ```
 
-No Player delete endpoint exists.
-
-Player transfer is deferred.
+No Player delete endpoint exists. Player transfer remains deferred.
 
 ## Roster
 
@@ -65,14 +61,29 @@ Endpoint:
 GET /api/teams/{team_id}/players
 ```
 
-Ordering:
+Ordering remains server/domain defined.
+
+## M13 Management UI
+
+Team Detail at:
 
 ```text
-jersey_number ASC NULLS LAST
-last_name ASC
-first_name ASC
-id ASC
+/teams/{team_id}
 ```
+
+provides the first-class roster-management surface.
+
+M13 capabilities include:
+
+```text
+view roster
+search/sort roster in management UX
+add Player
+edit Player identity / jersey number
+responsive/mobile roster management
+```
+
+M13 does not permit changing `team_id` through Player edit and does not add delete/transfer behavior.
 
 ## Socket.IO
 
@@ -82,35 +93,12 @@ player:updated
 roster:updated
 ```
 
-Event order on successful create/update:
+Successful Player changes commit before notification. `roster:updated` tells clients to refetch authoritative roster state through REST.
 
-```text
-COMMIT
- ↓
-player event
- ↓
-roster:updated
-```
+## Scoring Relationship
 
-`roster:updated` payload:
+A ScoringEvent may reference a Player. When supplied, the Player must exist and belong to the scoring Team.
 
-```json
-{
-  "team_id": "<team UUID>"
-}
-```
+## Recovery
 
-The client refetches the roster through REST.
-
-## M7 Scoring Relationship
-
-A ScoringEvent may contain a Player ID.
-
-If supplied:
-
-```text
-Player must exist
-Player must belong to scoring Team
-```
-
-`player_id` may be null for an unknown/unavailable scorer.
+Player and derived roster state is PostgreSQL-backed. M13-G validates that it survives local application and PostgreSQL container restarts.

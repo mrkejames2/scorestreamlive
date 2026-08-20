@@ -1,11 +1,10 @@
 # ScoreStreamLive Architecture
 
-## Current Production State
+## Release State
 
 ```text
-M0–M12 COMPLETE
-M12 LOCAL RELEASE GATE — PASS
-M12 PRODUCTION RELEASE GATE — PASS
+M0–M12 PRODUCTION COMPLETE
+M13 LOCAL/HUMAN ACCEPTED — PRODUCTION RELEASE PENDING
 ```
 
 ## Runtime Architecture
@@ -30,7 +29,7 @@ Browser / API Client
 
 ## State Ownership
 
-PostgreSQL is authoritative for persistent Game, Team, Player, score, ScoringEvent, GameClock, GameLifecycle, and Team-branding state.
+PostgreSQL is authoritative for persistent Game, Team, Player, score, ScoringEvent, GameClock, GameLifecycle, and Team-branding metadata.
 
 REST is the durable mutation boundary.
 
@@ -50,7 +49,7 @@ Game
 └── GameLifecycle
 ```
 
-Roster is derived from Player membership; there is no separate Roster table.
+Roster is derived from `Player.team_id`; there is no Roster table.
 
 ## Mutation Rule
 
@@ -66,61 +65,61 @@ Reload
 Emit
 ```
 
-Successful real-time events never describe uncommitted state.
+## Team / Roster Management Architecture
 
-## Scoring Architecture
-
-Current score lives on Game. `ScoringEvent` stores history. ScoringEvent creation and Game score mutation occur atomically.
-
-## Clock Architecture
-
-GameClock uses persistent state plus UTC timestamp anchors rather than an in-memory authoritative timer.
-
-A running clock requires no per-second database write, no per-second Socket.IO broadcast, and no timer task per Game.
-
-Clock mutations use optimistic version concurrency.
-
-There is deliberately no authoritative `clock:tick` event.
-
-## Lifecycle Architecture
-
-GameLifecycle owns match meaning; GameClock owns time.
+M13 adds a product-management layer around existing Team and Player domains.
 
 ```text
-pregame → first_half → halftime → second_half → full_time
+/teams
+/teams/{team_id}
+        │
+        ▼
+existing Team / Player REST APIs
+        │
+        ▼
+services
+        │
+        ▼
+PostgreSQL
 ```
 
-Integrated lifecycle transitions coordinate lifecycle and clock atomically. Successful lifecycle/clock notifications are emitted only after the shared transaction commits.
+Team branding metadata (`logo_url`, primary/secondary colors) remains persistent Team state. Logo image bytes are not stored in PostgreSQL; they use the existing Team logo file-storage contract.
+
+Player membership remains represented only by `Player.team_id`. M13 does not add Player transfer or delete.
 
 ## Recovery Architecture
 
-Persisted authoritative state supports:
+Authoritative state supports:
 
 ```text
 browser refresh
-Socket.IO disconnect/reconnect
-returning to a Game later
-application-container restart (local recovery validation)
+Socket.IO reconnect
+returning later
+application-container restart
+PostgreSQL-container restart
 ```
 
-M12-G proves that recovery does not depend on previously stored browser state.
+M13-G validates Team/Player/branding/logo persistence through local application and database recovery. Recovery does not depend on browser state.
+
+## Existing Match Architecture
+
+Scoring, clock, lifecycle, Control Center, Overlay, and pre-game setup remain unchanged in architectural responsibility.
+
+GameClock remains timestamp-anchor based with no per-second authoritative DB writes or Socket.IO tick.
+
+Lifecycle remains separate from clock time and uses committed transactional transitions.
 
 ## Product Surfaces
 
-M10–M12 added the product-facing layer around the engine:
-
 ```text
-Control Center
-Broadcast Overlay
-Game Management Home
-Game creation / pre-game setup
-Team branding
-Roster setup
-Game detail / launch hub
-Existing-game resume / recovery
+/teams
+/teams/{team_id}
+/games
+/games/{game_id}/setup
+/games/{game_id}
+/control/games/{game_id}
+/overlay/games/{game_id}
 ```
-
-These surfaces consume the same authoritative domains rather than introducing a separate UI state authority.
 
 ## Infrastructure Not Present
 
@@ -136,12 +135,14 @@ distributed timer service
 per-Game timer workers
 ```
 
-Adding these requires demonstrated future need and explicit architecture approval.
+M13 did not introduce new infrastructure.
 
 ## Next Architectural Layer
 
+After M13 production closure:
+
 ```text
-M13 — Team & Roster Management UI
+M14 — Game Library / Dashboard
 ```
 
-M13 is a management/product UX layer around existing Team, Player, roster, branding, REST, Socket.IO, and PostgreSQL architecture. It should not redesign the validated match engine without an explicit architectural requirement.
+M14 should build discovery/dashboard UX around persisted Game state rather than introduce a new source of truth.

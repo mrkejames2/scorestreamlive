@@ -11,56 +11,65 @@ Before proposing implementation:
 
 1. Read:
    - docs/ai/GOLDEN_RULE.md
+   - docs/ai/AI_SESSION_BOOTSTRAP.md
+   - docs/ai/DEVELOPMENT_WORKFLOW.md
    - docs/AI_HANDOFF.md
    - docs/CURRENT_MILESTONE_STATUS.md
    - docs/IMPLEMENTATION_MAP.md
    - docs/ARCHITECTURE.md
+   - docs/ROADMAP.md
    - docs/MILESTONES.md
    - BACKLOG.MD
-   - the active milestone specification when one exists
    - affected domain docs
 
 2. Inspect the actual active branch/repository.
 
 3. Inspect relevant Alembic migrations before changing persistence.
 
-4. Explain/confirm:
+4. Confirm:
    - current production baseline,
    - active milestone and boundaries,
    - PostgreSQL responsibility,
    - REST responsibility,
    - Socket.IO responsibility,
    - protected architecture,
-   - existing validation harness,
+   - current validation harness,
    - likely files/domains affected.
 
-5. Identify conflicts between documentation and repository. Repository/migrations win; repair documentation as part of the milestone.
+5. Identify conflicts between documentation and repository. Repository/migrations win.
 
-6. Do not write code until the current authorized task is clear.
+6. Do not write code until the authorized task is clear.
 
 Rules:
 - PostgreSQL is authoritative persistent state.
 - REST is the persistent mutation boundary.
 - Socket.IO communicates committed state.
-- Preserve working production-validated architecture.
+- Preserve production-validated architecture.
 - Do not expand milestone scope without approval.
-- Do not invent repository state.
-- Do not begin future milestones early.
+- Do not implement future roadmap items early.
 - Use small sub-milestones with automated validation, human acceptance, and checkpoints.
-- Validation scripts show progress and summarize failures compactly.
-- Documentation synchronization is a required milestone-close gate.
-- Deferred ideas belong in BACKLOG.MD rather than silently expanding scope.
+- Documentation synchronization is a required release gate.
+- Deferred ideas belong in BACKLOG.MD.
 ```
 
 ## Current Session Boundary
 
-As of the M12 closeout:
-
 ```text
-M0–M12 COMPLETE
-Next: M13 — Team & Roster Management UI
-Local: http://192.168.12.133:8000
+M0–M12 PRODUCTION COMPLETE
+M13 LOCAL + HUMAN ACCEPTED
+M13 PRODUCTION RELEASE PENDING
+Canonical M13 harness: scripts/validate_m13h.sh
+
+Local:      http://192.168.12.133:8000
 Production: https://scorestreamlive.onrender.com
 ```
 
-Always re-read the repository copies of these documents; do not assume this bootstrap's checkpoint remains current forever.
+M13 delivered `/teams` and `/teams/{team_id}` Team/Player/Roster management around existing APIs. It did not add a Roster table, Player transfer/delete, or a new state authority.
+
+After M13 production closure:
+
+```text
+Next roadmap milestone: M14 — Game Library / Dashboard
+```
+
+Always re-read repository state; this checkpoint is intentionally updated again if production release results change.

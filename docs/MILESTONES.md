@@ -2,33 +2,29 @@
 
 ## Development Model
 
-Each major milestone is developed as a controlled branch chain with small accepted sub-milestones.
-
 ```text
 Architecture / scope
 ↓
-Sub-milestone implementation
+chained sub-milestones
 ↓
-Automated validation + cumulative regression
+automated validation + cumulative regression
 ↓
-Human acceptance
+human acceptance
 ↓
-Checkpoint / push
+checkpoint / push
 ↓
-Next sub-milestone
+final milestone release gate
 ↓
-Final milestone release gate
+documentation synchronization
 ↓
-Documentation synchronization
+merge final milestone branch → main
 ↓
-Merge final milestone branch → main
+production deployment + validation
 ↓
-Local + production verification
+branch cleanup / clean main
 ```
 
-Validation output should show progress (`[step/total]`) and finish with a compact passed/failed summary plus failed components only.
-
-## Completed
+## Production Complete
 
 ```text
 M0  — Deployment Foundation                         COMPLETE
@@ -46,37 +42,49 @@ M11 — Live Scoreboard Overlay                       COMPLETE
 M12 — Game Setup / Pre-Game Workflow                COMPLETE
 ```
 
-M12 completed the first full GUI-driven soccer match workflow: create/select Teams, create a Game, initialize lifecycle/clock, manage pre-game rosters, launch the Control Center and Broadcast Overlay, run the match, and recover authoritative state later.
+## M13 — Team & Roster Management UI
 
-## Product Roadmap
+Current state:
 
-| Milestone | Focus | Product outcome |
-|---|---|---|
-| **M13** | **Team & Roster Management UI** | Manage teams, players, colors, logos |
-| **M14** | **Game Library / Dashboard** | See upcoming, live, and completed games |
-| **M15** | **Accounts & Ownership** | Users, login, permissions, game ownership |
-| **M16** | **Production MVP Hardening** | Security, cleanup, deployment, production acceptance |
-| **M17** | **Sharing & Public Game Experience** | Public scoreboard/game pages and shareable links |
-| **M18** | **Monetization Foundation** | Plans, subscriptions, sponsor/ad capabilities |
-| **M19+** | **Sport Engine Expansion** | Basketball, hockey, football, baseball, and additional sports |
+```text
+IMPLEMENTATION — COMPLETE
+LOCAL RELEASE GATE — PASS
+HUMAN ACCEPTANCE — PASS
+DOCUMENTATION SYNC — IN PROGRESS
+PRODUCTION RELEASE GATE — PENDING
+```
+
+Accepted sub-milestones:
+
+```text
+M13-A — Team Management Home                         PASS
+M13-B — Team Create / Edit / Branding                PASS
+M13-C — Team Detail & Roster View                    PASS
+M13-D — Player Create / Edit                         PASS
+M13-E — Roster Management UX                        PASS
+M13-F — Management UX Polish / Mobile                PASS
+M13-G — Recovery / Persistence / Regression          PASS
+M13-H — Final Acceptance / Release Gate              LOCAL PASS + HUMAN PASS
+```
+
+M13 delivered first-class Team/Player/Roster management while preserving the existing REST/service/PostgreSQL/Socket.IO architecture. It added no Roster table, Player transfer, Player delete, or match-engine redesign.
+
+Canonical local M13 result:
+
+```text
+M13-H ............... PASS   36 passed / 0 failed
+M13-G cumulative .... PASS
+MILESTONE 13 LOCAL RELEASE GATE = PASS
+```
+
+M13 becomes fully COMPLETE only after final branch merge, production deployment, production M13-H PASS, branch cleanup, and clean `main`.
 
 ## Next
 
-### M13 — Team & Roster Management UI
-
-High-level scope:
-
 ```text
-Team management UI
-Team create/edit/branding
-Team detail and roster view
-Player create/edit
-Roster management UX
-Management UX/mobile polish
-Persistence/recovery/regression
-Final acceptance/release gate
+M14 — Game Library / Dashboard
 ```
 
-M13 should build management UX around the validated engine rather than redesign scoring, clock, lifecycle, Socket.IO, Control Center, or Overlay architecture.
+Product outcome: make upcoming, live, and completed persisted Games easy to discover and reopen.
 
-Detailed M13 architecture must be approved before implementation begins.
+M14 scope must be approved in a new major-milestone session before implementation.

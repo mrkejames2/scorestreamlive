@@ -2,21 +2,26 @@
 
 ## Status
 
-Production validated.
+Production domain validated; M13 management UI locally accepted and pending production M13 release validation.
 
 ## Purpose
 
 Team represents a sports team referenced by Games and Players.
 
-Conceptual fields:
+## Persistent Fields
 
 ```text
 id
 name
 short_name
+logo_url
+primary_color
+secondary_color
 created_at
 updated_at
 ```
+
+`logo_url` is persistent metadata. Logo image bytes are deliberately not stored in PostgreSQL.
 
 ## API
 
@@ -25,45 +30,70 @@ POST   /api/teams
 GET    /api/teams
 GET    /api/teams/{team_id}
 PATCH  /api/teams/{team_id}
+POST   /api/teams/{team_id}/logo
 GET    /api/teams/{team_id}/players
 ```
 
-## Game Relationship
-
-Games reference Teams as:
+## M13 Web UI
 
 ```text
-home_team_id
-away_team_id
+/teams
+/teams/{team_id}
 ```
 
-## Player Relationship
+`/teams` is the Team Management Home and supports Team discovery, creation, editing, and branding.
 
-Players belong to a Team through:
+`/teams/{team_id}` is Team Detail and provides Team identity/branding plus derived roster management.
+
+M13 management surfaces use the existing REST APIs for persistent mutations. Browser state is not authoritative.
+
+## Branding
+
+Team supports:
+
+```text
+short name
+primary color
+secondary color
+logo
+```
+
+Logo upload/replacement is handled through the Team logo endpoint and storage service. Local Docker uses a persistent Team-logo volume so uploaded logos survive application/container recovery.
+
+## Player Relationship / Roster
+
+Players belong to Team through:
 
 ```text
 Player.team_id
 ```
 
-## Roster
+Roster remains derived:
 
-No separate roster table exists.
+```text
+Players WHERE player.team_id = team.id
+```
 
-The Team roster is derived by querying Players.
+No separate Roster table exists.
 
-## Scoring Validation
+## Game Relationship
 
-In M7, a Team can score only when it participates in the target Game as Home or Away Team.
+Games reference Teams through `home_team_id` and `away_team_id`.
 
 ## Socket.IO
 
 ```text
 team:created
 team:updated
-```
-
-Roster changes are represented separately with:
-
-```text
 roster:updated
 ```
+
+Successful notifications represent committed state.
+
+## M13 Boundaries
+
+M13 did not introduce Team deletion, a Roster table, or a new persistence model.
+
+## Validation
+
+M13-G proves Team identity/branding/logo persistence across local app and PostgreSQL restart recovery. M13-H is the canonical final M13 release gate.

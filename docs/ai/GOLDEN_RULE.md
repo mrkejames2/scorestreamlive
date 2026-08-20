@@ -15,17 +15,17 @@
 8. Prior AI conversation
 ```
 
-AI chat history is useful context, but it is never more authoritative than the repository.
-
 ## Current Checkpoint
 
 ```text
-M0–M12 COMPLETE
-M12 LOCAL RELEASE GATE — PASS
-M12 PRODUCTION RELEASE GATE — PASS
-M12 HUMAN ACCEPTANCE — PASS
-M13 NOT STARTED
+M0–M12 PRODUCTION COMPLETE
+M13 IMPLEMENTATION COMPLETE
+M13 LOCAL RELEASE GATE — PASS
+M13 HUMAN ACCEPTANCE — PASS
+M13 PRODUCTION RELEASE GATE — PENDING
 ```
+
+Do not declare M13 fully complete before merge/deploy/production validation/branch cleanup.
 
 ## Technical Rules
 
@@ -36,38 +36,25 @@ Socket.IO  = committed-state notification
 ```
 
 Never emit successful state before commit.
-
 Never invent repository state.
-
 Never expand milestone scope without approval.
-
-Never begin the next milestone merely because it is next on the roadmap.
-
+Never begin the next milestone merely because it is next.
 Do not redesign validated architecture when the requirement can be satisfied by extending the existing design.
 
 ## Working Method
 
-Prefer one major milestone per AI session/chat.
-
-At session start:
-
 ```text
 read repository rules/state
-inspect actual repository
-inspect relevant migrations/domains
-identify documentation drift
-confirm active milestone scope
-then architect/implement
-```
-
-For each sub-milestone:
-
-```text
-small approved implementation
 ↓
-automated validation
+inspect implementation + migrations
 ↓
-cumulative regression
+approve scope/boundaries
+↓
+small sub-milestone
+↓
+targeted automated validation
+↓
+silent cumulative regression
 ↓
 human acceptance
 ↓
@@ -76,47 +63,45 @@ checkpoint / push
 
 ## Validation UX Rule
 
-Long regression runs should:
+Validation should show progress, keep successful nested regression output quiet, report totals, and list failed components only.
 
-```text
-show [step/total] progress
-keep successful cumulative output quiet
-report pass/fail totals
-list failed components only
-```
+`VALIDATION_MODE=local` and `VALIDATION_MODE=production` must remain distinct so local-only Docker/restart tests do not create false production failures.
 
 ## Milestone Closure Rule
-
-A major milestone is closed only after the applicable gates complete:
 
 ```text
 final automated local validation
 human acceptance
-Git checkpoint / branch integrity
 documentation synchronization
+final branch checkpoint
 merge final milestone branch → main
 production deployment
 production validation
+delete merged milestone branches
 clean main baseline
 ```
 
-Local-only checks (for example Docker container restart recovery) must not create false production failures. Validation modes must distinguish environment-specific checks.
-
 ## Documentation Synchronization Rule
 
-At every major milestone close, review and update as applicable:
+At every major milestone close, review/update as applicable:
 
 ```text
 docs/AI_HANDOFF.md
 docs/CURRENT_MILESTONE_STATUS.md
 docs/IMPLEMENTATION_MAP.md
+docs/ROADMAP.md
 docs/MILESTONES.md
 docs/ARCHITECTURE.md
 affected domain docs
 docs/DECISIONS.md
 docs/DEPLOYMENT.md
 docs/ai/GOLDEN_RULE.md
+docs/ai/AI_SESSION_BOOTSTRAP.md
 BACKLOG.MD
 ```
 
-Documentation synchronization is part of the milestone, not optional cleanup.
+Documentation synchronization is part of the milestone.
+
+## Next
+
+After M13 production closure, the roadmap points to M14 — Game Library / Dashboard. M14 still requires a fresh repository-based startup review and explicit authorization.

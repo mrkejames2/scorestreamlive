@@ -1,9 +1,5 @@
 # ScoreStreamLive — Product Roadmap
 
-## Product Transition
-
-Milestones through M10 established the core engine and operator cockpit. M11 onward increasingly builds the product a parent, coach, streamer, or club uses directly.
-
 ## Completed Foundation
 
 ```text
@@ -13,29 +9,17 @@ M11     Live Scoreboard Overlay
 M12     Game Setup / Pre-Game Workflow
 ```
 
-All milestones M0–M12 are complete as of the current baseline.
+M0–M12 are production complete.
 
-## Product Roadmap
-
-| Milestone | Focus | What becomes visible/useful |
-|---|---|---|
-| **M13** | **Team & Roster Management UI** | Manage teams, players, colors, logos |
-| **M14** | **Game Library / Dashboard** | See upcoming, live, and completed games |
-| **M15** | **Accounts & Ownership** | Users, login, permissions, game ownership |
-| **M16** | **Production MVP Hardening** | Security, cleanup, deployment, production acceptance |
-| **M17** | **Sharing & Public Game Experience** | Public scoreboard/game pages and shareable links |
-| **M18** | **Monetization Foundation** | Plans, subscriptions, sponsor/ad capabilities |
-| **M19+** | **Sport Engine Expansion** | Basketball, hockey, football, baseball, and additional sports |
-
-## M13 Direction
-
-M13 is the next major milestone:
+## Current Release Candidate
 
 ```text
-Team & Roster Management UI
+M13 — Team & Roster Management UI
 ```
 
-Expected high-level decomposition, subject to architecture approval at M13 start:
+M13 implementation is complete and has passed its local release gate and human acceptance. Production deployment/validation remains before M13 can be declared fully complete.
+
+Delivered M13 decomposition:
 
 ```text
 M13-A — Team Management Home
@@ -48,20 +32,30 @@ M13-G — Recovery / Persistence / Regression
 M13-H — Final Acceptance / Release Gate
 ```
 
-The purpose of M13 is to make existing Team/Player/Roster/branding capabilities maintainable through first-class product UI. It should not absorb Game Library/Dashboard work intended for M14 or redesign the validated match engine.
+M13 makes existing Team/Player/Roster/branding capabilities maintainable through first-class product UI while preserving the validated match engine.
 
-## Roadmap Governance
+## Product Roadmap
 
-Roadmap entries describe direction, not automatic authorization.
+| Milestone | Focus | Product outcome |
+|---|---|---|
+| **M13** | **Team & Roster Management UI** | Local/human accepted; production release pending |
+| **M14** | **Game Library / Dashboard** | See upcoming, live, and completed games |
+| **M15** | **Accounts & Ownership** | Users, login, permissions, game ownership |
+| **M16** | **Production MVP Hardening** | Security, cleanup, deployment, production acceptance |
+| **M17** | **Sharing & Public Game Experience** | Public scoreboard/game pages and shareable links |
+| **M18** | **Monetization Foundation** | Plans, subscriptions, sponsor/ad capabilities |
+| **M19+** | **Sport Engine Expansion** | Basketball, hockey, football, baseball, additional sports |
 
-Before each major milestone:
+## Next Direction
+
+After M13 production closure:
 
 ```text
-read current repository documentation
-inspect actual implementation
-approve milestone architecture
-approve sub-milestone boundaries
-then implement
+M14 — Game Library / Dashboard
 ```
 
-Deferred enhancements are tracked in root `BACKLOG.MD`.
+M14 should make persisted Games easier to find and understand as upcoming, live, or completed. Detailed M14 scope remains subject to repository inspection and architecture approval at the start of the M14 session.
+
+## Governance
+
+Roadmap entries describe direction, not automatic authorization. Deferred enhancements remain in root `BACKLOG.MD`.
