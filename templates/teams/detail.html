@@ -1,1 +1,126 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ScoreStreamLive — Team Detail</title><link rel="stylesheet" href="/static/css/team-detail.css"></head><body><main class="detail-shell" data-team-id="{{ team_id }}"><header class="topbar"><a class="back" href="/teams">← Teams</a><span id="detail-status" class="status">LOADING</span></header><section id="detail-error" class="notice hidden"></section><section id="detail-success" class="notice success hidden"></section><section id="team-hero" class="hero hidden"><div id="hero-accent" class="hero-accent"></div><div class="hero-body"><div class="logo-shell"><span id="logo-fallback">T</span><img id="team-logo" class="hidden" alt=""></div><div class="identity"><div class="eyebrow">SCORESTREAMLIVE · M13-D</div><h1 id="team-name">Team</h1><div id="team-short" class="short-name"></div><div class="colors"><span id="primary-swatch" class="swatch"></span><code id="primary-color"></code><span id="secondary-swatch" class="swatch"></span><code id="secondary-color"></code></div><code id="team-id" class="team-id"></code></div></div></section><section class="roster-panel"><div class="panel-head"><div><div class="eyebrow">ROSTER</div><h2>Players</h2><p>Create and edit Players assigned to this Team.</p></div><div class="roster-actions"><strong id="roster-count">—</strong><button id="add-player" class="button primary">+ Add Player</button></div></div><div id="roster-empty" class="empty hidden">No players are assigned to this Team yet.</div><div id="roster-list" class="roster-list"></div></section><footer><span>Milestone M13-D</span><span>Player Create / Edit</span></footer></main><template id="player-row-template"><article class="player-row"><div class="jersey"></div><div><strong class="player-name"></strong><code class="player-id"></code></div><button class="button secondary edit-player">Edit</button></article></template><div id="player-modal" class="modal hidden"><div class="backdrop" data-close-player></div><section class="modal-card"><div class="modal-head"><h2 id="player-modal-title">Add Player</h2><button class="close" data-close-player>×</button></div><form id="player-form"><div class="form-grid"><label>First Name *<input id="player-first" maxlength="255" required></label><label>Last Name *<input id="player-last" maxlength="255" required></label><label>Jersey Number<input id="player-jersey" type="number" min="0" max="999"></label></div><div id="player-form-error" class="notice hidden"></div><div class="modal-actions"><button class="button secondary" type="button" data-close-player>Cancel</button><button id="save-player" class="button primary">Add Player</button></div></form></section></div><script type="module" src="/static/js/teams/detail.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>ScoreStreamLive — Team Detail</title>
+  <link rel="stylesheet" href="/static/css/team-detail.css">
+</head>
+<body>
+<main class="detail-shell" data-team-id="{{ team_id }}">
+  <header class="topbar">
+    <a class="back" href="/teams">← Teams</a>
+    <span id="detail-status" class="status">LOADING</span>
+  </header>
+
+  <section id="detail-error" class="notice hidden" role="alert"></section>
+  <section id="detail-success" class="notice success hidden" role="status"></section>
+
+  <section id="team-hero" class="hero hidden">
+    <div id="hero-accent" class="hero-accent"></div>
+    <div class="hero-body">
+      <div class="logo-shell">
+        <span id="logo-fallback">T</span>
+        <img id="team-logo" class="hidden" alt="">
+      </div>
+      <div class="identity">
+        <div class="eyebrow">SCORESTREAMLIVE · M13-E</div>
+        <h1 id="team-name">Team</h1>
+        <div id="team-short" class="short-name"></div>
+        <div class="colors">
+          <span id="primary-swatch" class="swatch"></span><code id="primary-color"></code>
+          <span id="secondary-swatch" class="swatch"></span><code id="secondary-color"></code>
+        </div>
+        <code id="team-id" class="team-id"></code>
+      </div>
+    </div>
+  </section>
+
+  <section class="roster-panel">
+    <div class="panel-head">
+      <div>
+        <div class="eyebrow">ROSTER MANAGEMENT</div>
+        <h2>Players</h2>
+        <p>Create, find, sort, and edit Players assigned to this Team.</p>
+      </div>
+      <div class="roster-actions">
+        <div class="roster-count-block">
+          <strong id="roster-count">—</strong>
+          <span id="roster-count-label">players</span>
+        </div>
+        <button id="add-player" class="button primary" type="button">+ Add Player</button>
+      </div>
+    </div>
+
+    <div class="roster-toolbar">
+      <label class="search-field">
+        <span class="sr-only">Search roster</span>
+        <input id="roster-search" type="search" placeholder="Search name or jersey…" autocomplete="off">
+      </label>
+      <label class="sort-field">
+        <span>Sort</span>
+        <select id="roster-sort">
+          <option value="jersey">Jersey number</option>
+          <option value="last_name">Last name</option>
+          <option value="first_name">First name</option>
+        </select>
+      </label>
+      <span id="roster-visible-count" class="visible-count"></span>
+    </div>
+
+    <div id="roster-empty" class="empty hidden">
+      <strong>No players yet</strong>
+      <span>Add the first Player to this Team.</span>
+    </div>
+    <div id="roster-no-results" class="empty hidden">
+      <strong>No matching players</strong>
+      <span>Try a different name or jersey number.</span>
+    </div>
+
+    <div id="roster-list" class="roster-list"></div>
+  </section>
+
+  <footer><span>Milestone M13-E</span><span>Roster Management UX</span></footer>
+</main>
+
+<template id="player-row-template">
+  <article class="player-row">
+    <div class="jersey"></div>
+    <div class="player-info">
+      <strong class="player-name"></strong>
+      <span class="player-meta"></span>
+      <code class="player-id"></code>
+    </div>
+    <button class="button secondary edit-player" type="button">Edit</button>
+  </article>
+</template>
+
+<div id="player-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="player-modal-title">
+  <div class="backdrop" data-close-player></div>
+  <section class="modal-card">
+    <div class="modal-head">
+      <div>
+        <div class="eyebrow">PLAYER</div>
+        <h2 id="player-modal-title">Add Player</h2>
+      </div>
+      <button class="close" type="button" data-close-player aria-label="Close">×</button>
+    </div>
+    <form id="player-form">
+      <div class="form-grid">
+        <label><span>First Name *</span><input id="player-first" maxlength="255" required autocomplete="off"></label>
+        <label><span>Last Name *</span><input id="player-last" maxlength="255" required autocomplete="off"></label>
+        <label><span>Jersey Number</span><input id="player-jersey" type="number" min="0" max="999" placeholder="Optional" inputmode="numeric"></label>
+      </div>
+      <div id="player-form-error" class="notice hidden" role="alert"></div>
+      <div id="jersey-warning" class="notice warning hidden" role="status"></div>
+      <div class="modal-actions">
+        <button class="button secondary" type="button" data-close-player>Cancel</button>
+        <button id="save-player" class="button primary" type="submit">Add Player</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<script type="module" src="/static/js/teams/detail.js"></script>
+</body>
+</html>
