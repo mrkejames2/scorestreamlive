@@ -3,18 +3,8 @@
 ## Current Production Version
 
 ```text
-M0–M8 COMPLETE
-M8 PRODUCTION VALIDATED
-```
-
-## Latest Checkpoint
-
-```text
-Implementation commit:
-ecbd6ab
-
-Alembic:
-20260814_0005
+M0–M12 COMPLETE
+M12 LOCAL + PRODUCTION RELEASE GATES PASS
 ```
 
 ## Runtime Stack
@@ -29,10 +19,10 @@ PostgreSQL
 Alembic
 Pydantic
 python-socketio
-Docker
-Docker Compose
+Docker / Docker Compose
 GitHub
 Render
+HTML / CSS / JavaScript management and broadcast surfaces
 ```
 
 ## Runtime Architecture
@@ -55,222 +45,139 @@ Render
                           PostgreSQL
 ```
 
+PostgreSQL is authoritative. REST is the durable mutation boundary. Socket.IO communicates committed state.
+
 ## Persistent Domains
+
+```text
+Game
+Team
+Player
+ScoringEvent
+GameClock
+GameLifecycle
+```
+
+Roster has no table; it is derived from Player membership by `team_id`.
 
 ### Game
 
-```text
-id
-name
-status
-scheduled_at
-home_team_id
-away_team_id
-home_score
-away_score
-created_at
-updated_at
-```
+Contains identity/setup fields, Home/Away Team references, authoritative current score, and timestamps.
 
 ### Team
 
-Games reference Teams through home/away IDs.
+Referenced by Games and Players. M12 added persisted branding used by product surfaces, including team colors and logo data/reference according to the implemented storage contract.
 
 ### Player
 
-Players belong to Teams via `team_id`.
-
-### Roster
-
-No table.
-
-Derived by Team membership.
+Belongs to one Team through `team_id`; roster membership is derived from this relationship.
 
 ### ScoringEvent
 
-```text
-id
-game_id
-team_id
-player_id nullable
-event_type
-created_at
-```
+Stores scoring history and optional scorer association. Current Game score is updated atomically with scoring-event creation.
 
 ### GameClock
 
-```text
-id
-game_id UNIQUE
-mode
-status
-duration_seconds
-elapsed_seconds
-running_since
-version
-created_at
-updated_at
-```
+One clock per Game. Supports count-up/count-down state, persisted elapsed anchors, optimistic version concurrency, and restart/reconnect recovery.
 
-## GameClock REST
+There is intentionally no `clock:tick` authoritative event.
+
+### GameLifecycle
+
+Persists soccer match phase independently from clock time.
+
+Canonical soccer flow:
 
 ```text
-POST  /api/games/{game_id}/clock
-GET   /api/games/{game_id}/clock
-PATCH /api/games/{game_id}/clock
-
-POST /api/games/{game_id}/clock/start
-POST /api/games/{game_id}/clock/pause
-POST /api/games/{game_id}/clock/resume
-POST /api/games/{game_id}/clock/reset
+pregame → first_half → halftime → second_half → full_time
 ```
 
-## Clock Calculation
+Integrated transitions coordinate lifecycle and clock in one transaction and emit committed state after success.
 
-Running:
+## Product / Web Surfaces Through M12
 
 ```text
-elapsed =
-    elapsed_seconds
-    +
-    floor(server_now - running_since)
+/games                         Game Management Home
+/games/{game_id}/setup         Pre-game setup / roster management
+/games/{game_id}               Game detail / launch hub
+/control/games/{game_id}       Operator Control Center
+/overlay/games/{game_id}       Broadcast Overlay
 ```
 
-Count up:
+M12 established a GUI-driven workflow from Team/Game setup through match operation and later recovery.
 
-```text
-display = elapsed
-```
+## Socket.IO Domain Model
 
-Count down:
+Existing domain notifications include Team, Game, Player/Roster, Scoring, Clock, and Lifecycle committed-state changes.
 
-```text
-display =
-    max(duration_seconds - elapsed, 0)
-```
-
-## Concurrency
-
-Clock mutations require `expected_version`.
-
-PostgreSQL conditional updates ensure stale same-version commands cannot both commit.
-
-## Socket.IO
-
-Technical:
-
-```text
-connection:ready
-client:ping
-server:pong
-test:broadcast
-```
-
-Domain:
-
-```text
-team:created
-team:updated
-
-game:created
-game:updated
-game:score_updated
-
-player:created
-player:updated
-roster:updated
-
-scoring_event:created
-
-clock:updated
-```
-
-There is no:
-
-```text
-clock:tick
-```
-
-## Clock Event Model
-
-Successful clock mutation:
+Rules:
 
 ```text
 validate
 ↓
-database mutation
+mutate database
 ↓
 COMMIT
 ↓
-reload committed clock
+reload committed state
 ↓
-clock:updated
+emit
 ```
 
-## Restart Safety
+Failed/stale mutations do not emit successful state.
 
-No background timer is authoritative.
+## Recovery Model
 
-Persisted:
+Authoritative recovery is server/database based, not browser-state based.
 
-```text
-elapsed_seconds
-running_since
-status
-```
+A user can return to Game Management and reopen a persisted Game. Clock/lifecycle/score/rosters/scoring history are recovered from authoritative application state.
 
-allow a running clock to survive application restart.
+Local M12-G validation includes application-container restart recovery. Production M12-H deliberately skips that Docker-only action while validating the deployed end-to-end workflow.
 
 ## Validation
 
-```text
-M8 local:      83 / 83 PASS
-M8 production: 146 / 146 PASS
-M8 remote:      17 / 17 PASS
-M7 production: 127 / 127 PASS
-M6 production:  57 / 57 PASS
-```
-
-## Technical Validation Client
-
-`/client` supports manual M8 diagnostics:
+Canonical current release entry point:
 
 ```text
-clock creation
-mode/duration
-start
-pause
-resume
-reset
-version
-server_time
-running_since
-rendered time
-soccer added-time display
-clock:updated logging
-disconnect/reconnect
+scripts/validate_m12h.sh
 ```
 
-It is not the production game controller.
-
-## Deployment
+Modes:
 
 ```text
-Ubuntu VM
-↓
-Docker validation
-↓
-GitHub
-↓
-Render
-↓
-Alembic
-↓
-production validation
+VALIDATION_MODE=local
+VALIDATION_MODE=production
 ```
 
-## Next
+Local endpoint:
 
 ```text
-M9 NOT STARTED
+http://192.168.12.133:8000
 ```
+
+Production endpoint:
+
+```text
+https://scorestreamlive.onrender.com
+```
+
+Latest accepted M12-H results:
+
+```text
+Local:      35 passed / 0 failed + M12-G cumulative PASS
+Production: 35 passed / 0 failed; M12-G SKIPPED as local-only
+```
+
+## Development / Git Model
+
+Major milestones use chained sub-milestone branches. Each accepted sub-milestone is checkpointed before the next. The final accepted milestone branch is merged into `main` with a milestone merge commit.
+
+Milestone documentation synchronization is part of closure.
+
+## Next Architectural Layer
+
+```text
+M13 — Team & Roster Management UI
+```
+
+M13 should add first-class Team/Player/Roster management around the validated domains and APIs without redesigning the match engine.
