@@ -29,6 +29,7 @@ function renderTeam(t){
   n.querySelector(".team-id").textContent=t.id;n.querySelector(".team-id").title=t.id;
   applyColor(n.querySelector(".primary-swatch"),n.querySelector(".primary-color"),t.primary_color);
   applyColor(n.querySelector(".secondary-swatch"),n.querySelector(".secondary-color"),t.secondary_color);
+  n.querySelector(".view-team-link").href=`/teams/${t.id}`;
   n.querySelector(".manage-team-button").onclick=()=>openModal(t);
   card.dataset.teamId=t.id;listEl.appendChild(n);
 }
@@ -69,11 +70,8 @@ async function saveTeam(e){
     let team;
     if(editingTeam){team=await json(`/api/teams/${editingTeam.id}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});}
     else{team=await json("/api/teams",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});}
-    if(logoInput.files[0]){
-      const fd=new FormData();fd.append("logo",logoInput.files[0]);
-      team=await json(`/api/teams/${team.id}/logo`,{method:"POST",body:fd});
-    }
-    closeModal();await loadTeams();notice(successEl,`${team.name} ${editingTeam?"updated":"created"} successfully.`);setTimeout(()=>notice(successEl,""),5000);
+    if(logoInput.files[0]){const fd=new FormData();fd.append("logo",logoInput.files[0]);team=await json(`/api/teams/${team.id}/logo`,{method:"POST",body:fd});}
+    const wasEditing=Boolean(editingTeam);closeModal();await loadTeams();notice(successEl,`${team.name} ${wasEditing?"updated":"created"} successfully.`);setTimeout(()=>notice(successEl,""),5000);
   }catch(e){notice(formError,e.message||"Unable to save Team.");setStatus("error","ERROR");}
   finally{save.disabled=false;if(!modal.classList.contains("hidden"))setStatus("ready","READY");}
 }

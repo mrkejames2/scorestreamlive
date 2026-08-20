@@ -10,9 +10,9 @@
 <main class="teams-shell">
   <header class="teams-header">
     <div>
-      <div class="eyebrow">SCORESTREAMLIVE · M13-B</div>
+      <div class="eyebrow">SCORESTREAMLIVE · M13-C</div>
       <h1>Teams</h1>
-      <p class="subhead">Create and maintain reusable team identity and branding. Roster management remains deferred to later Milestone 13 checkpoints.</p>
+      <p class="subhead">Create and maintain reusable team identity and branding, then open a Team to review its derived roster.</p>
     </div>
     <div class="header-actions">
       <span id="teams-status" class="status-chip" data-state="loading">LOADING</span>
@@ -29,14 +29,14 @@
   </section>
 
   <section class="teams-panel">
-    <div class="panel-heading"><div><h2>Team Management</h2><p>Team mutations use the existing REST API. Successful saves are reloaded from committed persistent state.</p></div></div>
+    <div class="panel-heading"><div><h2>Team Management</h2><p>Team mutations use the existing REST API. Open any Team to view its read-only roster.</p></div></div>
     <div id="teams-error" class="notice notice-error hidden" role="alert"></div>
     <div id="teams-success" class="notice notice-success hidden" role="status"></div>
     <div id="teams-empty" class="empty-state hidden"><h3>No teams yet</h3><p>Create your first reusable Team.</p><button class="button button-primary empty-create-team" type="button">+ Create Team</button></div>
     <div id="teams-list" class="teams-grid" aria-live="polite"></div>
   </section>
 
-  <footer class="teams-footer"><span>Milestone M13-B</span><span>Team Create / Edit / Branding</span></footer>
+  <footer class="teams-footer"><span>Milestone M13-C</span><span>Team Detail &amp; Roster View</span></footer>
 </main>
 
 <template id="team-card-template">
@@ -54,8 +54,11 @@
       </div>
     </div>
     <div class="team-card-actions">
-      <span class="future-note">Roster detail opens in M13-C</span>
-      <button class="button button-secondary manage-team-button" type="button">Edit Team</button>
+      <span class="future-note">Roster is read-only in M13-C</span>
+      <div class="team-action-group">
+        <a class="button button-primary view-team-link">View Team</a>
+        <button class="button button-secondary manage-team-button" type="button">Edit Team</button>
+      </div>
     </div>
   </article>
 </template>
