@@ -1,84 +1,77 @@
 # ScoreStreamLive — Current Milestone Status
 
-## Current
+## Current Release
 
 ```text
-MILESTONE 8 — COMPLETE
-PRODUCTION VALIDATED
+MILESTONE 12 — COMPLETE
+LOCAL RELEASE GATE — PASS
+PRODUCTION RELEASE GATE — PASS
+HUMAN ACCEPTANCE — PASS
 ```
 
-## Completed Milestones
+Milestones M0 through M12 are complete.
+
+## Repository Baseline
 
 ```text
-M0 COMPLETE
-M1 COMPLETE
-M2 COMPLETE
-M3 COMPLETE
-M4 COMPLETE
-M5 COMPLETE
-M6 COMPLETE
-M7 COMPLETE
-M8 COMPLETE
+Branch: main
+M12 merge: fc688f7
+Documentation / validation cleanup: fb6cec5
 ```
 
-## Latest Production Validation
+## Validation
+
+Local endpoint:
 
 ```text
-M8 local:      83 / 83 PASS
-M8 production: 146 / 146 PASS
-M8 remote:      17 / 17 PASS
-
-M7 production regression:
-127 / 127 PASS
-
-M6 production regression:
-57 / 57 PASS
+http://192.168.12.133:8000
 ```
 
-## Repository Checkpoint
+Production endpoint:
 
 ```text
-M8 implementation:
-ecbd6ab
-Implement Milestone 8: Game Clock System with REST API and real-time synchronization
+https://scorestreamlive.onrender.com
 ```
 
-## Alembic
+M12-H local:
 
 ```text
-20260814_0005
+35 passed / 0 failed
+M12-G cumulative regression: PASS
+MILESTONE 12 LOCAL RELEASE GATE = PASS
 ```
 
-## Independent Review
+M12-H production:
 
 ```text
-DeepSeek:
-APPROVE MILESTONE 8 FOR PRODUCTION DEPLOYMENT
+35 passed / 0 failed
+M12-G cumulative regression: SKIPPED (local-only Docker recovery)
+MILESTONE 12 PRODUCTION RELEASE GATE = PASS
 ```
 
-## Current Production Domain
+## Current Product Capability
 
 ```text
-Game
-├── Home Team
-│   └── Players
-├── Away Team
-│   └── Players
-├── Score
-├── ScoringEvents
-└── GameClock
+Team domain + branding
+Player / derived roster domain
+Game creation and management
+Scoring and scoring history
+Persistent authoritative GameClock
+Soccer lifecycle / phases
+Integrated lifecycle + clock transitions
+Real-time Socket.IO committed-state notifications
+Operator Control Center
+Broadcast Overlay
+GUI pre-game setup workflow
+Game detail / launch hub
+Existing-game resume / recovery UX
 ```
 
-## Next
+## Next Milestone
 
 ```text
-M9 NOT STARTED
+M13 — Team & Roster Management UI
+STATUS: NOT STARTED
 ```
 
-Directional focus:
-
-```text
-Game Lifecycle / Phases
-```
-
-No M9 implementation is authorized by this file.
+M13 is not authorized merely because it is next. Begin only from an approved M13 architecture/specification on a milestone branch.
