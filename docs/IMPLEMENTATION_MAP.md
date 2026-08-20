@@ -1,10 +1,11 @@
 # ScoreStreamLive — Implementation Map
 
-## Current Production Version
+## Release State
 
 ```text
-M0–M12 COMPLETE
-M12 LOCAL + PRODUCTION RELEASE GATES PASS
+M0–M12 PRODUCTION COMPLETE
+M13 LOCAL + HUMAN ACCEPTED
+M13 PRODUCTION RELEASE PENDING
 ```
 
 ## Runtime Stack
@@ -22,30 +23,30 @@ python-socketio
 Docker / Docker Compose
 GitHub
 Render
-HTML / CSS / JavaScript management and broadcast surfaces
+HTML / CSS / JavaScript product surfaces
 ```
 
 ## Runtime Architecture
 
 ```text
-                       Browser / API Client
-                              │
-                ┌─────────────┴─────────────┐
-                │                           │
-              REST                      Socket.IO
-                │                           │
-                └─────────────┬─────────────┘
-                              ▼
-                          FastAPI
-                              │
-                           Services
-                              │
-                       SQLAlchemy Async
-                              │
-                          PostgreSQL
+Browser / API Client
+        │
+   ┌────┴────┐
+   │         │
+ REST     Socket.IO
+   │         │
+   └────┬────┘
+        │
+     FastAPI
+        │
+     Services
+        │
+ SQLAlchemy Async
+        │
+   PostgreSQL
 ```
 
-PostgreSQL is authoritative. REST is the durable mutation boundary. Socket.IO communicates committed state.
+PostgreSQL is authoritative. REST performs durable mutations. Socket.IO communicates committed state.
 
 ## Persistent Domains
 
@@ -58,88 +59,82 @@ GameClock
 GameLifecycle
 ```
 
-Roster has no table; it is derived from Player membership by `team_id`.
-
-### Game
-
-Contains identity/setup fields, Home/Away Team references, authoritative current score, and timestamps.
+Roster has no table. It is derived from `Player.team_id`.
 
 ### Team
 
-Referenced by Games and Players. M12 added persisted branding used by product surfaces, including team colors and logo data/reference according to the implemented storage contract.
+Current Team state includes identity and branding:
+
+```text
+id
+name
+short_name
+logo_url
+primary_color
+secondary_color
+created_at
+updated_at
+```
+
+Logo bytes are deliberately not stored in PostgreSQL. `logo_url` is persistent Team metadata; the logo file uses the existing Team logo storage service/volume contract.
 
 ### Player
 
-Belongs to one Team through `team_id`; roster membership is derived from this relationship.
+Player belongs to one Team through `team_id`. M13 exposes create/edit management UI but does not add transfer or delete.
 
-### ScoringEvent
-
-Stores scoring history and optional scorer association. Current Game score is updated atomically with scoring-event creation.
-
-### GameClock
-
-One clock per Game. Supports count-up/count-down state, persisted elapsed anchors, optimistic version concurrency, and restart/reconnect recovery.
-
-There is intentionally no `clock:tick` authoritative event.
-
-### GameLifecycle
-
-Persists soccer match phase independently from clock time.
-
-Canonical soccer flow:
+## Product / Web Surfaces
 
 ```text
-pregame → first_half → halftime → second_half → full_time
-```
-
-Integrated transitions coordinate lifecycle and clock in one transaction and emit committed state after success.
-
-## Product / Web Surfaces Through M12
-
-```text
+/teams                         Team Management Home
+/teams/{team_id}               Team Detail / Roster Management
 /games                         Game Management Home
-/games/{game_id}/setup         Pre-game setup / roster management
+/games/{game_id}/setup         Pre-game setup
 /games/{game_id}               Game detail / launch hub
 /control/games/{game_id}       Operator Control Center
 /overlay/games/{game_id}       Broadcast Overlay
 ```
 
-M12 established a GUI-driven workflow from Team/Game setup through match operation and later recovery.
+### M13 Team Management
 
-## Socket.IO Domain Model
+`/teams` provides first-class Team discovery and management, including create/edit/branding workflows.
 
-Existing domain notifications include Team, Game, Player/Roster, Scoring, Clock, and Lifecycle committed-state changes.
+`/teams/{team_id}` provides Team identity/branding plus the derived roster and Player management UX.
 
-Rules:
+The browser continues to use existing REST APIs for persistent mutations:
 
 ```text
-validate
-↓
-mutate database
-↓
-COMMIT
-↓
-reload committed state
-↓
-emit
-```
+POST  /api/teams
+GET   /api/teams
+GET   /api/teams/{team_id}
+PATCH /api/teams/{team_id}
+POST  /api/teams/{team_id}/logo
+GET   /api/teams/{team_id}/players
 
-Failed/stale mutations do not emit successful state.
+POST  /api/players
+GET   /api/players/{player_id}
+PATCH /api/players/{player_id}
+```
 
 ## Recovery Model
 
-Authoritative recovery is server/database based, not browser-state based.
+Recovery is authoritative server/database recovery, not browser-state recovery.
 
-A user can return to Game Management and reopen a persisted Game. Clock/lifecycle/score/rosters/scoring history are recovered from authoritative application state.
+M13-G proves locally that Team, Player, Team branding metadata, and Team logo storage survive:
 
-Local M12-G validation includes application-container restart recovery. Production M12-H deliberately skips that Docker-only action while validating the deployed end-to-end workflow.
+```text
+browser refresh
+application-container restart
+PostgreSQL-container restart
+```
+
+The app must recover database connectivity without treating browser state as authoritative.
 
 ## Validation
 
-Canonical current release entry point:
+Canonical M13 release entry point:
 
 ```text
-scripts/validate_m12h.sh
+scripts/validate_m13h.sh
 ```
 
 Modes:
@@ -149,35 +144,26 @@ VALIDATION_MODE=local
 VALIDATION_MODE=production
 ```
 
-Local endpoint:
+Latest local release result:
 
 ```text
-http://192.168.12.133:8000
+M13-H: 36 passed / 0 failed
+M13-G cumulative: PASS
+MILESTONE 13 LOCAL RELEASE GATE = PASS
 ```
 
-Production endpoint:
+M13-G performs local recovery testing; production mode skips Docker-only restart operations.
 
-```text
-https://scorestreamlive.onrender.com
-```
+## Git Model
 
-Latest accepted M12-H results:
-
-```text
-Local:      35 passed / 0 failed + M12-G cumulative PASS
-Production: 35 passed / 0 failed; M12-G SKIPPED as local-only
-```
-
-## Development / Git Model
-
-Major milestones use chained sub-milestone branches. Each accepted sub-milestone is checkpointed before the next. The final accepted milestone branch is merged into `main` with a milestone merge commit.
-
-Milestone documentation synchronization is part of closure.
+M13 uses the accepted chained branches M13-A through M13-H. Only the final accepted M13-H branch is merged into `main` after documentation synchronization. Production validation follows the merge/deployment.
 
 ## Next Architectural Layer
 
+After M13 production closure:
+
 ```text
-M13 — Team & Roster Management UI
+M14 — Game Library / Dashboard
 ```
 
-M13 should add first-class Team/Player/Roster management around the validated domains and APIs without redesigning the match engine.
+M14 should add Game discoverability/dashboard UX around the existing Game domain and lifecycle state without redesigning the engine.
