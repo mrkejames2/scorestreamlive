@@ -9,14 +9,13 @@ This file is persistent cross-session project memory for ScoreStreamLive.
 ## Current Release
 
 ```text
-M0–M12 PRODUCTION COMPLETE
-M13 IMPLEMENTATION COMPLETE
+M0–M13 PRODUCTION COMPLETE
 M13 LOCAL RELEASE GATE — PASS
 M13 HUMAN ACCEPTANCE — PASS
-M13 PRODUCTION RELEASE GATE — PENDING
+M13 PRODUCTION RELEASE GATE — PASS
 ```
 
-M13 must not be called fully complete until its final branch is merged to `main`, Render deploys it, production validation passes, merged milestone branches are removed, and `main` is clean.
+M13 was merged to `main` at merge commit `f9725b0`, deployed through Render, and passed the production M13-H release harness with 36 passed / 0 failed plus M13-G cumulative PASS.
 
 ## Environment
 
@@ -31,8 +30,6 @@ Validation modes:
 VALIDATION_MODE=local
 VALIDATION_MODE=production
 ```
-
-Production mode must not fail because a Docker-only local recovery action is unavailable.
 
 ## Core Architecture
 
@@ -75,43 +72,22 @@ GameClock
 GameLifecycle
 ```
 
-Roster is derived:
-
-```text
-Players WHERE player.team_id = team.id
-```
-
-There is no Roster table.
+Roster is derived from Players where `player.team_id = team.id`; there is no Roster table.
 
 ## M13 Product Layer
 
 M13 added first-class Team and Roster management around the existing domains and APIs.
-
-Product surfaces:
 
 ```text
 /teams
 /teams/{team_id}
 ```
 
-M13 capabilities:
-
-```text
-Team Management Home
-Team create/edit
-Team primary/secondary colors
-Team logo upload/replacement
-Team Detail
-Derived roster display
-Player create/edit
-Roster search/sort and management UX
-Responsive/mobile management polish
-Persistence/recovery validation
-```
+Capabilities include Team create/edit/branding, logo upload/replacement, Team Detail, derived roster display, Player create/edit, roster search/sort/management UX, responsive/mobile polish, and persistence/recovery validation.
 
 M13 did not introduce Player delete or Player transfer. Team membership remains immutable through Player update.
 
-Team logo metadata is persisted on Team (`logo_url`). Image bytes are stored outside PostgreSQL using the existing Team logo storage contract and persistent Docker volume.
+Team logo metadata is persisted on Team (`logo_url`). Image bytes remain outside PostgreSQL under the existing Team logo storage contract.
 
 ## Existing Match Product
 
@@ -133,16 +109,15 @@ Canonical release harness:
 scripts/validate_m13h.sh
 ```
 
-Latest local result:
+Accepted release evidence:
 
 ```text
-M13-H ............... PASS   36 passed / 0 failed
-M13-G cumulative .... PASS
-MILESTONE 13 LOCAL RELEASE GATE = PASS
-M13-H HUMAN ACCEPTANCE = PASS
+LOCAL:      M13-H 36 passed / 0 failed; M13-G cumulative PASS
+HUMAN:      PASS
+PRODUCTION: M13-H 36 passed / 0 failed; M13-G cumulative PASS
 ```
 
-M13-G locally validates persistence across application and PostgreSQL container restarts. M13-H production mode must skip local-only restart operations while preserving production-safe persistence and cumulative validation.
+M13-G locally validates persistence across application and PostgreSQL container restarts. Production mode skips local-only restart operations while preserving production-safe cumulative validation.
 
 ## Development Workflow
 
@@ -174,14 +149,13 @@ Downloaded ZIP/README artifacts are operator transfer artifacts and should be re
 
 ## Deferred Work
 
-See root `BACKLOG.MD`. In particular, validation data has accumulated heavily and requires both a safe test-data cleanup strategy and a deliberate full application-data reset procedure. Do not improvise destructive cleanup.
+See root `BACKLOG.MD`. Validation data has accumulated heavily and requires both a safe test-data cleanup strategy and a deliberate full application-data reset procedure. `/teams` discoverability for large datasets is also deferred. Do not improvise destructive cleanup.
 
 ## Next
 
-After M13 production closure:
-
 ```text
 M14 — Game Library / Dashboard
+STATUS: NOT STARTED
 ```
 
-M14 should make upcoming, live, and completed Games discoverable without redesigning the validated engine.
+M14 should make upcoming, live, and completed Games discoverable without redesigning the validated engine. Start M14 only after a fresh repository inspection and approved milestone plan.
