@@ -2,118 +2,81 @@
 
 ## Development Model
 
-Milestones use controlled checkpoints where appropriate:
+Each major milestone is developed as a controlled branch chain with small accepted sub-milestones.
 
 ```text
-Persistence
+Architecture / scope
 ↓
-REST / Service
+Sub-milestone implementation
 ↓
-Socket.IO
+Automated validation + cumulative regression
 ↓
-Validation / Docs / Regression
+Human acceptance
 ↓
-Independent Review
+Checkpoint / push
 ↓
-Production
+Next sub-milestone
 ↓
-Documentation Sync
+Final milestone release gate
+↓
+Documentation synchronization
+↓
+Merge final milestone branch → main
+↓
+Local + production verification
 ```
+
+Validation output should show progress (`[step/total]`) and finish with a compact passed/failed summary plus failed components only.
 
 ## Completed
 
-### M0 — Deployment Foundation
-
-Complete.
-
-### M1 — Application Foundation
-
-Complete.
-
-### M2 — PostgreSQL Foundation
-
-Complete.
-
-### M3 — Socket.IO Foundation
-
-Complete.
-
-### M4 — Game Foundation
-
-Complete.
-
-### M5 — Team Foundation
-
-Complete.
-
-### M6 — Player / Roster Foundation
-
-Complete.
-
-### M7 — Score / ScoringEvent Foundation
-
-Complete — production validated.
-
-### M8 — Game Clock / Timer Foundation
-
 ```text
-COMPLETE — PRODUCTION VALIDATED
+M0  — Deployment Foundation                         COMPLETE
+M1  — Application Foundation                        COMPLETE
+M2  — PostgreSQL Foundation                         COMPLETE
+M3  — Socket.IO Foundation                          COMPLETE
+M4  — Game Foundation                               COMPLETE
+M5  — Team Foundation                               COMPLETE
+M6  — Player / Roster Foundation                    COMPLETE
+M7  — Score / ScoringEvent Foundation               COMPLETE
+M8  — Game Clock / Timer Foundation                 COMPLETE
+M9  — Game Lifecycle / Phases                       COMPLETE
+M10 — Control Center / Match-Day Operator UX        COMPLETE
+M11 — Live Scoreboard Overlay                       COMPLETE
+M12 — Game Setup / Pre-Game Workflow                COMPLETE
 ```
 
-Implemented:
+M12 completed the first full GUI-driven soccer match workflow: create/select Teams, create a Game, initialize lifecycle/clock, manage pre-game rosters, launch the Control Center and Broadcast Overlay, run the match, and recover authoritative state later.
+
+## Product Roadmap
+
+| Milestone | Focus | Product outcome |
+|---|---|---|
+| **M13** | **Team & Roster Management UI** | Manage teams, players, colors, logos |
+| **M14** | **Game Library / Dashboard** | See upcoming, live, and completed games |
+| **M15** | **Accounts & Ownership** | Users, login, permissions, game ownership |
+| **M16** | **Production MVP Hardening** | Security, cleanup, deployment, production acceptance |
+| **M17** | **Sharing & Public Game Experience** | Public scoreboard/game pages and shareable links |
+| **M18** | **Monetization Foundation** | Plans, subscriptions, sponsor/ad capabilities |
+| **M19+** | **Sport Engine Expansion** | Basketball, hockey, football, baseball, and additional sports |
+
+## Next
+
+### M13 — Team & Roster Management UI
+
+High-level scope:
 
 ```text
-GameClock persistence
-count_up
-count_down
-start
-pause
-resume
-reset
-configuration
-UTC timestamp anchors
-application restart recovery
-disconnect/reconnect recovery
-optimistic version concurrency
-multi-client synchronization
-multi-Game isolation
-clock:updated
-no clock:tick
-soccer added-time derivation
-technical validation client
+Team management UI
+Team create/edit/branding
+Team detail and roster view
+Player create/edit
+Roster management UX
+Management UX/mobile polish
+Persistence/recovery/regression
+Final acceptance/release gate
 ```
 
-Validation:
+M13 should build management UX around the validated engine rather than redesign scoring, clock, lifecycle, Socket.IO, Control Center, or Overlay architecture.
 
-```text
-Local M8:       83 / 83 PASS
-Production M8: 146 / 146 PASS
-Remote clock:   17 / 17 PASS
-M7 regression: 127 / 127 PASS
-M6 regression:  57 / 57 PASS
-```
-
-Independent review:
-
-```text
-DeepSeek:
-APPROVE MILESTONE 8 FOR PRODUCTION DEPLOYMENT
-```
-
-## Next Direction
-
-### M9 — Game Lifecycle / Phases
-
-Not started.
-
-Likely directional concepts:
-
-```text
-Pregame
-First Half
-Halftime
-Second Half
-Final
-```
-
-This roadmap entry does not authorize implementation.
+Detailed M13 architecture must be approved before implementation begins.
