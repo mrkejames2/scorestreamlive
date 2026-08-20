@@ -1,34 +1,22 @@
 # ScoreStreamLive — Current Milestone Status
 
-## Current Release State
+## Current Release
 
 ```text
-MILESTONE 13 — LOCAL RELEASE ACCEPTED / PRODUCTION RELEASE PENDING
-M13-H LOCAL RELEASE GATE — PASS (36 passed / 0 failed)
-M13-G CUMULATIVE REGRESSION — PASS
-M13-H HUMAN ACCEPTANCE — PASS
-PRODUCTION RELEASE GATE — PENDING
+MILESTONE 13 — COMPLETE
+LOCAL RELEASE GATE — PASS
+HUMAN ACCEPTANCE — PASS
+PRODUCTION RELEASE GATE — PASS
 ```
 
-Milestones M0 through M12 are production complete. M13 implementation and local/human acceptance are complete, but M13 is not fully closed until merge to `main`, production deployment, production validation, branch cleanup, and a clean `main` baseline.
+Milestones M0 through M13 are complete.
 
-## Active Branch
-
-```text
-milestone/m13-h-final-acceptance-release-gate
-```
-
-Accepted M13 chain:
+## Repository Baseline
 
 ```text
-M13-A — Team Management Home
-M13-B — Team Create / Edit / Branding
-M13-C — Team Detail & Roster View
-M13-D — Player Create / Edit
-M13-E — Roster Management UX
-M13-F — Management UX / Mobile Polish
-M13-G — Recovery / Persistence / Regression
-M13-H — Final Acceptance / Release Gate
+Branch of record: main
+M13 merge commit: f9725b0
+Canonical release harness: scripts/validate_m13h.sh
 ```
 
 ## Validation
@@ -45,22 +33,23 @@ Production endpoint:
 https://scorestreamlive.onrender.com
 ```
 
-Canonical M13 release harness:
+M13-H local:
 
 ```text
-scripts/validate_m13h.sh
-```
-
-Latest local result:
-
-```text
-M13-H ............... PASS   36 passed / 0 failed
-M13-G cumulative .... PASS
-OVERALL ............. PASS
+36 passed / 0 failed
+M13-G cumulative regression: PASS
 MILESTONE 13 LOCAL RELEASE GATE = PASS
 ```
 
-M13-G additionally proved Team, Player, branding, and uploaded-logo persistence across local application-container and PostgreSQL-container restart recovery.
+M13-H production:
+
+```text
+36 passed / 0 failed
+M13-G cumulative regression: PASS
+MILESTONE 13 PRODUCTION RELEASE GATE = PASS
+```
+
+M13-G local recovery also proved Team, Player, branding, and uploaded-logo persistence across application-container and PostgreSQL-container restarts.
 
 ## Current Product Capability
 
@@ -86,36 +75,15 @@ Game detail / launch hub
 Existing-game resume / recovery UX
 ```
 
-## Protected M13 Boundaries
+## M13 Boundaries Preserved
 
-M13 did not add a Roster table, Player transfer, Player delete, a new persistence architecture, distributed infrastructure, or a new match engine. Player membership remains `Player.team_id`, PostgreSQL remains authoritative, REST remains the durable mutation boundary, and Socket.IO remains committed-state notification.
+M13 did not add a Roster table, Player transfer, Player delete, a new persistence architecture, distributed infrastructure, or a new match engine. Player membership remains `Player.team_id`; PostgreSQL remains authoritative; REST remains the durable mutation boundary; Socket.IO remains committed-state notification.
 
-## Next Closure Actions
-
-```text
-documentation synchronization
-↓
-final M13-H checkpoint
-↓
-merge final M13-H branch → main
-↓
-push main / Render deployment
-↓
-VALIDATION_MODE=production scripts/validate_m13h.sh
-↓
-production PASS
-↓
-delete merged M13 branches
-↓
-clean main baseline
-```
-
-## Next Major Milestone
-
-After M13 production closure:
+## Next Milestone
 
 ```text
 M14 — Game Library / Dashboard
+STATUS: NOT STARTED
 ```
 
-M14 is not authorized merely because it is next on the roadmap.
+M14 is not authorized merely because it is next. Begin only from a fresh repository-based startup review and approved M14 architecture/specification.
