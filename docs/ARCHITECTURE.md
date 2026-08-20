@@ -3,8 +3,9 @@
 ## Current Production State
 
 ```text
-M0–M8 COMPLETE
-M8 PRODUCTION VALIDATED
+M0–M12 COMPLETE
+M12 LOCAL RELEASE GATE — PASS
+M12 PRODUCTION RELEASE GATE — PASS
 ```
 
 ## Runtime Architecture
@@ -29,33 +30,27 @@ Browser / API Client
 
 ## State Ownership
 
-PostgreSQL is authoritative for:
-
-```text
-Games
-Teams
-Players
-Game score
-ScoringEvents
-GameClocks
-```
+PostgreSQL is authoritative for persistent Game, Team, Player, score, ScoringEvent, GameClock, GameLifecycle, and Team-branding state.
 
 REST is the durable mutation boundary.
 
-Socket.IO distributes committed state.
+Socket.IO distributes committed state after successful mutations.
 
 ## Current Domain
 
 ```text
 Game
 ├── Home Team
-│   └── Players
+│   └── Players (derived roster)
 ├── Away Team
-│   └── Players
+│   └── Players (derived roster)
 ├── Score
 ├── ScoringEvents
-└── GameClock
+├── GameClock
+└── GameLifecycle
 ```
+
+Roster is derived from Player membership; there is no separate Roster table.
 
 ## Mutation Rule
 
@@ -75,80 +70,57 @@ Successful real-time events never describe uncommitted state.
 
 ## Scoring Architecture
 
-Current score lives on Game.
-
-ScoringEvent stores history.
-
-ScoringEvent insert and Game score increment occur in one transaction.
+Current score lives on Game. `ScoringEvent` stores history. ScoringEvent creation and Game score mutation occur atomically.
 
 ## Clock Architecture
 
-GameClock is represented as:
+GameClock uses persistent state plus UTC timestamp anchors rather than an in-memory authoritative timer.
+
+A running clock requires no per-second database write, no per-second Socket.IO broadcast, and no timer task per Game.
+
+Clock mutations use optimistic version concurrency.
+
+There is deliberately no authoritative `clock:tick` event.
+
+## Lifecycle Architecture
+
+GameLifecycle owns match meaning; GameClock owns time.
 
 ```text
-persistent state
-+
-UTC timestamp anchor
+pregame → first_half → halftime → second_half → full_time
 ```
 
-not as an in-memory background timer.
+Integrated lifecycle transitions coordinate lifecycle and clock atomically. Successful lifecycle/clock notifications are emitted only after the shared transaction commits.
 
-When running:
+## Recovery Architecture
+
+Persisted authoritative state supports:
 
 ```text
-current elapsed =
-    elapsed_seconds
-    +
-    floor(server_now - running_since)
+browser refresh
+Socket.IO disconnect/reconnect
+returning to a Game later
+application-container restart (local recovery validation)
 ```
 
-Clients render locally from the same authoritative anchor.
+M12-G proves that recovery does not depend on previously stored browser state.
 
-## Clock Scale Model
+## Product Surfaces
 
-A running clock requires:
+M10–M12 added the product-facing layer around the engine:
 
 ```text
-no per-second database write
-no per-second Socket.IO broadcast
-no timer task per Game
+Control Center
+Broadcast Overlay
+Game Management Home
+Game creation / pre-game setup
+Team branding
+Roster setup
+Game detail / launch hub
+Existing-game resume / recovery
 ```
 
-This allows many simultaneous running Games without one continuous server loop per Game.
-
-## Concurrency
-
-Clock state carries integer `version`.
-
-Mutations provide `expected_version`.
-
-PostgreSQL conditional updates decide the winner.
-
-## Real-Time Clock Contract
-
-```text
-clock:updated
-```
-
-is emitted only after commit.
-
-There is deliberately no:
-
-```text
-clock:tick
-```
-
-## Restart Safety
-
-Persisted clock anchors allow current time to be reconstructed after application restart.
-
-This behavior is locally validated.
-
-## Soccer Presentation
-
-Generic GameClock persists no soccer-specific phase or stoppage-time columns.
-
-Soccer added-time minute is derived from generic elapsed time after the configured regulation duration.
+These surfaces consume the same authoritative domains rather than introducing a separate UI state authority.
 
 ## Infrastructure Not Present
 
@@ -164,14 +136,12 @@ distributed timer service
 per-Game timer workers
 ```
 
-Adding these requires a demonstrated future need.
+Adding these requires demonstrated future need and explicit architecture approval.
 
 ## Next Architectural Layer
 
-Directional:
-
 ```text
-M9 — Game Lifecycle / Phases
+M13 — Team & Roster Management UI
 ```
 
-Not started.
+M13 is a management/product UX layer around existing Team, Player, roster, branding, REST, Socket.IO, and PostgreSQL architecture. It should not redesign the validated match engine without an explicit architectural requirement.
