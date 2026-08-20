@@ -3,10 +3,11 @@
 ## Release State
 
 ```text
-M0–M12 PRODUCTION COMPLETE
-M13 LOCAL + HUMAN ACCEPTED
-M13 PRODUCTION RELEASE PENDING
+M0–M13 PRODUCTION COMPLETE
+M14 NOT STARTED
 ```
+
+M13 production merge: `f9725b0`.
 
 ## Runtime Stack
 
@@ -119,15 +120,7 @@ PATCH /api/players/{player_id}
 
 Recovery is authoritative server/database recovery, not browser-state recovery.
 
-M13-G proves locally that Team, Player, Team branding metadata, and Team logo storage survive:
-
-```text
-browser refresh
-application-container restart
-PostgreSQL-container restart
-```
-
-The app must recover database connectivity without treating browser state as authoritative.
+M13-G proves locally that Team, Player, Team branding metadata, and Team logo storage survive browser refresh, application-container restart, and PostgreSQL-container restart.
 
 ## Validation
 
@@ -137,33 +130,25 @@ Canonical M13 release entry point:
 scripts/validate_m13h.sh
 ```
 
-Modes:
+Accepted M13 release evidence:
 
 ```text
-VALIDATION_MODE=local
-VALIDATION_MODE=production
-```
-
-Latest local release result:
-
-```text
-M13-H: 36 passed / 0 failed
-M13-G cumulative: PASS
-MILESTONE 13 LOCAL RELEASE GATE = PASS
+LOCAL:      36 passed / 0 failed; M13-G cumulative PASS
+HUMAN:      PASS
+PRODUCTION: 36 passed / 0 failed; M13-G cumulative PASS
 ```
 
 M13-G performs local recovery testing; production mode skips Docker-only restart operations.
 
 ## Git Model
 
-M13 uses the accepted chained branches M13-A through M13-H. Only the final accepted M13-H branch is merged into `main` after documentation synchronization. Production validation follows the merge/deployment.
+M13 used chained branches M13-A through M13-H. The final accepted M13-H branch was merged into `main`; production deployment and validation passed. M13 branches may now be removed as release cleanup.
 
 ## Next Architectural Layer
 
-After M13 production closure:
-
 ```text
 M14 — Game Library / Dashboard
+STATUS: NOT STARTED
 ```
 
-M14 should add Game discoverability/dashboard UX around the existing Game domain and lifecycle state without redesigning the engine.
+M14 should add Game discoverability/dashboard UX around the existing Game domain and lifecycle state without redesigning the engine. Detailed scope requires the M14 startup review.
