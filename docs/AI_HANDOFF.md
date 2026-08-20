@@ -2,54 +2,58 @@
 
 ## Purpose
 
-This file is the persistent cross-session project memory for ScoreStreamLive.
+This file is persistent cross-session project memory for ScoreStreamLive.
 
-AI chat history is disposable. The repository is authoritative.
+**AI chat history is disposable. The repository is authoritative.**
 
-## Current Production State
+At the beginning of a new major-milestone session, read the repository documentation and inspect the actual repository before proposing implementation.
 
-```text
-M0–M8 COMPLETE
-M8 COMPLETE — PRODUCTION VALIDATED
-M9 NOT STARTED
-```
-
-## Latest Production Checkpoint
+## Current Release
 
 ```text
-Implementation commit:
-ecbd6ab
-
-Alembic:
-20260814_0005
-
-Local M8:
-83 / 83 PASS
-
-Production M8:
-146 / 146 PASS
-
-Remote M8 clock:
-17 / 17 PASS
-
-M7 production regression:
-127 / 127 PASS
-
-M6 production regression:
-57 / 57 PASS
-
-DeepSeek:
-APPROVED
-
-Render:
-PASS
+M0–M12 COMPLETE
+M12 LOCAL RELEASE GATE — PASS
+M12 PRODUCTION RELEASE GATE — PASS
+M12 HUMAN ACCEPTANCE — PASS
+M13 NOT STARTED
 ```
+
+Repository baseline after M12:
+
+```text
+M12 merge: fc688f7
+Repository/docs cleanup: fb6cec5
+Branch of record: main
+```
+
+## Environment
+
+Local development / validation:
+
+```text
+http://192.168.12.133:8000
+```
+
+Production:
+
+```text
+https://scorestreamlive.onrender.com
+```
+
+Validation supports explicit modes:
+
+```text
+VALIDATION_MODE=local
+VALIDATION_MODE=production
+```
+
+Production mode does not run Docker-only recovery checks.
 
 ## Project
 
-ScoreStreamLive is a real-time sports game-management and scoreboard platform.
+ScoreStreamLive is a real-time sports game-management and broadcast-scoreboard platform.
 
-Current development is soccer-first while preserving a generic sports engine wherever doing so does not weaken the soccer experience.
+Development is soccer-first while preserving a generic sports engine where doing so does not weaken the soccer experience.
 
 ## Core Architecture
 
@@ -77,27 +81,29 @@ Browser / API Client
 2. REST is the persistent mutation boundary.
 3. Socket.IO communicates committed state.
 4. Successful domain events occur only after commit.
-5. Do not redesign validated architecture without architecture approval.
+5. Preserve validated architecture unless an approved architecture change requires otherwise.
 6. Preserve cumulative validation harnesses.
-7. Work in milestone checkpoints.
-8. Repository + migrations outrank AI memory.
-9. Do not introduce distributed infrastructure before a demonstrated need.
+7. Work in milestone/sub-milestone checkpoints.
+8. Repository + migrations outrank AI memory and prior conversation.
+9. Do not expand active milestone scope without explicit approval.
+10. Do not introduce distributed infrastructure before demonstrated need.
+11. Documentation synchronization is part of milestone closure.
 
-## Current Domain
+## Current Product Domains
 
 ```text
 Game
 ├── Home Team
-│   └── Players
+│   └── Players (derived roster)
 ├── Away Team
-│   └── Players
-├── home_score
-├── away_score
+│   └── Players (derived roster)
+├── Score
 ├── ScoringEvents
-└── GameClock
+├── GameClock
+└── GameLifecycle
 ```
 
-## Team / Player / Roster
+Team branding is persisted and used by management, Control Center, and Broadcast Overlay surfaces.
 
 Roster remains derived:
 
@@ -107,269 +113,158 @@ Players WHERE player.team_id = team.id
 
 No separate Roster table exists.
 
-`roster:updated` is an invalidation notification containing `team_id`.
-
 ## Scoring
 
-Game owns authoritative current score.
+Game owns authoritative current score. Scoring history is stored in `ScoringEvent`.
 
-Scoring history is stored in `ScoringEvent`.
-
-Successful scoring:
+Successful scoring follows:
 
 ```text
 validate
 ↓
-ScoringEvent INSERT
-+
-atomic Game score increment
+ScoringEvent INSERT + atomic Game score mutation
 ↓
 ONE COMMIT
 ↓
 reload
 ↓
-scoring_event:created
+committed-state Socket.IO notifications
+```
+
+## Clock
+
+The server owns clock truth. Clients render from persisted state and timestamp anchors.
+
+No per-second database write, authoritative in-process timer loop, or one-second Socket.IO tick exists.
+
+Running clock truth survives refresh, disconnect/reconnect, and application restart.
+
+## Lifecycle
+
+Soccer lifecycle:
+
+```text
+pregame
 ↓
-game:score_updated
+first_half
+↓
+halftime
+↓
+second_half
+↓
+full_time
 ```
 
-## M8 GameClock
+Lifecycle meaning and GameClock time remain separate persisted domains. Integrated transitions coordinate them transactionally.
 
-Persistent GameClock fields:
+## Product Surfaces Through M12
 
 ```text
-id
-game_id
-mode
-status
-duration_seconds
-elapsed_seconds
-running_since
-version
-created_at
-updated_at
+Game Management Home
+Game creation/setup workflow
+Inline Team selection/creation
+Team branding/logos
+Roster setup / Player creation
+Game detail / launch hub
+Control Center
+Broadcast Overlay
+Existing Game resume / recovery UX
 ```
 
-Modes:
+## Validation
+
+Canonical current release gate:
 
 ```text
-count_up
-count_down
+scripts/validate_m12h.sh
 ```
 
-Status:
+Local M12-H:
 
 ```text
-stopped
-running
-paused
+35 passed / 0 failed
+M12-G cumulative regression: PASS
+MILESTONE 12 LOCAL RELEASE GATE = PASS
 ```
 
-One Game has at most one GameClock.
-
-## Clock Authority
-
-The server owns clock truth. Clients render the clock.
-
-When not running:
+Production M12-H:
 
 ```text
-authoritative_elapsed = elapsed_seconds
+35 passed / 0 failed
+M12-G cumulative: SKIPPED (local-only)
+MILESTONE 12 PRODUCTION RELEASE GATE = PASS
 ```
 
-When running:
+Validation-script UX rules:
 
 ```text
-authoritative_elapsed =
-    elapsed_seconds
-    +
-    floor(server_now - running_since)
-```
-
-No per-second database write exists.
-
-No authoritative in-process timer loop exists.
-
-No one-second Socket.IO tick exists.
-
-## Clock REST
-
-```text
-POST  /api/games/{game_id}/clock
-GET   /api/games/{game_id}/clock
-PATCH /api/games/{game_id}/clock
-
-POST /api/games/{game_id}/clock/start
-POST /api/games/{game_id}/clock/pause
-POST /api/games/{game_id}/clock/resume
-POST /api/games/{game_id}/clock/reset
-```
-
-## Clock Concurrency
-
-Mutations carry:
-
-```text
-expected_version
-```
-
-PostgreSQL conditional updates enforce optimistic concurrency.
-
-Two same-version controllers cannot both commit.
-
-Stale commands return `409`.
-
-## Clock Socket.IO
-
-Canonical event:
-
-```text
-clock:updated
-```
-
-Emitted after successful committed:
-
-```text
-create
-configure
-start
-pause
-resume
-reset
-```
-
-Failed/stale mutations emit no clock update.
-
-There is intentionally no:
-
-```text
-clock:tick
-```
-
-## Restart / Reconnect
-
-Running clock truth survives:
-
-```text
-browser refresh
-Socket.IO disconnect
-Socket.IO reconnect
-application container restart
-```
-
-because persisted anchors are authoritative.
-
-Local final validation explicitly restarted the application while a clock was running and proved elapsed time included the restart interval.
-
-## Soccer Added-Time Presentation
-
-For a 45-minute count-up clock:
-
-```text
-44:59       normal
-45:00–45:59 +1
-46:00–46:59 +2
-47:00–47:59 +3
-```
-
-Derived:
-
-```text
-floor((elapsed - duration) / 60) + 1
-```
-
-This represents elapsed added-time minute, not referee-announced stoppage time.
-
-## Validation Assets
-
-```text
-scripts/validate_m6.sh
-scripts/validate_m7.sh
-scripts/validate_m8a.sh
-scripts/validate_m8b.sh
-scripts/validate_m8c.sh
-scripts/validate_m8.sh
-```
-
-Canonical current validation entry point:
-
-```text
-scripts/validate_m8.sh
+show progress such as [1/12]
+keep cumulative regression output silent unless needed
+final output = passed/failed summary
+list failed components only
 ```
 
 ## Development Workflow
 
+One major milestone per AI chat/session is preferred.
+
 ```text
-GPT
-Architecture
-  ↓
-Kimi / GPT Implementation Role
-Implementation
-  ↓
-Devin
-Environment / Git / Deployment
-  ↓
-DeepSeek
-Independent Review
-  ↓
-GPT
-Final Disposition
+Read repository rules/state
+↓
+Approve milestone architecture and boundaries
+↓
+Create milestone sub-branch
+↓
+Implement smallest approved sub-milestone
+↓
+Automated validation + cumulative regression
+↓
+Human acceptance
+↓
+Checkpoint / push
+↓
+Repeat through final sub-milestone
+↓
+Final local + human release gate
+↓
+Documentation synchronization
+↓
+Merge final milestone branch → main
+↓
+Production release validation
+↓
+Close milestone/session
 ```
 
-Rule:
+Deferred enhancement requests go into root `BACKLOG.MD` when the user says **Add to Backlog**. They do not automatically expand active milestone scope.
 
-> DeepSeek recommends. GPT decides. Implementation follows approved architecture. Deployment follows validated code.
+## Documentation Closure
 
-## Milestone Gate
-
-```text
-Architecture
-↓
-checkpoint implementation
-↓
-local validation
-↓
-regression validation
-↓
-independent review
-↓
-GitHub
-↓
-Render
-↓
-production validation
-↓
-documentation synchronization
-↓
-next milestone
-```
-
-## Explicitly Deferred
+At the end of every major milestone, review and synchronize at minimum:
 
 ```text
-Game phases
-Pregame
-First Half
-Halftime
-Second Half
-Extra Time lifecycle
-production game controller
-public scoreboard UI
-OBS overlay
-authentication
-authorization
-organizations
-subscriptions
-Redis
-NATS
-Kafka
-microservices
+docs/AI_HANDOFF.md
+docs/CURRENT_MILESTONE_STATUS.md
+docs/IMPLEMENTATION_MAP.md
+docs/MILESTONES.md
+docs/ARCHITECTURE.md
+affected domain docs
+docs/DECISIONS.md when architecture decisions changed
+docs/DEPLOYMENT.md when deployment changed
+docs/ai/GOLDEN_RULE.md
+BACKLOG.MD
 ```
 
 ## Next
 
 ```text
-M9 — Game Lifecycle / Phases
+M13 — Team & Roster Management UI
 ```
 
-M9 is not yet architected or authorized.
+M13 high-level product goal:
+
+```text
+Manage teams, players, colors, logos, and rosters through first-class UI.
+```
+
+Do not redesign the validated match engine merely to implement management UI.
