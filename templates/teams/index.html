@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>ScoreStreamLive — Teams</title>
+  <link rel="stylesheet" href="/static/css/teams.css">
+</head>
+<body>
+  <main class="teams-shell">
+    <header class="teams-header">
+      <div>
+        <div class="eyebrow">SCORESTREAMLIVE · M13-A</div>
+        <h1>Teams</h1>
+        <p class="subhead">
+          Browse reusable teams and their persisted branding. Team editing and full roster
+          management arrive in later Milestone 13 checkpoints.
+        </p>
+      </div>
+
+      <div class="header-actions">
+        <span id="teams-status" class="status-chip" data-state="loading">LOADING</span>
+        <button
+          id="create-team"
+          class="button button-primary"
+          type="button"
+          disabled
+          title="Team creation moves to the first-class Team UI in M13-B."
+        >
+          + Create Team
+        </button>
+        <button id="refresh-teams" class="button button-secondary" type="button">
+          Refresh
+        </button>
+        <a class="button button-secondary" href="/games">Games</a>
+      </div>
+    </header>
+
+    <section class="summary-grid" aria-label="Team management summary">
+      <article class="summary-card">
+        <span class="summary-label">Teams</span>
+        <strong id="summary-total" class="summary-value">—</strong>
+      </article>
+      <article class="summary-card">
+        <span class="summary-label">With Logos</span>
+        <strong id="summary-logos" class="summary-value">—</strong>
+      </article>
+      <article class="summary-card">
+        <span class="summary-label">Branded</span>
+        <strong id="summary-branded" class="summary-value">—</strong>
+      </article>
+    </section>
+
+    <section class="teams-panel">
+      <div class="panel-heading">
+        <div>
+          <h2>Team Management</h2>
+          <p>
+            Teams shown here come directly from the existing authoritative Team API.
+            Roster detail is intentionally deferred to the Team detail workflow in M13-C.
+          </p>
+        </div>
+      </div>
+
+      <div id="teams-error" class="notice notice-error hidden" role="alert"></div>
+
+      <div id="teams-empty" class="empty-state hidden">
+        <h3>No teams yet</h3>
+        <p>Create/select teams from the existing Game Setup workflow until M13-B adds first-class Team creation here.</p>
+        <a class="button button-primary" href="/games">Go to Games</a>
+      </div>
+
+      <div id="teams-list" class="teams-grid" aria-live="polite"></div>
+    </section>
+
+    <footer class="teams-footer">
+      <span>Milestone {{ milestone }}</span>
+      <span>Team Management Home</span>
+    </footer>
+  </main>
+
+  <template id="team-card-template">
+    <article class="team-card">
+      <div class="team-accent" aria-hidden="true"></div>
+
+      <div class="team-card-body">
+        <div class="team-brand-shell" aria-hidden="true">
+          <span class="team-brand-fallback">T</span>
+          <img class="team-brand-logo hidden" alt="">
+        </div>
+
+        <div class="team-identity">
+          <div class="team-title-row">
+            <div>
+              <h3 class="team-name"></h3>
+              <div class="team-short-name"></div>
+            </div>
+          </div>
+
+          <div class="branding-row" aria-label="Team colors">
+            <span class="color-swatch primary-swatch" title="Primary color"></span>
+            <code class="primary-color">Not set</code>
+            <span class="color-swatch secondary-swatch" title="Secondary color"></span>
+            <code class="secondary-color">Not set</code>
+          </div>
+
+          <div class="team-meta">
+            <span class="detail-label">Team ID</span>
+            <code class="team-id"></code>
+          </div>
+        </div>
+      </div>
+
+      <div class="team-card-actions">
+        <span class="future-note">Team detail/edit opens in M13-B/C</span>
+        <button class="button button-secondary manage-team-button" type="button" disabled>
+          Manage Team
+        </button>
+      </div>
+    </article>
+  </template>
+
+  <script type="module" src="/static/js/teams/index.js"></script>
+</body>
+</html>
