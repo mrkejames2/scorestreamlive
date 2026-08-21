@@ -42,15 +42,11 @@ Do not advance after a failed gate unless the failure is understood and explicit
 
 ## Validation Standards
 
-Validation scripts should:
+Active validation uses the domain-based harness documented in `docs/VALIDATION.md`.
 
-- show progress (`[step/total]`);
-- default local BASE_URL to `http://192.168.12.133:8000` when appropriate;
-- distinguish local-only and production-safe checks;
-- keep successful nested regression output quiet;
-- report passed/failed totals;
-- list only failed components at the end;
-- preserve cumulative regression coverage.
+Controls: `VALIDATION_MODE=local|production`, `VALIDATION_SCOPE=fast|full|release`, `VALIDATION_OUTPUT=summary|full`, and `VALIDATION_FAIL_FAST=0|1`.
+
+The active regression suite executes each domain once, captures detailed logs during the original run, and never recursively replays historical milestone validators. Expensive application/PostgreSQL restart testing belongs to release scope. Historical milestone validators remain acceptance records; durable current regression coverage belongs under `scripts/regression/`.
 
 Current production endpoint:
 
