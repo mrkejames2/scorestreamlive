@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/static/css/games-d4.css">
   <link rel="stylesheet" href="/static/css/games-g.css">
   <link rel="stylesheet" href="/static/css/games-m14b.css">
+  <link rel="stylesheet" href="/static/css/games-m14c.css">
 </head>
 <body>
   <main class="games-shell">
@@ -397,6 +398,33 @@
       </article>
     </section>
 
+    <section class="library-filter-bar" aria-label="Game library search and filters">
+      <label class="library-filter-field" for="game-library-search">
+        <span class="library-filter-label">Search Games</span>
+        <input id="game-library-search" class="text-input library-filter-input" type="search" autocomplete="off" placeholder="Search game or team...">
+      </label>
+
+      <label class="library-filter-field" for="game-library-classification-filter">
+        <span class="library-filter-label">Game Type</span>
+        <select id="game-library-classification-filter" class="text-input library-filter-select">
+          <option value="all">All Games</option>
+          <option value="live">Live</option>
+          <option value="upcoming">Upcoming</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </label>
+
+      <div class="library-filter-footer">
+        <span id="game-library-results-status" class="library-results-status" role="status" aria-live="polite">Showing all games</span>
+        <button id="game-library-clear-filters" class="button button-secondary library-clear-button" type="button" disabled>Clear Filters</button>
+      </div>
+    </section>
+
+    <div id="game-library-no-results" class="library-no-results hidden" role="status">
+      No games match the current search and filter.
+    </div>
+
     <section class="games-panel">
       <div class="panel-heading">
         <div>
@@ -513,5 +541,6 @@
   </template>
 
   <script type="module" src="/static/js/games/index.js"></script>
+  <script type="module" src="/static/js/games/filters.js"></script>
 </body>
 </html>

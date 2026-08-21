@@ -445,6 +445,16 @@ function renderCard(item) {
         ? "cancelled"
         : "ready";
   card.dataset.libraryClassification = classification;
+  card.dataset.searchText = [
+    game.name,
+    homeTeam?.name,
+    homeTeam?.short_name,
+    awayTeam?.name,
+    awayTeam?.short_name,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLocaleLowerCase();
 
   const resumeIndicator = fragment.querySelector(".resume-indicator");
   resumeIndicator.classList.toggle("hidden", !active && !completed && !cancelled);
@@ -1298,22 +1308,18 @@ async function loadGames(options = {}) {
     if (state.selectedAwayId) {
       applySelectedTeamBrand("away", state.selectedAwayId);
     }
-
     const sortedGames = [...games].sort(
       (a, b) => gameSortValue(b) - gameSortValue(a),
     );
 
     const recentGames =
       sortedGames.slice(0, MAX_VISIBLE_GAMES);
-
     const hydrated = await mapWithConcurrency(
       recentGames,
       MAX_CONCURRENT_GAMES,
       hydrateGame,
     );
-
     const usable = hydrated.filter(Boolean);
-
     renderLibrary(games, usable);
 
     els.empty.classList.toggle(
@@ -1342,7 +1348,6 @@ async function loadGames(options = {}) {
         games.length,
         recentGames.length,
       );
-
       setStatus("READY", "ready");
     }
 

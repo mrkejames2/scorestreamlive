@@ -1,0 +1,64 @@
+/* ScoreStreamLive M14-C — Game Library Search & Filter */
+
+.library-filter-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 240px);
+  gap: 14px;
+  align-items: end;
+  margin: 18px 0 22px;
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  background: rgba(255,255,255,.025);
+}
+.library-filter-field { display: grid; gap: 7px; }
+.library-filter-label {
+  color: rgba(238,244,255,.62);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.library-filter-input,
+.library-filter-select { width: 100%; min-height: 44px; box-sizing: border-box; }
+.library-filter-footer {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 34px;
+}
+.library-results-status { color: rgba(238,244,255,.62); font-size: 13px; }
+.library-results-status[data-filtered="true"] { color: rgba(238,244,255,.9); font-weight: 800; }
+.library-clear-button[disabled] { opacity: .45; cursor: default; }
+.library-no-results {
+  margin: 0 0 20px;
+  padding: 20px;
+  border: 1px dashed rgba(255,255,255,.12);
+  border-radius: 14px;
+  background: rgba(255,255,255,.02);
+  text-align: center;
+  color: rgba(238,244,255,.62);
+}
+.library-card-filtered { display: none !important; }
+.library-section.library-section-filtered-empty { display: none; }
+.library-section[data-filter-active="true"].library-section-filtered-empty { display: grid; }
+.library-section[data-filter-active="true"].library-section-filtered-empty .games-list { display: none; }
+.library-section-filter-message {
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px dashed rgba(255,255,255,.09);
+  border-radius: 12px;
+  color: rgba(238,244,255,.5);
+  font-size: 12px;
+}
+@media (max-width: 700px) {
+  .library-filter-bar { grid-template-columns: 1fr; }
+  .library-filter-footer {
+    grid-column: 1;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .library-clear-button { width: 100%; }
+}
