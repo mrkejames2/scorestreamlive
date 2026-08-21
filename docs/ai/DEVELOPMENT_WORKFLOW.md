@@ -27,9 +27,9 @@ create/continue milestone branch
 ↓
 implement smallest coherent change
 ↓
-run targeted automated validation
+FAST domain validation
 ↓
-run cumulative regression silently
+FULL domain validation at acceptance
 ↓
 human acceptance
 ↓
@@ -37,6 +37,8 @@ checkpoint commit + push
 ↓
 next sub-milestone
 ```
+
+Use `VALIDATION_SCOPE=release` for final release/recovery confidence when appropriate. Active M14+ validation must not recursively replay historical milestone validators.
 
 Do not advance after a failed gate unless the failure is understood and explicitly dispositioned.
 

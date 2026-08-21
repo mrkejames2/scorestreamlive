@@ -1,55 +1,65 @@
 # ScoreStreamLive — Current Milestone Status
 
-## Current Release
+## Production Baseline
 
 ```text
-MILESTONE 13 — COMPLETE
-LOCAL RELEASE GATE — PASS
-HUMAN ACCEPTANCE — PASS
-PRODUCTION RELEASE GATE — PASS
+M0–M13 — PRODUCTION COMPLETE
 ```
 
-Milestones M0 through M13 are complete.
+M13 production merge/history remains the established production baseline on `main`.
 
-## Repository Baseline
+## Active Development Milestone
 
 ```text
-Branch of record: main
-M13 merge commit: f9725b0
-Canonical release harness: scripts/validate_m13h.sh
+M14 — Game Library / Dashboard
+STATUS: IN PROGRESS
 ```
 
-## Validation
-
-Local endpoint:
+Accepted M14 checkpoints:
 
 ```text
-http://192.168.12.133:8000
+M14-0 — Validation Harness Modernization      COMPLETE
+M14-A V2 — Game Library Classification        COMPLETE
+M14-B V2 — Game Library Dashboard             COMPLETE
+M14-C — Game Library Search & Filter          ACTIVE / NOT IMPLEMENTED
 ```
 
-Production endpoint:
+Current branch:
 
 ```text
-https://scorestreamlive.onrender.com
+milestone-14c-game-library-search-filter
 ```
 
-M13-H local:
+Current pre-M14-C implementation checkpoint:
 
 ```text
-36 passed / 0 failed
-M13-G cumulative regression: PASS
-MILESTONE 13 LOCAL RELEASE GATE = PASS
+c2427d0 Complete M14-B game library dashboard
 ```
 
-M13-H production:
+## M14 Acceptance Evidence
+
+M14-0:
 
 ```text
-36 passed / 0 failed
-M13-G cumulative regression: PASS
-MILESTONE 13 PRODUCTION RELEASE GATE = PASS
+FAST     PASS
+FULL     PASS
+RELEASE  PASS
 ```
 
-M13-G local recovery also proved Team, Player, branding, and uploaded-logo persistence across application-container and PostgreSQL-container restarts.
+M14-A V2:
+
+```text
+FAST  PASS
+FULL  PASS
+```
+
+M14-B V2:
+
+```text
+FAST              PASS
+FULL              PASS
+HUMAN ACCEPTANCE  PASS
+```
 
 ## Current Product Capability
 
@@ -61,8 +71,11 @@ Team Detail and derived roster view
 Player create/edit UI
 Roster search/sort/management UX
 Responsive/mobile management UX
-Persistent recovery across refresh and local container/database restart
+
 Game creation and management
+Game Library canonical classification
+Game Library grouped dashboard
+Upcoming / Live / Completed / Cancelled classification
 Scoring and scoring history
 Persistent authoritative GameClock
 Soccer lifecycle / phases
@@ -75,15 +88,27 @@ Game detail / launch hub
 Existing-game resume / recovery UX
 ```
 
-## M13 Boundaries Preserved
-
-M13 did not add a Roster table, Player transfer, Player delete, a new persistence architecture, distributed infrastructure, or a new match engine. Player membership remains `Player.team_id`; PostgreSQL remains authoritative; REST remains the durable mutation boundary; Socket.IO remains committed-state notification.
-
-## Next Milestone
+## Active Validation Model
 
 ```text
-M14 — Game Library / Dashboard
-STATUS: NOT STARTED
+FAST     = inexpensive developer/domain feedback
+FULL     = current durable domain regression suite
+RELEASE  = FULL + expensive recovery/resilience checks
 ```
 
-M14 is not authorized merely because it is next. Begin only from a fresh repository-based startup review and approved M14 architecture/specification.
+The active harness is `scripts/validate.sh`.
+
+Durable regression domains live in `scripts/regression/`.
+
+Historical milestone validators remain acceptance records and must not become a recursive runtime regression chain again.
+
+## M14-C Boundary
+
+```text
+M14-C — Game Library Search & Filter
+IMPLEMENTATION: NOT STARTED
+```
+
+M14-C should extend Game Library discoverability on top of the accepted classification/dashboard architecture.
+
+Do not introduce a new state authority, lifecycle redesign, timer redesign, or unnecessary migration as part of M14-C.

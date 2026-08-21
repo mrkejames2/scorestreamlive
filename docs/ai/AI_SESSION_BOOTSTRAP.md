@@ -55,21 +55,28 @@ Rules:
 ## Current Session Boundary
 
 ```text
-M0–M12 PRODUCTION COMPLETE
-M13 LOCAL + HUMAN ACCEPTED
-M13 PRODUCTION RELEASE PENDING
-Canonical M13 harness: scripts/validate_m13h.sh
+M0–M13 PRODUCTION COMPLETE
+
+M14-0 — Validation Harness Modernization      COMPLETE
+M14-A V2 — Game Library Classification        COMPLETE
+M14-B V2 — Game Library Dashboard             COMPLETE
+M14-C — Game Library Search & Filter          ACTIVE
+M14-C implementation                          NOT STARTED
+
+Branch:
+milestone-14c-game-library-search-filter
+
+Checkpoint:
+c2427d0 Complete M14-B game library dashboard
 
 Local:      http://192.168.12.133:8000
 Production: https://scorestreamlive.onrender.com
 ```
 
-M13 delivered `/teams` and `/teams/{team_id}` Team/Player/Roster management around existing APIs. It did not add a Roster table, Player transfer/delete, or a new state authority.
+Active validation is domain-based through `scripts/validate.sh` and `scripts/regression/`.
 
-After M13 production closure:
+Do not reintroduce recursive historical milestone validation.
 
-```text
-Next roadmap milestone: M14 — Game Library / Dashboard
-```
+M14-C should be architected against the accepted Game Library classification/dashboard layer before implementation.
 
-Always re-read repository state; this checkpoint is intentionally updated again if production release results change.
+Always re-read repository state; this checkpoint is intentionally updated as M14 progresses.

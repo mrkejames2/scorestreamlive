@@ -4,10 +4,13 @@
 
 ```text
 M0–M13 PRODUCTION COMPLETE
-M14 NOT STARTED
-```
+M14 IN PROGRESS
 
-M13 production merge: `f9725b0`.
+M14-0 COMPLETE
+M14-A V2 COMPLETE
+M14-B V2 COMPLETE
+M14-C ACTIVE / NOT IMPLEMENTED
+```
 
 ## Runtime Stack
 
@@ -38,13 +41,13 @@ Browser / API Client
    │         │
    └────┬────┘
         │
-     FastAPI
+      FastAPI
         │
-     Services
+      Services
         │
- SQLAlchemy Async
+  SQLAlchemy Async
         │
-   PostgreSQL
+    PostgreSQL
 ```
 
 PostgreSQL is authoritative. REST performs durable mutations. Socket.IO communicates committed state.
@@ -62,93 +65,110 @@ GameLifecycle
 
 Roster has no table. It is derived from `Player.team_id`.
 
-### Team
-
-Current Team state includes identity and branding:
-
-```text
-id
-name
-short_name
-logo_url
-primary_color
-secondary_color
-created_at
-updated_at
-```
-
-Logo bytes are deliberately not stored in PostgreSQL. `logo_url` is persistent Team metadata; the logo file uses the existing Team logo storage service/volume contract.
-
-### Player
-
-Player belongs to one Team through `team_id`. M13 exposes create/edit management UI but does not add transfer or delete.
-
 ## Product / Web Surfaces
 
 ```text
 /teams                         Team Management Home
 /teams/{team_id}               Team Detail / Roster Management
-/games                         Game Management Home
+/games                         Game Library / Dashboard
 /games/{game_id}/setup         Pre-game setup
 /games/{game_id}               Game detail / launch hub
 /control/games/{game_id}       Operator Control Center
 /overlay/games/{game_id}       Broadcast Overlay
 ```
 
-### M13 Team Management
+## M14 Game Library Implementation
 
-`/teams` provides first-class Team discovery and management, including create/edit/branding workflows.
-
-`/teams/{team_id}` provides Team identity/branding plus the derived roster and Player management UX.
-
-The browser continues to use existing REST APIs for persistent mutations:
+M14-A V2 introduced the canonical browser classification module:
 
 ```text
-POST  /api/teams
-GET   /api/teams
-GET   /api/teams/{team_id}
-PATCH /api/teams/{team_id}
-POST  /api/teams/{team_id}/logo
-GET   /api/teams/{team_id}/players
-
-POST  /api/players
-GET   /api/players/{player_id}
-PATCH /api/players/{player_id}
+static/js/games/classification.js
 ```
+
+Classification outputs:
+
+```text
+upcoming
+live
+completed
+cancelled
+```
+
+M14-B V2 uses that classification to group `/games` into:
+
+```text
+Live Games
+Upcoming
+Completed
+Cancelled
+```
+
+The dashboard preserves existing launch behavior:
+
+```text
+Open Game
+Resume Game
+Review Game
+Manage Roster
+Open Control Center
+Open Overlay
+```
+
+M14-C will add Search & Filter on top of this accepted layer.
+
+## Validation Implementation
+
+Shared orchestrator:
+
+```text
+scripts/validate.sh
+```
+
+Shared helpers:
+
+```text
+scripts/lib/validation.sh
+```
+
+Durable domains:
+
+```text
+scripts/regression/health.sh
+scripts/regression/surfaces.sh
+scripts/regression/api_reads.sh
+scripts/regression/architecture.sh
+scripts/regression/game_library.sh
+scripts/regression/game_dashboard.sh
+scripts/regression/recovery.sh
+```
+
+Milestone wrappers:
+
+```text
+scripts/validate_m14_0.sh
+scripts/validate_m14a.sh
+scripts/validate_m14b.sh
+```
+
+New M14+ milestone wrappers delegate to the shared orchestrator. They must not recursively replay historical milestone validators.
 
 ## Recovery Model
 
 Recovery is authoritative server/database recovery, not browser-state recovery.
 
-M13-G proves locally that Team, Player, Team branding metadata, and Team logo storage survive browser refresh, application-container restart, and PostgreSQL-container restart.
+Expensive application-container and PostgreSQL-container restart checks are isolated to `VALIDATION_SCOPE=release`.
 
-## Validation
-
-Canonical M13 release entry point:
+## Current Git Checkpoint
 
 ```text
-scripts/validate_m13h.sh
+0078c3d Modernize validation harness for M14
+a4c75ab Complete M14-A game library classification foundation
+f4f6955 Integrate M14-A with modern validation harness
+c2427d0 Complete M14-B game library dashboard
 ```
 
-Accepted M13 release evidence:
+Current branch:
 
 ```text
-LOCAL:      36 passed / 0 failed; M13-G cumulative PASS
-HUMAN:      PASS
-PRODUCTION: 36 passed / 0 failed; M13-G cumulative PASS
+milestone-14c-game-library-search-filter
 ```
-
-M13-G performs local recovery testing; production mode skips Docker-only restart operations.
-
-## Git Model
-
-M13 used chained branches M13-A through M13-H. The final accepted M13-H branch was merged into `main`; production deployment and validation passed. M13 branches may now be removed as release cleanup.
-
-## Next Architectural Layer
-
-```text
-M14 — Game Library / Dashboard
-STATUS: NOT STARTED
-```
-
-M14 should add Game discoverability/dashboard UX around the existing Game domain and lifecycle state without redesigning the engine. Detailed scope requires the M14 startup review.
