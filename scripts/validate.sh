@@ -8,6 +8,7 @@ add Health scripts/regression/health.sh
 add 'Web Surfaces' scripts/regression/surfaces.sh
 add 'API Reads' scripts/regression/api_reads.sh
 add Architecture scripts/regression/architecture.sh
+add 'Game Library' scripts/regression/game_library.sh
 if [[ "$VALIDATION_SCOPE" == release ]]; then add Recovery scripts/regression/recovery.sh; fi
 fails=0
 echo '========================================'
