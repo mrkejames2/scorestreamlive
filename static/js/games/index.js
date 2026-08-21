@@ -1,3 +1,8 @@
+import {
+  classifyGame,
+  GameLibraryClassification,
+} from "./classification.js";
+
 const byId = (id) => document.getElementById(id);
 
 const MAX_VISIBLE_GAMES = 25;
@@ -337,23 +342,6 @@ function clockLabel(clock) {
   return `${status} · ${minutes}:${String(remainder).padStart(2, "0")}`;
 }
 
-function isCompleted(game, lifecycle) {
-  return (
-    lifecycle?.phase === "full_time"
-    || game?.status === "completed"
-  );
-}
-
-function isActive(game, lifecycle, clock) {
-  if (isCompleted(game, lifecycle)) return false;
-
-  return (
-    ["first_half", "halftime", "second_half"].includes(lifecycle?.phase)
-    || clock?.status === "running"
-    || game?.status === "live"
-  );
-}
-
 function gameSortValue(game) {
   const raw =
     game.scheduled_at
@@ -429,14 +417,17 @@ function renderCard(item) {
 
   card.dataset.gameId = game.id;
 
-  const active = isActive(game, lifecycle, clock);
-  const completed = isCompleted(game, lifecycle);
+  const classification = classifyGame(game, lifecycle, clock);
+  const active = classification === GameLibraryClassification.LIVE;
+  const completed =
+    classification === GameLibraryClassification.COMPLETED;
 
   card.dataset.resumeState = completed
     ? "completed"
     : active
       ? "active"
       : "ready";
+  card.dataset.libraryClassification = classification;
 
   const resumeIndicator = fragment.querySelector(".resume-indicator");
   resumeIndicator.classList.toggle("hidden", !active && !completed);
@@ -523,13 +514,15 @@ function renderSummary(allGames, visibleItems) {
 
   els.active.textContent = String(
     visibleItems.filter(({ game, lifecycle, clock }) =>
-      isActive(game, lifecycle, clock)
+      classifyGame(game, lifecycle, clock)
+      === GameLibraryClassification.LIVE
     ).length,
   );
 
   els.completed.textContent = String(
-    visibleItems.filter(({ game, lifecycle }) =>
-      isCompleted(game, lifecycle)
+    visibleItems.filter(({ game, lifecycle, clock }) =>
+      classifyGame(game, lifecycle, clock)
+      === GameLibraryClassification.COMPLETED
     ).length,
   );
 }
