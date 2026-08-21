@@ -37,12 +37,25 @@ const els = {
   newGameError: byId("new-game-error"),
   newGameSuccess: byId("new-game-success"),
 
-  list: byId("games-list"),
   empty: byId("games-empty"),
   error: byId("games-error"),
   total: byId("summary-total"),
-  active: byId("summary-active"),
+  upcoming: byId("summary-upcoming"),
+  live: byId("summary-live"),
   completed: byId("summary-completed"),
+  librarySections: byId("library-sections"),
+  liveList: byId("games-live-list"),
+  upcomingList: byId("games-upcoming-list"),
+  completedList: byId("games-completed-list"),
+  cancelledList: byId("games-cancelled-list"),
+  liveEmpty: byId("library-live-empty"),
+  upcomingEmpty: byId("library-upcoming-empty"),
+  completedEmpty: byId("library-completed-empty"),
+  cancelledSection: byId("library-cancelled"),
+  liveCount: byId("library-live-count"),
+  upcomingCount: byId("library-upcoming-count"),
+  completedCount: byId("library-completed-count"),
+  cancelledCount: byId("library-cancelled-count"),
   template: byId("game-card-template"),
 };
 
@@ -421,17 +434,25 @@ function renderCard(item) {
   const active = classification === GameLibraryClassification.LIVE;
   const completed =
     classification === GameLibraryClassification.COMPLETED;
+  const cancelled =
+    classification === GameLibraryClassification.CANCELLED;
 
   card.dataset.resumeState = completed
     ? "completed"
     : active
       ? "active"
-      : "ready";
+      : cancelled
+        ? "cancelled"
+        : "ready";
   card.dataset.libraryClassification = classification;
 
   const resumeIndicator = fragment.querySelector(".resume-indicator");
-  resumeIndicator.classList.toggle("hidden", !active && !completed);
-  resumeIndicator.textContent = completed ? "COMPLETED" : "RESUMABLE";
+  resumeIndicator.classList.toggle("hidden", !active && !completed && !cancelled);
+  resumeIndicator.textContent = cancelled
+    ? "CANCELLED"
+    : completed
+      ? "COMPLETED"
+      : "RESUMABLE";
 
   card.style.setProperty(
     "--home-primary",
@@ -491,7 +512,7 @@ function renderCard(item) {
 
   const hubLink = fragment.querySelector(".hub-link");
   hubLink.href = `/games/${game.id}`;
-  hubLink.textContent = completed
+  hubLink.textContent = completed || cancelled
     ? "Review Game"
     : active
       ? "Resume Game"
@@ -509,22 +530,55 @@ function renderCard(item) {
   return fragment;
 }
 
-function renderSummary(allGames, visibleItems) {
+function groupByLibraryClassification(items) {
+  const grouped = {
+    [GameLibraryClassification.LIVE]: [],
+    [GameLibraryClassification.UPCOMING]: [],
+    [GameLibraryClassification.COMPLETED]: [],
+    [GameLibraryClassification.CANCELLED]: [],
+  };
+
+  for (const item of items) {
+    const classification = classifyGame(item.game, item.lifecycle, item.clock);
+    (grouped[classification] || grouped[GameLibraryClassification.UPCOMING]).push(item);
+  }
+
+  return grouped;
+}
+
+function renderLibraryList(listElement, items) {
+  listElement.replaceChildren();
+  for (const item of items) {
+    listElement.appendChild(renderCard(item));
+  }
+}
+
+function renderLibrary(allGames, visibleItems) {
+  const grouped = groupByLibraryClassification(visibleItems);
+  const live = grouped[GameLibraryClassification.LIVE];
+  const upcoming = grouped[GameLibraryClassification.UPCOMING];
+  const completed = grouped[GameLibraryClassification.COMPLETED];
+  const cancelled = grouped[GameLibraryClassification.CANCELLED];
+
   els.total.textContent = String(allGames.length);
+  els.live.textContent = String(live.length);
+  els.upcoming.textContent = String(upcoming.length);
+  els.completed.textContent = String(completed.length);
 
-  els.active.textContent = String(
-    visibleItems.filter(({ game, lifecycle, clock }) =>
-      classifyGame(game, lifecycle, clock)
-      === GameLibraryClassification.LIVE
-    ).length,
-  );
+  els.liveCount.textContent = String(live.length);
+  els.upcomingCount.textContent = String(upcoming.length);
+  els.completedCount.textContent = String(completed.length);
+  els.cancelledCount.textContent = String(cancelled.length);
 
-  els.completed.textContent = String(
-    visibleItems.filter(({ game, lifecycle, clock }) =>
-      classifyGame(game, lifecycle, clock)
-      === GameLibraryClassification.COMPLETED
-    ).length,
-  );
+  els.liveEmpty.classList.toggle("hidden", live.length !== 0);
+  els.upcomingEmpty.classList.toggle("hidden", upcoming.length !== 0);
+  els.completedEmpty.classList.toggle("hidden", completed.length !== 0);
+  els.cancelledSection.classList.toggle("hidden", cancelled.length === 0);
+
+  renderLibraryList(els.liveList, live);
+  renderLibraryList(els.upcomingList, upcoming);
+  renderLibraryList(els.completedList, completed);
+  renderLibraryList(els.cancelledList, cancelled);
 }
 
 async function mapWithConcurrency(items, limit, worker) {
@@ -1260,17 +1314,15 @@ async function loadGames(options = {}) {
 
     const usable = hydrated.filter(Boolean);
 
-    els.list.replaceChildren();
-
-    for (const item of usable) {
-      els.list.appendChild(renderCard(item));
-    }
-
-    renderSummary(games, usable);
+    renderLibrary(games, usable);
 
     els.empty.classList.toggle(
       "hidden",
       usable.length !== 0,
+    );
+    els.librarySections.classList.toggle(
+      "hidden",
+      usable.length === 0,
     );
 
     const failedCount =

@@ -1,0 +1,62 @@
+/* ScoreStreamLive M14-B V2 — Game Library Dashboard */
+
+.library-summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.library-sections { display: grid; gap: 22px; }
+.library-section { display: grid; gap: 12px; }
+.library-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.library-section-heading h3 { margin: 0; font-size: 18px; }
+.library-section-heading p { margin: 4px 0 0; color: rgba(238,244,255,.55); font-size: 12px; }
+.library-count {
+  display: inline-flex;
+  min-width: 30px;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 9px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 999px;
+  background: rgba(255,255,255,.045);
+  color: rgba(238,244,255,.78);
+  font-size: 12px;
+  font-weight: 900;
+}
+.library-section[data-library-state="live"] .library-count {
+  border-color: rgba(115,217,167,.24);
+  background: rgba(32,134,84,.14);
+  color: #8ee1b7;
+}
+.library-section[data-library-state="upcoming"] .library-count {
+  border-color: rgba(76,145,255,.24);
+  background: rgba(42,119,255,.11);
+  color: #8db8ff;
+}
+.library-category-empty {
+  margin: 0;
+  padding: 18px;
+  border: 1px dashed rgba(255,255,255,.1);
+  border-radius: 14px;
+  color: rgba(238,244,255,.48);
+  background: rgba(255,255,255,.018);
+  font-size: 13px;
+}
+.game-card[data-library-classification="cancelled"] { opacity: .7; }
+.game-card[data-library-classification="cancelled"] .resume-indicator {
+  border-color: rgba(255,191,92,.18);
+  background: rgba(156,97,20,.13);
+  color: #efc17c;
+}
+@media (max-width: 860px) {
+  .library-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .library-summary-grid { grid-template-columns: 1fr 1fr; }
+  .library-section-heading { align-items: flex-start; }
+  .library-section-heading h3 { font-size: 16px; }
+}
