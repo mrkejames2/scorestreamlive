@@ -11,23 +11,26 @@ This file is persistent cross-session project memory for ScoreStreamLive.
 ```text
 M0–M13 PRODUCTION COMPLETE
 
-M14-0 — Validation Harness Modernization      COMPLETE
-M14-A V2 — Game Library Classification        COMPLETE
-M14-B V2 — Game Library Dashboard             COMPLETE
-M14-C — Game Library Search & Filter          ACTIVE
-M14-C implementation                          NOT STARTED
+M14-0 — Validation Harness Modernization       COMPLETE
+M14-A V2 — Game Library Classification         COMPLETE
+M14-B V2 — Game Library Dashboard              COMPLETE
+M14-C — Game Library Search & Filter           COMPLETE
+M14-D — Scalable Game Library Retrieval        COMPLETE
+M14-E — Configurable Continuous Match Clock    COMPLETE
+
+M14 — FEATURE COMPLETE / RELEASE PENDING
 ```
 
 Current M14-C branch:
 
 ```text
-milestone-14c-game-library-search-filter
+milestone-14e-clock-duration-configuration
 ```
 
 Current checkpoint before M14-C implementation:
 
 ```text
-c2427d0 Complete M14-B game library dashboard
+ca64d9f Complete M14-E configurable continuous match clock
 ```
 
 Important M14 lineage:
@@ -130,7 +133,11 @@ canonical Game Library classification
     ↓
 Game Library Dashboard
     ↓
-M14-C Search & Filter
+Search & Filter
+    ↓
+bounded/scalable retrieval
+    ↓
+reopen / resume / review
 ```
 
 M14-A V2 established canonical classification. M14-B V2 added grouped dashboard presentation and preserved existing launch actions.
@@ -169,6 +176,9 @@ API Reads
 Architecture
 Game Library
 Game Dashboard
+Game Search/Filter
+Game Retrieval
+Game Clock Configuration
 Recovery        (release scope only)
 ```
 
@@ -221,15 +231,39 @@ See root `BACKLOG.MD`. Do not improvise destructive cleanup.
 ## Resume Here
 
 ```text
-ACTIVE: M14-C — Game Library Search & Filter
-IMPLEMENTATION: NOT STARTED
-BASELINE: c2427d0
-BRANCH: milestone-14c-game-library-search-filter
+ACTIVE: Final M14 Release Gate
+FEATURE IMPLEMENTATION: COMPLETE
+CHECKPOINT: ca64d9f
+BRANCH: milestone-14e-clock-duration-configuration
 ```
 
-Before implementation:
+Next:
 
-1. inspect current M14 Game Library code;
-2. define M14-C search/filter UX and protected boundaries;
-3. add durable M14-C regression coverage to `scripts/regression/`;
-4. do not reintroduce recursive historical milestone validation.
+1. run local `VALIDATION_SCOPE=release`;
+2. merge the complete M14 lineage into `main`;
+3. push `main`;
+4. run production-safe validation;
+5. mark M14 production complete;
+6. only then begin M15.
+
+## M14-E Continuous Clock Contract
+
+Configured soccer half length is `H`.
+
+```text
+first half starts at 0
+first-half regulation threshold = H
+second half resumes at H
+full-match regulation threshold = 2H
+```
+
+During added time, the regulation display freezes at the threshold and `+N` advances.
+
+```text
+20:01 -> 20:00 +1
+21:00 -> 20:00 +2
+40:01 -> 40:00 +1
+41:00 -> 40:00 +2
+```
+
+Never reintroduce fixed `2700` / `5400` lifecycle transition durations.

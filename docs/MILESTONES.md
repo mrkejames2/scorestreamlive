@@ -71,10 +71,12 @@ Product outcome: make persisted Games easy to discover, understand, reopen, and 
 Current state:
 
 ```text
-M14-0 — Validation Harness Modernization      COMPLETE
-M14-A — Game Library Classification           COMPLETE (V2)
-M14-B — Game Library Dashboard                COMPLETE (V2)
-M14-C — Game Library Search & Filter          ACTIVE
+M14-0 — Validation Harness Modernization       COMPLETE
+M14-A — Game Library Classification            COMPLETE (V2)
+M14-B — Game Library Dashboard                 COMPLETE (V2)
+M14-C — Game Library Search & Filter           COMPLETE
+M14-D — Scalable Game Library Retrieval        COMPLETE
+M14-E — Configurable Continuous Match Clock    COMPLETE
 ```
 
 ### M14-0
@@ -127,10 +129,78 @@ c2427d0 Complete M14-B game library dashboard
 
 ### M14-C
 
+Added Game Library Search & Filter on top of the accepted classification/dashboard architecture.
+
+Acceptance:
+
 ```text
-Game Library Search & Filter
-STATUS: ACTIVE
-IMPLEMENTATION: NOT STARTED
+FAST PASS
+FULL PASS
+HUMAN ACCEPTANCE PASS
 ```
 
-M14-C must preserve the accepted classification/dashboard architecture and add its durable regression coverage to the shared harness.
+### M14-D
+
+Added scalable retrieval behavior:
+
+```text
+bounded Game API retrieval
+deterministic recency ordering
+embedded Team briefs
+lazy full-Team loading for Game creation
+```
+
+Acceptance:
+
+```text
+FAST PASS
+FULL PASS
+HUMAN ACCEPTANCE PASS
+```
+
+### M14-E
+
+Added configurable soccer half length using the existing authoritative GameClock configuration path.
+
+Supported presets:
+
+```text
+20 / 25 / 30 / 35 / 40 / 45 minutes
+```
+
+Continuous match-clock contract:
+
+```text
+configured half = H
+first-half regulation threshold = H
+second-half clock resumes at H
+full-match regulation threshold = 2H
+```
+
+Control Center and Overlay freeze regulation time at the threshold while `+N` added time advances.
+
+Acceptance:
+
+```text
+FAST PASS
+FULL PASS
+HUMAN ACCEPTANCE PASS
+```
+
+Checkpoint:
+
+```text
+ca64d9f Complete M14-E configurable continuous match clock
+```
+
+### M14 Release Gate
+
+```text
+FEATURE IMPLEMENTATION COMPLETE
+LOCAL ACCEPTANCE COMPLETE
+FINAL RELEASE SCOPE PENDING
+MERGE TO MAIN PENDING
+PRODUCTION VALIDATION PENDING
+```
+
+M15 must not begin until M14 is production complete.

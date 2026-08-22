@@ -79,6 +79,9 @@ scripts/regression/api_reads.sh
 scripts/regression/architecture.sh
 scripts/regression/game_library.sh
 scripts/regression/game_dashboard.sh
+scripts/regression/game_search_filter.sh
+scripts/regression/game_retrieval.sh
+scripts/regression/game_clock_configuration.sh
 scripts/regression/recovery.sh
 ```
 
@@ -94,6 +97,9 @@ Examples:
 scripts/validate_m14_0.sh
 scripts/validate_m14a.sh
 scripts/validate_m14b.sh
+scripts/validate_m14c.sh
+scripts/validate_m14d.sh
+scripts/validate_m14e.sh
 ```
 
 A new milestone may add or strengthen durable domain coverage, but must not create another recursive chain of historical milestone validators.
@@ -150,4 +156,34 @@ VALIDATION_MODE=local \
 VALIDATION_SCOPE=release \
 VALIDATION_OUTPUT=full \
 ./scripts/validate_mXX.sh
+```
+
+## M14-E Game Clock Configuration Contract
+
+The durable `Game Clock Configuration` domain protects:
+
+```text
+supported 20/25/30/35/40/45 minute presets
+authoritative GameClock PATCH path
+running-clock configuration guard
+no hard-coded 45/90 lifecycle overwrite
+first-half threshold H
+second-half start H
+full-match threshold 2H
+Control Center regulation freeze + added time
+Overlay regulation freeze + added time
+```
+
+Boundary examples:
+
+```text
+20:00 -> no +1
+20:01 -> +1
+20:59 -> +1
+21:00 -> +2
+
+40:00 -> no +1
+40:01 -> +1
+40:59 -> +1
+41:00 -> +2
 ```

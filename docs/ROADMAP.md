@@ -16,21 +16,24 @@ M0–M13 are production complete.
 
 ```text
 M14 — Game Library / Dashboard
-STATUS: IN PROGRESS
+STATUS: FEATURE COMPLETE / RELEASE PENDING
 ```
 
-Accepted M14 work:
+Completed M14 work:
 
 ```text
 M14-0 — Validation Harness Modernization
 M14-A V2 — Game Library Classification
 M14-B V2 — Game Library Dashboard
+M14-C — Game Library Search & Filter
+M14-D — Scalable Game Library Retrieval
+M14-E — Configurable Continuous Match Clock
 ```
 
-Active next slice:
+Active next step:
 
 ```text
-M14-C — Game Library Search & Filter
+M14 FINAL RELEASE GATE
 ```
 
 M14 makes persisted Games easier to find and understand as upcoming, live, completed, or cancelled while preserving the validated match engine.
@@ -53,3 +56,16 @@ Roadmap entries describe direction, not automatic authorization.
 Implement the active milestone only after scope/boundaries are approved.
 
 Deferred enhancements remain in root `BACKLOG.MD`.
+
+## M14 Release Boundary
+
+M14-E established configurable continuous soccer timing without changing the state authority model.
+
+```text
+configured half = H
+first-half threshold = H
+second-half resumes at H
+full-match threshold = 2H
+```
+
+M15 — Accounts & Ownership — begins only after M14 passes release validation, merges to `main`, deploys, and is marked production complete.

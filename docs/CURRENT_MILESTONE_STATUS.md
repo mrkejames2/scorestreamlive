@@ -12,28 +12,30 @@ M13 production merge/history remains the established production baseline on `mai
 
 ```text
 M14 — Game Library / Dashboard
-STATUS: IN PROGRESS
+STATUS: FEATURE COMPLETE / RELEASE PENDING
 ```
 
 Accepted M14 checkpoints:
 
 ```text
-M14-0 — Validation Harness Modernization      COMPLETE
-M14-A V2 — Game Library Classification        COMPLETE
-M14-B V2 — Game Library Dashboard             COMPLETE
-M14-C — Game Library Search & Filter          ACTIVE / NOT IMPLEMENTED
+M14-0 — Validation Harness Modernization       COMPLETE
+M14-A V2 — Game Library Classification         COMPLETE
+M14-B V2 — Game Library Dashboard              COMPLETE
+M14-C — Game Library Search & Filter           COMPLETE
+M14-D — Scalable Game Library Retrieval        COMPLETE
+M14-E — Configurable Continuous Match Clock    COMPLETE
 ```
 
 Current branch:
 
 ```text
-milestone-14c-game-library-search-filter
+milestone-14e-clock-duration-configuration
 ```
 
 Current pre-M14-C implementation checkpoint:
 
 ```text
-c2427d0 Complete M14-B game library dashboard
+ca64d9f Complete M14-E configurable continuous match clock
 ```
 
 ## M14 Acceptance Evidence
@@ -102,13 +104,41 @@ Durable regression domains live in `scripts/regression/`.
 
 Historical milestone validators remain acceptance records and must not become a recursive runtime regression chain again.
 
-## M14-C Boundary
+## M14 Final Release Boundary
 
 ```text
-M14-C — Game Library Search & Filter
-IMPLEMENTATION: NOT STARTED
+M14-A through M14-E — IMPLEMENTATION COMPLETE
+LOCAL FAST/FULL/HUMAN ACCEPTANCE — PASS
+FINAL RELEASE SCOPE — PENDING
+MERGE TO MAIN — PENDING
+PRODUCTION VALIDATION — PENDING
 ```
 
-M14-C should extend Game Library discoverability on top of the accepted classification/dashboard architecture.
+Do not begin M15 until M14 has passed release validation, merged to `main`, deployed, and been marked production complete.
 
-Do not introduce a new state authority, lifecycle redesign, timer redesign, or unnecessary migration as part of M14-C.
+### M14-E Continuous Soccer Clock Contract
+
+Configured half length is `H`.
+
+```text
+First half:
+  start elapsed = 0
+  regulation threshold = H
+
+Second half:
+  continuous clock resumes at H
+  regulation threshold = 2H
+```
+
+Added time freezes the displayed regulation clock at the threshold while `+N` advances.
+
+```text
+20:00 -> 20:00
+20:01 -> 20:00 +1
+21:00 -> 20:00 +2
+40:00 -> 40:00
+40:01 -> 40:00 +1
+41:00 -> 40:00 +2
+```
+
+The lifecycle service must never restore hard-coded `2700` / `5400` transition durations.

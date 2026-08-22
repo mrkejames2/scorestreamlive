@@ -4,9 +4,8 @@
 
 ```text
 M0–M13 PRODUCTION COMPLETE
-M14 IN PROGRESS
-M14-0 / M14-A V2 / M14-B V2 COMPLETE
-M14-C ACTIVE
+M14 FEATURE COMPLETE / RELEASE PENDING
+M14-0 / M14-A / M14-B / M14-C / M14-D / M14-E COMPLETE
 ```
 
 ## Runtime Architecture
@@ -102,7 +101,9 @@ Canonical Game Library Classification
           ↓
 Game Library Dashboard
           ↓
-M14-C Search & Filter
+Search & Filter
+          ↓
+Bounded Scalable Retrieval
 ```
 
 Canonical classification is presentation/domain interpretation. It is not a new persistence authority.
@@ -145,6 +146,9 @@ scripts/validate.sh
       ├── Architecture
       ├── Game Library
       ├── Game Dashboard
+      ├── Game Search/Filter
+      ├── Game Retrieval
+      ├── Game Clock Configuration
       └── Recovery (release only)
 ```
 
@@ -167,3 +171,25 @@ per-Game timer workers
 ```
 
 Do not introduce these without explicit architectural approval.
+
+## M14-E Continuous Match Clock
+
+GameClock remains timestamp-anchor based with no per-second database write and no per-second authoritative Socket.IO tick.
+
+Configured half length is `H`.
+
+```text
+START_FIRST_HALF:
+  elapsed = 0
+  regulation threshold = H
+
+START_SECOND_HALF:
+  elapsed = H
+  regulation threshold = 2H
+```
+
+Control Center and Overlay derive added-time presentation from authoritative GameClock state.
+
+During added time, the regulation clock display freezes at the current threshold and `+N` advances.
+
+Lifecycle transitions must derive thresholds from configured `H` and must not restore hard-coded `2700` / `5400` values.
