@@ -55,7 +55,7 @@ Rules:
 ## Current Session Boundary
 
 ```text
-M0–M13 PRODUCTION COMPLETE
+M0–M14 PRODUCTION COMPLETE
 
 M14-0 — Validation Harness Modernization       COMPLETE
 M14-A V2 — Game Library Classification         COMPLETE
@@ -64,13 +64,13 @@ M14-C — Game Library Search & Filter           COMPLETE
 M14-D — Scalable Game Library Retrieval        COMPLETE
 M14-E — Configurable Continuous Match Clock    COMPLETE
 
-M14 STATUS: FEATURE COMPLETE / RELEASE PENDING
+M14 STATUS: PRODUCTION COMPLETE
 
 Branch:
-milestone-14e-clock-duration-configuration
+main
 
 Checkpoint:
-ca64d9f Complete M14-E configurable continuous match clock
+50aff98 Merge Milestone 14 Game Library and configurable match clock
 
 Local:      http://192.168.12.133:8000
 Production: https://scorestreamlive.onrender.com
@@ -80,6 +80,6 @@ Active validation is domain-based through `scripts/validate.sh` and `scripts/reg
 
 Do not reintroduce recursive historical milestone validation.
 
-Next task is the final M14 release gate: RELEASE validation, merge to `main`, production validation, and production-complete documentation. Do not begin M15 before that gate closes.
+M14 release gates are closed. Next milestone is M15 — Accounts & Ownership. Inspect and architect M15 before implementation.
 
 Always re-read repository state; this checkpoint is intentionally updated as M14 progresses.

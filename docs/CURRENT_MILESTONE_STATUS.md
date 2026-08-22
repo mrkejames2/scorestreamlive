@@ -3,7 +3,7 @@
 ## Production Baseline
 
 ```text
-M0–M13 — PRODUCTION COMPLETE
+M0–M14 — PRODUCTION COMPLETE
 ```
 
 M13 production merge/history remains the established production baseline on `main`.
@@ -12,7 +12,7 @@ M13 production merge/history remains the established production baseline on `mai
 
 ```text
 M14 — Game Library / Dashboard
-STATUS: FEATURE COMPLETE / RELEASE PENDING
+STATUS: PRODUCTION COMPLETE
 ```
 
 Accepted M14 checkpoints:
@@ -109,12 +109,14 @@ Historical milestone validators remain acceptance records and must not become a 
 ```text
 M14-A through M14-E — IMPLEMENTATION COMPLETE
 LOCAL FAST/FULL/HUMAN ACCEPTANCE — PASS
-FINAL RELEASE SCOPE — PENDING
-MERGE TO MAIN — PENDING
-PRODUCTION VALIDATION — PENDING
+LOCAL RELEASE — PASS
+MERGE TO MAIN — COMPLETE
+PRODUCTION FULL — PASS
+PRODUCTION HUMAN ACCEPTANCE — PASS
+M14 — PRODUCTION COMPLETE
 ```
 
-Do not begin M15 until M14 has passed release validation, merged to `main`, deployed, and been marked production complete.
+M14 release gates are closed. M15 — Accounts & Ownership — is the next milestone.
 
 ### M14-E Continuous Soccer Clock Contract
 
@@ -142,3 +144,28 @@ Added time freezes the displayed regulation clock at the threshold while `+N` ad
 ```
 
 The lifecycle service must never restore hard-coded `2700` / `5400` transition durations.
+
+
+## M14 Production Release Record
+
+```text
+Merge to main:
+50aff98 Merge Milestone 14 Game Library and configurable match clock
+
+Local RELEASE:
+10 / 10 domains PASS
+Recovery PASS
+
+Production FULL:
+9 / 9 domains PASS
+
+Production Human Acceptance:
+PASS
+```
+
+## Next Milestone
+
+```text
+M15 — Accounts & Ownership
+STATUS: NEXT / NOT STARTED
+```

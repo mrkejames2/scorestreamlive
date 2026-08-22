@@ -10,13 +10,13 @@ M12     Game Setup / Pre-Game Workflow
 M13     Team & Roster Management UI
 ```
 
-M0–M13 are production complete.
+M0–M14 are production complete.
 
 ## Current Milestone
 
 ```text
 M14 — Game Library / Dashboard
-STATUS: FEATURE COMPLETE / RELEASE PENDING
+STATUS: PRODUCTION COMPLETE
 ```
 
 Completed M14 work:
@@ -30,10 +30,11 @@ M14-D — Scalable Game Library Retrieval
 M14-E — Configurable Continuous Match Clock
 ```
 
-Active next step:
+Next milestone:
 
 ```text
-M14 FINAL RELEASE GATE
+M15 — Accounts & Ownership
+STATUS: NEXT / NOT STARTED
 ```
 
 M14 makes persisted Games easier to find and understand as upcoming, live, completed, or cancelled while preserving the validated match engine.
@@ -68,4 +69,4 @@ second-half resumes at H
 full-match threshold = 2H
 ```
 
-M15 — Accounts & Ownership — begins only after M14 passes release validation, merges to `main`, deploys, and is marked production complete.
+M14 has passed release validation, merged to `main`, deployed, and passed production acceptance. M15 — Accounts & Ownership — is now next.

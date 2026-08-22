@@ -18,19 +18,19 @@ M14-C — Game Library Search & Filter           COMPLETE
 M14-D — Scalable Game Library Retrieval        COMPLETE
 M14-E — Configurable Continuous Match Clock    COMPLETE
 
-M14 — FEATURE COMPLETE / RELEASE PENDING
+M14 — PRODUCTION COMPLETE
 ```
 
-Current M14-C branch:
+Current branch:
 
 ```text
-milestone-14e-clock-duration-configuration
+main
 ```
 
-Current checkpoint before M14-C implementation:
+M14 production merge checkpoint:
 
 ```text
-ca64d9f Complete M14-E configurable continuous match clock
+50aff98 Merge Milestone 14 Game Library and configurable match clock
 ```
 
 Important M14 lineage:
@@ -234,7 +234,7 @@ See root `BACKLOG.MD`. Do not improvise destructive cleanup.
 ACTIVE: Final M14 Release Gate
 FEATURE IMPLEMENTATION: COMPLETE
 CHECKPOINT: ca64d9f
-BRANCH: milestone-14e-clock-duration-configuration
+BRANCH: main
 ```
 
 Next:
