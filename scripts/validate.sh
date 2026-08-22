@@ -8,6 +8,7 @@ add Health scripts/regression/health.sh
 add 'Web Surfaces' scripts/regression/surfaces.sh
 add 'API Reads' scripts/regression/api_reads.sh
 add Architecture scripts/regression/architecture.sh
+add Authentication scripts/regression/authentication.sh
 add 'Game Library' scripts/regression/game_library.sh
 add 'Game Dashboard' scripts/regression/game_dashboard.sh
 add 'Game Search/Filter' scripts/regression/game_search_filter.sh

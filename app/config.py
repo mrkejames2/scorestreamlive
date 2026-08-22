@@ -26,6 +26,23 @@ def _get_team_logo_max_bytes() -> int:
     return value if value > 0 else 2 * 1024 * 1024
 
 
+def _get_auth_session_days() -> int:
+    """Safely parse the authentication session lifetime."""
+    try:
+        value = int(os.getenv("AUTH_SESSION_DAYS", "30"))
+    except (ValueError, TypeError):
+        return 30
+    return value if value > 0 else 30
+
+
+def _get_bool(name: str, default: bool) -> bool:
+    """Read a conservative boolean environment setting."""
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
 @dataclass(frozen=True)
 class Settings:
     """Application settings loaded from environment variables."""
@@ -42,15 +59,22 @@ class Settings:
     SOCKET_CORS_ORIGINS: str = os.getenv("SOCKET_CORS_ORIGINS", "")
 
     # M12-D2 Team-logo storage.
-    #
-    # This path is intentionally configurable. Local Docker uses a named volume.
-    # A future production object-storage/disk adapter can preserve the same
-    # public logo_url contract.
     TEAM_LOGO_STORAGE_DIR: str = os.getenv(
         "TEAM_LOGO_STORAGE_DIR",
         "static/uploads/team-logos",
     )
     TEAM_LOGO_MAX_BYTES: int = _get_team_logo_max_bytes()
+
+    # M15-A authentication/session foundation.
+    AUTH_SESSION_COOKIE_NAME: str = os.getenv(
+        "AUTH_SESSION_COOKIE_NAME",
+        "scorestreamlive_session",
+    )
+    AUTH_SESSION_DAYS: int = _get_auth_session_days()
+    AUTH_SESSION_COOKIE_SECURE: bool = _get_bool(
+        "AUTH_SESSION_COOKIE_SECURE",
+        os.getenv("APP_ENV", "development") == "production",
+    )
 
 
 settings = Settings()
