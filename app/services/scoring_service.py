@@ -169,3 +169,62 @@ async def get_game_scoring_events(
         )
     )
     return list(result.scalars().all())
+
+def _player_display_name(player: Optional[Player]) -> str:
+    if player is None:
+        return "Unknown scorer"
+    parts = [player.first_name, player.last_name]
+    return " ".join(part for part in parts if part).strip() or "Unknown scorer"
+
+
+async def update_scoring_event_scorer(
+    db: AsyncSession,
+    event_id: uuid.UUID,
+    player_id: Optional[uuid.UUID],
+) -> ScoringEvent:
+    event = await db.get(ScoringEvent, event_id)
+    if not event:
+        raise ValueError("Scoring event not found")
+    previous_player = await db.get(Player, event.player_id) if event.player_id else None
+    player = None
+    if player_id is not None:
+        player = await db.get(Player, player_id)
+        if not player:
+            raise ValueError("Player not found")
+        if player.team_id != event.team_id:
+            raise ValueError("Player does not belong to the scoring Team")
+    event.player_id = player_id
+    await db.commit()
+    await db.refresh(event)
+    corrected_name = _player_display_name(player)
+    if previous_player is None and player is not None:
+        message = f"{corrected_name} scored."
+    elif player is None:
+        message = "Goal credited to Unknown scorer."
+    else:
+        message = f"Goal credited to {corrected_name}."
+    await sio.emit("scoring_event:updated", _serialize_scoring_event(event))
+    await sio.emit("scoring_event:corrected", {**_serialize_scoring_event(event), "correction_type": "scorer_changed", "message": message})
+    return event
+
+
+async def delete_scoring_event(db: AsyncSession, event_id: uuid.UUID) -> None:
+    event = await db.get(ScoringEvent, event_id)
+    if not event:
+        raise ValueError("Scoring event not found")
+    game = await db.get(Game, event.game_id)
+    if not game:
+        raise ValueError("Game not found")
+    payload = _serialize_scoring_event(event)
+    if event.team_id == game.home_team_id:
+        game.home_score = max(0, int(game.home_score) - 1)
+    elif event.team_id == game.away_team_id:
+        game.away_score = max(0, int(game.away_score) - 1)
+    else:
+        raise ValueError("Scoring event Team does not participate in this Game")
+    await db.delete(event)
+    await db.commit()
+    await db.refresh(game)
+    await sio.emit("scoring_event:deleted", {**payload, "correction_type": "goal_removed"})
+    await sio.emit("game:score_updated", _serialize_game_score(game))
+    await sio.emit("scoring_event:corrected", {**payload, "correction_type": "goal_removed", "message": "Goal removed."})

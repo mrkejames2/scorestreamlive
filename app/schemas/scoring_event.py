@@ -21,6 +21,10 @@ class ScoringEventCreate(BaseModel):
     event_type: Literal["goal"]
 
 
+class ScoringEventUpdate(BaseModel):
+    player_id: Optional[UUID] = None
+
+
 class ScoringEventResponse(BaseModel):
     """Committed scoring event returned by REST and Socket.IO."""
 

@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/static/css/control-d5.css">
   <link rel="stylesheet" href="/static/css/control-m14e.css">
   <link rel="stylesheet" href="/static/css/m14-hf1-matchday.css">
+  <link rel="stylesheet" href="/static/css/m14-hf2.css">
 </head>
 <body class="m10e-matchday" data-game-id="{{ game_id }}">
   <main class="control-shell">
@@ -140,6 +141,7 @@
           </div>
           <form id="clock-duration-form">
             <div class="clock-duration-options" role="radiogroup" aria-label="Half length">
+              <label class="clock-duration-option clock-duration-test-option"><input type="radio" name="clock-duration-minutes" value="1"><span>1 min (Test)</span></label>
               <label class="clock-duration-option"><input type="radio" name="clock-duration-minutes" value="20"><span>20 min</span></label>
               <label class="clock-duration-option"><input type="radio" name="clock-duration-minutes" value="25"><span>25 min</span></label>
               <label class="clock-duration-option"><input type="radio" name="clock-duration-minutes" value="30"><span>30 min</span></label>

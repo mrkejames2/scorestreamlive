@@ -1,4 +1,6 @@
 import {
+  deleteScoringEvent,
+  updateScoringEventScorer,
   updateBroadcastMessage,
   resumeClock,
   pauseClock,
@@ -44,7 +46,7 @@ const ACTION_LABELS = {
   end_game: "End Game",
 };
 
-const CLOCK_DURATION_MINUTES = [20, 25, 30, 35, 40, 45];
+const CLOCK_DURATION_MINUTES = [1, 20, 25, 30, 35, 40, 45];
 
 let commandInFlight = false;
 let scoringCommandInFlight = false;
@@ -229,38 +231,63 @@ function formatEventTime(event) {
   return `${minute}'`;
 }
 
+function scoringRosterForEvent(event) {
+  if (state.homeTeam && event.team_id === state.homeTeam.id) return state.homeRoster;
+  if (state.awayTeam && event.team_id === state.awayTeam.id) return state.awayRoster;
+  return [];
+}
+
+async function changeScoringEventScorer(event, select) {
+  if (scoringCommandInFlight) return;
+  scoringCommandInFlight = true;
+  try {
+    await updateScoringEventScorer(event.id, select.value || null);
+    showOperatorMessage("Goal scorer corrected.", "success", 3500);
+    await fetchAuthoritativeState();
+  } catch (error) {
+    showOperatorMessage(`Scorer correction failed: ${error?.message || error}`, "error", 7000);
+  } finally {
+    scoringCommandInFlight = false;
+    renderScoringControls();
+    renderScoring();
+  }
+}
+
+async function removeScoringEvent(event) {
+  if (scoringCommandInFlight) return;
+  if (!window.confirm("Remove this goal? The team score will be reduced by 1.")) return;
+  scoringCommandInFlight = true;
+  try {
+    await deleteScoringEvent(event.id);
+    showOperatorMessage("Goal removed and score corrected.", "success", 3500);
+    await fetchAuthoritativeState();
+  } catch (error) {
+    showOperatorMessage(`Goal removal failed: ${error?.message || error}`, "error", 7000);
+  } finally {
+    scoringCommandInFlight = false;
+    renderScoringControls();
+    renderScoring();
+  }
+}
+
 function renderScoring() {
   const container = byId("scoring-list");
   container.replaceChildren();
-
-  if (!state.scoringEvents.length) {
-    const empty = document.createElement("div");
-    empty.className = "empty-state";
-    empty.textContent = "No scoring events.";
-    container.appendChild(empty);
-    return;
-  }
-
+  if (!state.scoringEvents.length) { const empty=document.createElement("div"); empty.className="empty-state"; empty.textContent="No scoring events."; container.appendChild(empty); return; }
   for (const event of [...state.scoringEvents].reverse()) {
-    const row = document.createElement("div");
-    row.className = "scoring-event";
-
-    const time = document.createElement("div");
-    time.className = "scoring-time";
-    time.textContent = formatEventTime(event);
-
-    const detail = document.createElement("div");
-    const team = document.createElement("div");
-    team.className = "scoring-team";
-    team.textContent = scoringTeamName(event);
-
-    const player = document.createElement("div");
-    player.className = "scoring-player";
-    player.textContent = scorerName(event);
-
-    detail.append(team, player);
-    row.append(time, detail);
-    container.appendChild(row);
+    const row=document.createElement("div"); row.className="scoring-event scoring-event-correctable";
+    const time=document.createElement("div"); time.className="scoring-time"; time.textContent=formatEventTime(event);
+    const detail=document.createElement("div"); detail.className="scoring-event-detail";
+    const team=document.createElement("div"); team.className="scoring-team"; team.textContent=scoringTeamName(event);
+    const player=document.createElement("div"); player.className="scoring-player"; player.textContent=scorerName(event); detail.append(team,player);
+    const correction=document.createElement("div"); correction.className="scoring-correction-controls";
+    const select=document.createElement("select"); select.className="scoring-correction-select"; select.setAttribute("aria-label","Correct goal scorer");
+    const unknown=document.createElement("option"); unknown.value=""; unknown.textContent="Unknown Scorer"; select.appendChild(unknown);
+    for (const rp of scoringRosterForEvent(event)) { const option=document.createElement("option"); option.value=rp.id; const jersey=rp.jersey_number==null?"":`#${rp.jersey_number} `; option.textContent=`${jersey}${playerDisplayName(rp)}`; select.appendChild(option); }
+    select.value=event.player_id||"";
+    const changeButton=document.createElement("button"); changeButton.type="button"; changeButton.className="secondary-button scoring-correction-button"; changeButton.textContent="Change Scorer"; changeButton.disabled=scoringCommandInFlight; changeButton.addEventListener("click",()=>void changeScoringEventScorer(event,select));
+    const removeButton=document.createElement("button"); removeButton.type="button"; removeButton.className="secondary-button scoring-remove-button"; removeButton.textContent="Remove Goal"; removeButton.disabled=scoringCommandInFlight; removeButton.addEventListener("click",()=>void removeScoringEvent(event));
+    correction.append(select,changeButton,removeButton); row.append(time,detail,correction); container.appendChild(row);
   }
 }
 
@@ -813,6 +840,7 @@ async function runScoringAction(side) {
   } finally {
     scoringCommandInFlight = false;
     renderScoringControls();
+    renderScoring();
   }
 }
 
@@ -976,6 +1004,10 @@ try {
 
     onScoringEventCreated: (payload) => {
       applyScoringEvent(payload);
+    },
+
+    onScoringEventCorrected: () => {
+      void fetchAuthoritativeState();
     },
 
     onPhaseUpdated: (payload) => {
