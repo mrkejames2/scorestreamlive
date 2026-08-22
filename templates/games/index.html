@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="/static/css/games-d3.css">
   <link rel="stylesheet" href="/static/css/games-d4.css">
   <link rel="stylesheet" href="/static/css/games-g.css">
+  <link rel="stylesheet" href="/static/css/games-m14b.css">
+  <link rel="stylesheet" href="/static/css/games-m14c.css">
 </head>
 <body>
   <main class="games-shell">
@@ -16,7 +18,7 @@
         <div class="eyebrow">SCORESTREAMLIVE</div>
         <h1>Games</h1>
         <p class="subhead">
-          Create a launch-ready match, create or select branded teams, and jump directly into match control or the broadcast overlay.
+          Find live matches first, open upcoming games, review completed results, or create the next game.
         </p>
       </div>
 
@@ -377,14 +379,18 @@
       </form>
     </section>
 
-    <section class="summary-grid" aria-label="Game management summary">
+    <section class="summary-grid library-summary-grid" aria-label="Game library summary">
       <article class="summary-card">
-        <span class="summary-label">Games</span>
+        <span class="summary-label">Total</span>
         <strong id="summary-total" class="summary-value">—</strong>
       </article>
       <article class="summary-card">
-        <span class="summary-label">Active</span>
-        <strong id="summary-active" class="summary-value">—</strong>
+        <span class="summary-label">Upcoming</span>
+        <strong id="summary-upcoming" class="summary-value">—</strong>
+      </article>
+      <article class="summary-card">
+        <span class="summary-label">Live</span>
+        <strong id="summary-live" class="summary-value">—</strong>
       </article>
       <article class="summary-card">
         <span class="summary-label">Completed</span>
@@ -392,13 +398,39 @@
       </article>
     </section>
 
+    <section class="library-filter-bar" aria-label="Game library search and filters">
+      <label class="library-filter-field" for="game-library-search">
+        <span class="library-filter-label">Search Games</span>
+        <input id="game-library-search" class="text-input library-filter-input" type="search" autocomplete="off" placeholder="Search game or team...">
+      </label>
+
+      <label class="library-filter-field" for="game-library-classification-filter">
+        <span class="library-filter-label">Game Type</span>
+        <select id="game-library-classification-filter" class="text-input library-filter-select">
+          <option value="all">All Games</option>
+          <option value="live">Live</option>
+          <option value="upcoming">Upcoming</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </label>
+
+      <div class="library-filter-footer">
+        <span id="game-library-results-status" class="library-results-status" role="status" aria-live="polite">Showing all games</span>
+        <button id="game-library-clear-filters" class="button button-secondary library-clear-button" type="button" disabled>Clear Filters</button>
+      </div>
+    </section>
+
+    <div id="game-library-no-results" class="library-no-results hidden" role="status">
+      No games match the current search and filter.
+    </div>
+
     <section class="games-panel">
       <div class="panel-heading">
         <div>
-          <h2>Game Management</h2>
-          <p>
-            Recent games are shown below. Newly-created games are initialized and ready for Control Center and Overlay.
-          </p>
+          <div class="eyebrow">GAME LIBRARY</div>
+          <h2>Game Dashboard</h2>
+          <p>Live games are surfaced first, followed by upcoming and completed games.</p>
         </div>
       </div>
 
@@ -409,7 +441,42 @@
         <p>Use New Game to create the first match.</p>
       </div>
 
-      <div id="games-list" class="games-list" aria-live="polite"></div>
+      <div id="library-sections" class="library-sections" aria-live="polite">
+        <section id="library-live" class="library-section" data-library-state="live">
+          <div class="library-section-heading">
+            <div><h3>Live Games</h3><p>Matches currently underway or resumable.</p></div>
+            <span id="library-live-count" class="library-count">0</span>
+          </div>
+          <p id="library-live-empty" class="library-category-empty hidden">No games are currently live.</p>
+          <div id="games-live-list" class="games-list"></div>
+        </section>
+
+        <section id="library-upcoming" class="library-section" data-library-state="upcoming">
+          <div class="library-section-heading">
+            <div><h3>Upcoming</h3><p>Pregame and launch-ready matches.</p></div>
+            <span id="library-upcoming-count" class="library-count">0</span>
+          </div>
+          <p id="library-upcoming-empty" class="library-category-empty hidden">No upcoming games.</p>
+          <div id="games-upcoming-list" class="games-list"></div>
+        </section>
+
+        <section id="library-completed" class="library-section" data-library-state="completed">
+          <div class="library-section-heading">
+            <div><h3>Completed</h3><p>Finished games available for review.</p></div>
+            <span id="library-completed-count" class="library-count">0</span>
+          </div>
+          <p id="library-completed-empty" class="library-category-empty hidden">No completed games yet.</p>
+          <div id="games-completed-list" class="games-list"></div>
+        </section>
+
+        <section id="library-cancelled" class="library-section hidden" data-library-state="cancelled">
+          <div class="library-section-heading">
+            <div><h3>Cancelled</h3><p>Cancelled games retained in the library.</p></div>
+            <span id="library-cancelled-count" class="library-count">0</span>
+          </div>
+          <div id="games-cancelled-list" class="games-list"></div>
+        </section>
+      </div>
     </section>
 
     <footer class="games-footer">
@@ -474,5 +541,6 @@
   </template>
 
   <script type="module" src="/static/js/games/index.js"></script>
+  <script type="module" src="/static/js/games/filters.js"></script>
 </body>
 </html>

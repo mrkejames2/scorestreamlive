@@ -5,15 +5,17 @@
 ```text
 Architecture / scope
 ↓
-chained sub-milestones
+small coherent sub-milestone
 ↓
-automated validation + cumulative regression
+FAST domain validation
+↓
+FULL domain validation at acceptance
 ↓
 human acceptance
 ↓
 checkpoint / push
 ↓
-final milestone release gate
+final RELEASE validation when appropriate
 ↓
 documentation synchronization
 ↓
@@ -23,6 +25,8 @@ production deployment + validation
 ↓
 branch cleanup / clean main
 ```
+
+Historical milestone validators remain historical acceptance evidence. Active M14+ regression coverage is domain-based under `scripts/regression/` and must not recursively replay milestone history.
 
 ## Production Complete
 
@@ -40,19 +44,10 @@ M9  — Game Lifecycle / Phases                       COMPLETE
 M10 — Control Center / Match-Day Operator UX        COMPLETE
 M11 — Live Scoreboard Overlay                       COMPLETE
 M12 — Game Setup / Pre-Game Workflow                COMPLETE
+M13 — Team & Roster Management UI                   COMPLETE
 ```
 
-## M13 — Team & Roster Management UI
-
-Current state:
-
-```text
-IMPLEMENTATION — COMPLETE
-LOCAL RELEASE GATE — PASS
-HUMAN ACCEPTANCE — PASS
-DOCUMENTATION SYNC — IN PROGRESS
-PRODUCTION RELEASE GATE — PENDING
-```
+## M13 Historical Acceptance
 
 Accepted sub-milestones:
 
@@ -64,27 +59,148 @@ M13-D — Player Create / Edit                         PASS
 M13-E — Roster Management UX                        PASS
 M13-F — Management UX Polish / Mobile                PASS
 M13-G — Recovery / Persistence / Regression          PASS
-M13-H — Final Acceptance / Release Gate              LOCAL PASS + HUMAN PASS
+M13-H — Final Acceptance / Release Gate              PASS
 ```
 
-M13 delivered first-class Team/Player/Roster management while preserving the existing REST/service/PostgreSQL/Socket.IO architecture. It added no Roster table, Player transfer, Player delete, or match-engine redesign.
+M13 was accepted and released using the cumulative validator architecture that existed at the time. Preserve that as historical evidence; do not use it as the active M14+ regression model.
 
-Canonical local M13 result:
+## M14 — Game Library / Dashboard
+
+Product outcome: make persisted Games easy to discover, understand, reopen, and manage.
+
+Current state:
 
 ```text
-M13-H ............... PASS   36 passed / 0 failed
-M13-G cumulative .... PASS
-MILESTONE 13 LOCAL RELEASE GATE = PASS
+M14-0 — Validation Harness Modernization       COMPLETE
+M14-A — Game Library Classification            COMPLETE (V2)
+M14-B — Game Library Dashboard                 COMPLETE (V2)
+M14-C — Game Library Search & Filter           COMPLETE
+M14-D — Scalable Game Library Retrieval        COMPLETE
+M14-E — Configurable Continuous Match Clock    COMPLETE
 ```
 
-M13 becomes fully COMPLETE only after final branch merge, production deployment, production M13-H PASS, branch cleanup, and clean `main`.
+### M14-0
 
-## Next
+Introduced:
 
 ```text
-M14 — Game Library / Dashboard
+VALIDATION_SCOPE=fast|full|release
+VALIDATION_OUTPUT=summary|full
+VALIDATION_FAIL_FAST=0|1
 ```
 
-Product outcome: make upcoming, live, and completed persisted Games easy to discover and reopen.
+and a domain-based regression harness.
 
-M14 scope must be approved in a new major-milestone session before implementation.
+### M14-A V2
+
+Introduced canonical Game Library classification:
+
+```text
+upcoming
+live
+completed
+cancelled
+```
+
+Acceptance:
+
+```text
+FAST PASS
+FULL PASS
+```
+
+### M14-B V2
+
+Introduced grouped Game Library dashboard UX.
+
+Acceptance:
+
+```text
+FAST PASS
+FULL PASS
+HUMAN ACCEPTANCE PASS
+```
+
+Checkpoint:
+
+```text
+c2427d0 Complete M14-B game library dashboard
+```
+
+### M14-C
+
+Added Game Library Search & Filter on top of the accepted classification/dashboard architecture.
+
+Acceptance:
+
+```text
+FAST PASS
+FULL PASS
+HUMAN ACCEPTANCE PASS
+```
+
+### M14-D
+
+Added scalable retrieval behavior:
+
+```text
+bounded Game API retrieval
+deterministic recency ordering
+embedded Team briefs
+lazy full-Team loading for Game creation
+```
+
+Acceptance:
+
+```text
+FAST PASS
+FULL PASS
+HUMAN ACCEPTANCE PASS
+```
+
+### M14-E
+
+Added configurable soccer half length using the existing authoritative GameClock configuration path.
+
+Supported presets:
+
+```text
+20 / 25 / 30 / 35 / 40 / 45 minutes
+```
+
+Continuous match-clock contract:
+
+```text
+configured half = H
+first-half regulation threshold = H
+second-half clock resumes at H
+full-match regulation threshold = 2H
+```
+
+Control Center and Overlay freeze regulation time at the threshold while `+N` added time advances.
+
+Acceptance:
+
+```text
+FAST PASS
+FULL PASS
+HUMAN ACCEPTANCE PASS
+```
+
+Checkpoint:
+
+```text
+ca64d9f Complete M14-E configurable continuous match clock
+```
+
+### M14 Release Gate
+
+```text
+FEATURE IMPLEMENTATION COMPLETE
+LOCAL ACCEPTANCE COMPLETE
+FINAL RELEASE SCOPE PENDING
+MERGE TO MAIN PENDING
+PRODUCTION VALIDATION PENDING
+```
+
+M15 must not begin until M14 is production complete.

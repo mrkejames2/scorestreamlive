@@ -1,3 +1,8 @@
+import {
+  classifyGame,
+  GameLibraryClassification,
+} from "./classification.js";
+
 const byId = (id) => document.getElementById(id);
 
 const MAX_VISIBLE_GAMES = 25;
@@ -32,18 +37,32 @@ const els = {
   newGameError: byId("new-game-error"),
   newGameSuccess: byId("new-game-success"),
 
-  list: byId("games-list"),
   empty: byId("games-empty"),
   error: byId("games-error"),
   total: byId("summary-total"),
-  active: byId("summary-active"),
+  upcoming: byId("summary-upcoming"),
+  live: byId("summary-live"),
   completed: byId("summary-completed"),
+  librarySections: byId("library-sections"),
+  liveList: byId("games-live-list"),
+  upcomingList: byId("games-upcoming-list"),
+  completedList: byId("games-completed-list"),
+  cancelledList: byId("games-cancelled-list"),
+  liveEmpty: byId("library-live-empty"),
+  upcomingEmpty: byId("library-upcoming-empty"),
+  completedEmpty: byId("library-completed-empty"),
+  cancelledSection: byId("library-cancelled"),
+  liveCount: byId("library-live-count"),
+  upcomingCount: byId("library-upcoming-count"),
+  completedCount: byId("library-completed-count"),
+  cancelledCount: byId("library-cancelled-count"),
   template: byId("game-card-template"),
 };
 
 const state = {
   teams: [],
   teamMap: new Map(),
+  teamsLoaded: false,
   selectedHomeId: null,
   selectedAwayId: null,
   creatingGame: false,
@@ -337,23 +356,6 @@ function clockLabel(clock) {
   return `${status} · ${minutes}:${String(remainder).padStart(2, "0")}`;
 }
 
-function isCompleted(game, lifecycle) {
-  return (
-    lifecycle?.phase === "full_time"
-    || game?.status === "completed"
-  );
-}
-
-function isActive(game, lifecycle, clock) {
-  if (isCompleted(game, lifecycle)) return false;
-
-  return (
-    ["first_half", "halftime", "second_half"].includes(lifecycle?.phase)
-    || clock?.status === "running"
-    || game?.status === "live"
-  );
-}
-
 function gameSortValue(game) {
   const raw =
     game.scheduled_at
@@ -374,6 +376,19 @@ function buildTeamMap(teams) {
   }
 
   return map;
+}
+
+async function ensureTeamsLoaded() {
+  if (state.teamsLoaded) {
+    return state.teams;
+  }
+
+  const teams = await api("/api/teams");
+  state.teams = teams;
+  state.teamMap = buildTeamMap(teams);
+  state.teamsLoaded = true;
+
+  return teams;
 }
 
 function getTeamFromMap(teamId, fallbackName) {
@@ -414,8 +429,12 @@ async function hydrateGame(game) {
 
   return {
     game,
-    homeTeam: getTeamFromMap(game.home_team_id, "HOME"),
-    awayTeam: getTeamFromMap(game.away_team_id, "AWAY"),
+    homeTeam:
+      game.home_team
+      || getTeamFromMap(game.home_team_id, "HOME"),
+    awayTeam:
+      game.away_team
+      || getTeamFromMap(game.away_team_id, "AWAY"),
     lifecycle,
     clock,
   };
@@ -429,18 +448,39 @@ function renderCard(item) {
 
   card.dataset.gameId = game.id;
 
-  const active = isActive(game, lifecycle, clock);
-  const completed = isCompleted(game, lifecycle);
+  const classification = classifyGame(game, lifecycle, clock);
+  const active = classification === GameLibraryClassification.LIVE;
+  const completed =
+    classification === GameLibraryClassification.COMPLETED;
+  const cancelled =
+    classification === GameLibraryClassification.CANCELLED;
 
   card.dataset.resumeState = completed
     ? "completed"
     : active
       ? "active"
-      : "ready";
+      : cancelled
+        ? "cancelled"
+        : "ready";
+  card.dataset.libraryClassification = classification;
+  card.dataset.searchText = [
+    game.name,
+    homeTeam?.name,
+    homeTeam?.short_name,
+    awayTeam?.name,
+    awayTeam?.short_name,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLocaleLowerCase();
 
   const resumeIndicator = fragment.querySelector(".resume-indicator");
-  resumeIndicator.classList.toggle("hidden", !active && !completed);
-  resumeIndicator.textContent = completed ? "COMPLETED" : "RESUMABLE";
+  resumeIndicator.classList.toggle("hidden", !active && !completed && !cancelled);
+  resumeIndicator.textContent = cancelled
+    ? "CANCELLED"
+    : completed
+      ? "COMPLETED"
+      : "RESUMABLE";
 
   card.style.setProperty(
     "--home-primary",
@@ -500,7 +540,7 @@ function renderCard(item) {
 
   const hubLink = fragment.querySelector(".hub-link");
   hubLink.href = `/games/${game.id}`;
-  hubLink.textContent = completed
+  hubLink.textContent = completed || cancelled
     ? "Review Game"
     : active
       ? "Resume Game"
@@ -518,20 +558,55 @@ function renderCard(item) {
   return fragment;
 }
 
-function renderSummary(allGames, visibleItems) {
+function groupByLibraryClassification(items) {
+  const grouped = {
+    [GameLibraryClassification.LIVE]: [],
+    [GameLibraryClassification.UPCOMING]: [],
+    [GameLibraryClassification.COMPLETED]: [],
+    [GameLibraryClassification.CANCELLED]: [],
+  };
+
+  for (const item of items) {
+    const classification = classifyGame(item.game, item.lifecycle, item.clock);
+    (grouped[classification] || grouped[GameLibraryClassification.UPCOMING]).push(item);
+  }
+
+  return grouped;
+}
+
+function renderLibraryList(listElement, items) {
+  listElement.replaceChildren();
+  for (const item of items) {
+    listElement.appendChild(renderCard(item));
+  }
+}
+
+function renderLibrary(allGames, visibleItems) {
+  const grouped = groupByLibraryClassification(visibleItems);
+  const live = grouped[GameLibraryClassification.LIVE];
+  const upcoming = grouped[GameLibraryClassification.UPCOMING];
+  const completed = grouped[GameLibraryClassification.COMPLETED];
+  const cancelled = grouped[GameLibraryClassification.CANCELLED];
+
   els.total.textContent = String(allGames.length);
+  els.live.textContent = String(live.length);
+  els.upcoming.textContent = String(upcoming.length);
+  els.completed.textContent = String(completed.length);
 
-  els.active.textContent = String(
-    visibleItems.filter(({ game, lifecycle, clock }) =>
-      isActive(game, lifecycle, clock)
-    ).length,
-  );
+  els.liveCount.textContent = String(live.length);
+  els.upcomingCount.textContent = String(upcoming.length);
+  els.completedCount.textContent = String(completed.length);
+  els.cancelledCount.textContent = String(cancelled.length);
 
-  els.completed.textContent = String(
-    visibleItems.filter(({ game, lifecycle }) =>
-      isCompleted(game, lifecycle)
-    ).length,
-  );
+  els.liveEmpty.classList.toggle("hidden", live.length !== 0);
+  els.upcomingEmpty.classList.toggle("hidden", upcoming.length !== 0);
+  els.completedEmpty.classList.toggle("hidden", completed.length !== 0);
+  els.cancelledSection.classList.toggle("hidden", cancelled.length === 0);
+
+  renderLibraryList(els.liveList, live);
+  renderLibraryList(els.upcomingList, upcoming);
+  renderLibraryList(els.completedList, completed);
+  renderLibraryList(els.cancelledList, cancelled);
 }
 
 async function mapWithConcurrency(items, limit, worker) {
@@ -1033,15 +1108,27 @@ async function createInlineTeam(side) {
   }
 }
 
-function openNewGamePanel() {
+async function openNewGamePanel() {
   clearNewGameMessages();
   els.newGamePanel.classList.remove("hidden");
-  renderTeamResults("home");
-  renderTeamResults("away");
+  els.newGameButton.disabled = true;
 
-  window.requestAnimationFrame(() => {
-    els.gameName.focus();
-  });
+  try {
+    await ensureTeamsLoaded();
+    renderTeamResults("home");
+    renderTeamResults("away");
+
+    window.requestAnimationFrame(() => {
+      els.gameName.focus();
+    });
+  } catch (error) {
+    console.error("M14-D lazy Team load failed", error);
+    showNewGameError(
+      "Teams could not be loaded for Game creation. Refresh and try again.",
+    );
+  } finally {
+    els.newGameButton.disabled = false;
+  }
 }
 
 function closeNewGamePanel() {
@@ -1237,47 +1324,26 @@ async function loadGames(options = {}) {
   }
 
   try {
-    const [games, teams] = await Promise.all([
-      api("/api/games"),
-      api("/api/teams"),
-    ]);
-
-    state.teams = teams;
-    state.teamMap = buildTeamMap(teams);
-
-    if (state.selectedHomeId) {
-      applySelectedTeamBrand("home", state.selectedHomeId);
-    }
-    if (state.selectedAwayId) {
-      applySelectedTeamBrand("away", state.selectedAwayId);
-    }
-
-    const sortedGames = [...games].sort(
-      (a, b) => gameSortValue(b) - gameSortValue(a),
+    const games = await api(
+      `/api/games?limit=${MAX_VISIBLE_GAMES}`,
     );
 
-    const recentGames =
-      sortedGames.slice(0, MAX_VISIBLE_GAMES);
-
+    const recentGames = games;
     const hydrated = await mapWithConcurrency(
       recentGames,
       MAX_CONCURRENT_GAMES,
       hydrateGame,
     );
-
     const usable = hydrated.filter(Boolean);
-
-    els.list.replaceChildren();
-
-    for (const item of usable) {
-      els.list.appendChild(renderCard(item));
-    }
-
-    renderSummary(games, usable);
+    renderLibrary(games, usable);
 
     els.empty.classList.toggle(
       "hidden",
       usable.length !== 0,
+    );
+    els.librarySections.classList.toggle(
+      "hidden",
+      usable.length === 0,
     );
 
     const failedCount =
@@ -1297,7 +1363,6 @@ async function loadGames(options = {}) {
         games.length,
         recentGames.length,
       );
-
       setStatus("READY", "ready");
     }
 
@@ -1356,7 +1421,7 @@ els.refresh.addEventListener("click", () => {
 });
 
 els.newGameButton.addEventListener("click", () => {
-  openNewGamePanel();
+  void openNewGamePanel();
 });
 
 els.cancelNewGame.addEventListener("click", () => {

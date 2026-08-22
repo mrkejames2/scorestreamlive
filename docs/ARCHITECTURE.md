@@ -1,10 +1,11 @@
 # ScoreStreamLive Architecture
 
-## Release State
+## Release / Development State
 
 ```text
-M0–M12 PRODUCTION COMPLETE
-M13 LOCAL/HUMAN ACCEPTED — PRODUCTION RELEASE PENDING
+M0–M13 PRODUCTION COMPLETE
+M14 FEATURE COMPLETE / RELEASE PENDING
+M14-0 / M14-A / M14-B / M14-C / M14-D / M14-E COMPLETE
 ```
 
 ## Runtime Architecture
@@ -18,13 +19,13 @@ Browser / API Client
    │         │
    └────┬────┘
         │
-     FastAPI
+      FastAPI
         │
-     Services
+      Services
         │
- SQLAlchemy Async
+  SQLAlchemy Async
         │
-   PostgreSQL
+    PostgreSQL
 ```
 
 ## State Ownership
@@ -67,39 +68,11 @@ Emit
 
 ## Team / Roster Management Architecture
 
-M13 adds a product-management layer around existing Team and Player domains.
+M13 added a product-management layer around existing Team and Player domains.
 
-```text
-/teams
-/teams/{team_id}
-        │
-        ▼
-existing Team / Player REST APIs
-        │
-        ▼
-services
-        │
-        ▼
-PostgreSQL
-```
+Team branding metadata (`logo_url`, primary/secondary colors) remains persistent Team state. Logo image bytes are not stored in PostgreSQL.
 
-Team branding metadata (`logo_url`, primary/secondary colors) remains persistent Team state. Logo image bytes are not stored in PostgreSQL; they use the existing Team logo file-storage contract.
-
-Player membership remains represented only by `Player.team_id`. M13 does not add Player transfer or delete.
-
-## Recovery Architecture
-
-Authoritative state supports:
-
-```text
-browser refresh
-Socket.IO reconnect
-returning later
-application-container restart
-PostgreSQL-container restart
-```
-
-M13-G validates Team/Player/branding/logo persistence through local application and database recovery. Recovery does not depend on browser state.
+Player membership remains represented only by `Player.team_id`.
 
 ## Existing Match Architecture
 
@@ -108,6 +81,45 @@ Scoring, clock, lifecycle, Control Center, Overlay, and pre-game setup remain un
 GameClock remains timestamp-anchor based with no per-second authoritative DB writes or Socket.IO tick.
 
 Lifecycle remains separate from clock time and uses committed transactional transitions.
+
+## M14 Game Library Architecture
+
+M14 adds discovery/presentation around persisted Game state.
+
+```text
+Persisted Game
+    │
+    ├── Game fields
+    ├── GameLifecycle
+    └── GameClock
+          ↓
+Canonical Game Library Classification
+          ├── upcoming
+          ├── live
+          ├── completed
+          └── cancelled
+          ↓
+Game Library Dashboard
+          ↓
+Search & Filter
+          ↓
+Bounded Scalable Retrieval
+```
+
+Canonical classification is presentation/domain interpretation. It is not a new persistence authority.
+
+M14 must not solve display problems by synchronizing lifecycle state back into `Game.status`.
+
+Protected M14 boundaries:
+
+```text
+No new state authority
+No lifecycle redesign
+No timer redesign
+No per-second authoritative tick
+No unnecessary database migration
+No distributed infrastructure
+```
 
 ## Product Surfaces
 
@@ -120,6 +132,29 @@ Lifecycle remains separate from clock time and uses committed transactional tran
 /control/games/{game_id}
 /overlay/games/{game_id}
 ```
+
+## Validation Architecture
+
+Active M14+ validation is domain-based.
+
+```text
+scripts/validate.sh
+      │
+      ├── Health
+      ├── Web Surfaces
+      ├── API Reads
+      ├── Architecture
+      ├── Game Library
+      ├── Game Dashboard
+      ├── Game Search/Filter
+      ├── Game Retrieval
+      ├── Game Clock Configuration
+      └── Recovery (release only)
+```
+
+Durable current regression protection lives under `scripts/regression/`.
+
+Historical milestone validators remain acceptance records and are not recursively executed by the active orchestrator.
 
 ## Infrastructure Not Present
 
@@ -135,14 +170,26 @@ distributed timer service
 per-Game timer workers
 ```
 
-M13 did not introduce new infrastructure.
+Do not introduce these without explicit architectural approval.
 
-## Next Architectural Layer
+## M14-E Continuous Match Clock
 
-After M13 production closure:
+GameClock remains timestamp-anchor based with no per-second database write and no per-second authoritative Socket.IO tick.
+
+Configured half length is `H`.
 
 ```text
-M14 — Game Library / Dashboard
+START_FIRST_HALF:
+  elapsed = 0
+  regulation threshold = H
+
+START_SECOND_HALF:
+  elapsed = H
+  regulation threshold = 2H
 ```
 
-M14 should build discovery/dashboard UX around persisted Game state rather than introduce a new source of truth.
+Control Center and Overlay derive added-time presentation from authoritative GameClock state.
+
+During added time, the regulation clock display freezes at the current threshold and `+N` advances.
+
+Lifecycle transitions must derive thresholds from configured `H` and must not restore hard-coded `2700` / `5400` values.

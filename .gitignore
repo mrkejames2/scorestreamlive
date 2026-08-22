@@ -113,3 +113,4 @@ dmypy.json
 *.swp
 *.swo
 *~SCORESTREAMLIVE_M12_*.zip
+.validation/

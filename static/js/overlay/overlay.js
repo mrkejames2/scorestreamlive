@@ -168,11 +168,28 @@ function renderedElapsed() {
 
 function clockSecondsForDisplay() {
   const elapsed = renderedElapsed();
+
   if (state.clock?.mode === "count_down") {
     const duration = Number(state.clock.duration_seconds || 0);
     return Math.max(0, duration - elapsed);
   }
+
+  if (state.clock?.mode === "count_up") {
+    const duration = Number(state.clock.duration_seconds || 0);
+    if (duration > 0) {
+      return Math.min(elapsed, duration);
+    }
+  }
+
   return elapsed;
+}
+
+function soccerAddedTimeMinute() {
+  if (!state.clock || state.clock.mode !== "count_up") return null;
+  const duration = Number(state.clock.duration_seconds || 0);
+  const elapsed = renderedElapsed();
+  if (duration <= 0 || elapsed <= duration) return null;
+  return Math.floor((elapsed - duration) / 60) + 1;
 }
 
 function formatClock(totalSeconds) {
@@ -212,6 +229,8 @@ function render() {
   byId("away-score").textContent = String(state.game.away_score ?? 0);
   byId("phase-display").textContent = phaseLabel(state.lifecycle?.phase);
   byId("clock-display").textContent = formatClock(clockSecondsForDisplay());
+  const addedTimeMinute = soccerAddedTimeMinute();
+  byId("overlay-added-time").textContent = addedTimeMinute === null ? "" : `+${addedTimeMinute}`;
 
   applyOverlayTeamBrand("home", state.homeTeam);
   applyOverlayTeamBrand("away", state.awayTeam);

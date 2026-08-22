@@ -55,21 +55,31 @@ Rules:
 ## Current Session Boundary
 
 ```text
-M0–M12 PRODUCTION COMPLETE
-M13 LOCAL + HUMAN ACCEPTED
-M13 PRODUCTION RELEASE PENDING
-Canonical M13 harness: scripts/validate_m13h.sh
+M0–M13 PRODUCTION COMPLETE
+
+M14-0 — Validation Harness Modernization       COMPLETE
+M14-A V2 — Game Library Classification         COMPLETE
+M14-B V2 — Game Library Dashboard              COMPLETE
+M14-C — Game Library Search & Filter           COMPLETE
+M14-D — Scalable Game Library Retrieval        COMPLETE
+M14-E — Configurable Continuous Match Clock    COMPLETE
+
+M14 STATUS: FEATURE COMPLETE / RELEASE PENDING
+
+Branch:
+milestone-14e-clock-duration-configuration
+
+Checkpoint:
+ca64d9f Complete M14-E configurable continuous match clock
 
 Local:      http://192.168.12.133:8000
 Production: https://scorestreamlive.onrender.com
 ```
 
-M13 delivered `/teams` and `/teams/{team_id}` Team/Player/Roster management around existing APIs. It did not add a Roster table, Player transfer/delete, or a new state authority.
+Active validation is domain-based through `scripts/validate.sh` and `scripts/regression/`.
 
-After M13 production closure:
+Do not reintroduce recursive historical milestone validation.
 
-```text
-Next roadmap milestone: M14 — Game Library / Dashboard
-```
+Next task is the final M14 release gate: RELEASE validation, merge to `main`, production validation, and production-complete documentation. Do not begin M15 before that gate closes.
 
-Always re-read repository state; this checkpoint is intentionally updated again if production release results change.
+Always re-read repository state; this checkpoint is intentionally updated as M14 progresses.

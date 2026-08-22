@@ -18,14 +18,20 @@
 ## Current Checkpoint
 
 ```text
-M0–M12 PRODUCTION COMPLETE
-M13 IMPLEMENTATION COMPLETE
-M13 LOCAL RELEASE GATE — PASS
-M13 HUMAN ACCEPTANCE — PASS
-M13 PRODUCTION RELEASE GATE — PENDING
-```
+M0–M13 PRODUCTION COMPLETE
 
-Do not declare M13 fully complete before merge/deploy/production validation/branch cleanup.
+M14-0 — Validation Harness Modernization      COMPLETE
+M14-A V2 — Game Library Classification        COMPLETE
+M14-B V2 — Game Library Dashboard             COMPLETE
+M14-C — Game Library Search & Filter          ACTIVE
+M14-C IMPLEMENTATION                          NOT STARTED
+
+Current branch:
+milestone-14c-game-library-search-filter
+
+Current pre-implementation checkpoint:
+c2427d0 Complete M14-B game library dashboard
+```
 
 ## Technical Rules
 
@@ -50,28 +56,42 @@ inspect implementation + migrations
 ↓
 approve scope/boundaries
 ↓
-small sub-milestone
+small coherent change
 ↓
-targeted automated validation
+FAST domain validation
 ↓
-silent cumulative regression
+FULL domain validation at acceptance
 ↓
 human acceptance
 ↓
 checkpoint / push
 ```
 
-## Validation UX Rule
+Use `release` scope for expensive recovery/resilience validation when appropriate.
 
-Validation should show progress, keep successful nested regression output quiet, report totals, and list failed components only.
+## Validation Rule
 
-`VALIDATION_MODE=local` and `VALIDATION_MODE=production` must remain distinct so local-only Docker/restart tests do not create false production failures.
+Active M14+ validation is domain-based.
+
+```text
+scripts/validate.sh
+scripts/regression/
+```
+
+Historical milestone validators remain historical acceptance evidence.
+
+**Never rebuild a recursive milestone regression chain.**
+
+Each active regression domain should execute once per run. Failure detail must come from logs captured during that original run rather than by recursively rerunning prior milestone validators.
+
+`VALIDATION_MODE=local` and `VALIDATION_MODE=production` remain distinct.
 
 ## Milestone Closure Rule
 
 ```text
-final automated local validation
+final FULL local validation
 human acceptance
+RELEASE validation when required
 documentation synchronization
 final branch checkpoint
 merge final milestone branch → main
@@ -92,11 +112,13 @@ docs/IMPLEMENTATION_MAP.md
 docs/ROADMAP.md
 docs/MILESTONES.md
 docs/ARCHITECTURE.md
+docs/VALIDATION.md
 affected domain docs
 docs/DECISIONS.md
 docs/DEPLOYMENT.md
 docs/ai/GOLDEN_RULE.md
 docs/ai/AI_SESSION_BOOTSTRAP.md
+docs/ai/DEVELOPMENT_WORKFLOW.md
 BACKLOG.MD
 ```
 
@@ -104,4 +126,6 @@ Documentation synchronization is part of the milestone.
 
 ## Next
 
-After M13 production closure, the roadmap points to M14 — Game Library / Dashboard. M14 still requires a fresh repository-based startup review and explicit authorization.
+M14-C is the active authorized slice, but implementation has not started.
+
+Architect Game Library Search & Filter against the accepted M14-A/M14-B V2 layer before modifying product code.

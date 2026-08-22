@@ -1,0 +1,13 @@
+.clock-config-card{grid-column:1/-1}
+.clock-config-current{display:flex;gap:8px;align-items:baseline;margin-bottom:14px}
+.clock-config-current strong{font-size:24px}
+.clock-duration-options{display:grid;grid-template-columns:repeat(6,minmax(72px,1fr));gap:8px;margin-bottom:14px}
+.clock-duration-option{position:relative}
+.clock-duration-option input{position:absolute;opacity:0;pointer-events:none}
+.clock-duration-option span{display:block;padding:11px 8px;border:1px solid rgba(255,255,255,.16);border-radius:10px;background:rgba(255,255,255,.045);text-align:center;font-weight:850;cursor:pointer}
+.clock-duration-option input:checked+span{border-color:#6ba7ff;background:rgba(70,132,255,.20)}
+.clock-duration-option input:disabled+span{cursor:not-allowed;opacity:.45}
+.clock-config-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.clock-config-note{font-size:13px}
+@media(max-width:800px){.clock-duration-options{grid-template-columns:repeat(3,minmax(82px,1fr))}}
+@media(max-width:420px){.clock-duration-options{grid-template-columns:repeat(2,minmax(90px,1fr))}}

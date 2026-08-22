@@ -6,6 +6,7 @@
   <title>ScoreStreamLive — Game Control</title>
   <link rel="stylesheet" href="/static/css/control.css">
   <link rel="stylesheet" href="/static/css/control-d5.css">
+  <link rel="stylesheet" href="/static/css/control-m14e.css">
 </head>
 <body class="m10e-matchday" data-game-id="{{ game_id }}">
   <main class="control-shell">
@@ -118,6 +119,34 @@
             <button id="start-second-half-button" class="lifecycle-button primary-action" type="button" data-action="start_second_half" disabled>Start Second Half</button>
             <button id="end-game-button" class="lifecycle-button danger-action" type="button" data-action="end_game" disabled>End Game</button>
           </div>
+        </article>
+      </section>
+
+      <section class="operator-grid">
+        <article class="card operator-card clock-config-card">
+          <div class="card-header">
+            <h2>Match Clock</h2>
+            <span id="clock-config-status" class="command-status">READY</span>
+          </div>
+          <p class="muted clock-config-help">Set the length of each half for this game. The saved value is authoritative and preserved by reset.</p>
+          <div class="clock-config-current">
+            <span class="muted">Current Half Length</span>
+            <strong id="clock-duration-current">—</strong>
+          </div>
+          <form id="clock-duration-form">
+            <div class="clock-duration-options" role="radiogroup" aria-label="Half length">
+              <label class="clock-duration-option"><input type="radio" name="clock-duration-minutes" value="20"><span>20 min</span></label>
+              <label class="clock-duration-option"><input type="radio" name="clock-duration-minutes" value="25"><span>25 min</span></label>
+              <label class="clock-duration-option"><input type="radio" name="clock-duration-minutes" value="30"><span>30 min</span></label>
+              <label class="clock-duration-option"><input type="radio" name="clock-duration-minutes" value="35"><span>35 min</span></label>
+              <label class="clock-duration-option"><input type="radio" name="clock-duration-minutes" value="40"><span>40 min</span></label>
+              <label class="clock-duration-option"><input type="radio" name="clock-duration-minutes" value="45"><span>45 min</span></label>
+            </div>
+            <div class="clock-config-actions">
+              <button id="clock-duration-save" class="secondary-button" type="submit" disabled>Save Half Length</button>
+              <span id="clock-duration-note" class="muted clock-config-note">Clock must be stopped or paused to change half length.</span>
+            </div>
+          </form>
         </article>
       </section>
 

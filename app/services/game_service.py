@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -87,13 +87,33 @@ async def create_game(db: AsyncSession, data: GameCreate) -> Game:
     return game
 
 
-async def list_games(db: AsyncSession) -> List[Game]:
-    """Return all Games ordered by creation time (newest first)."""
-    result = await db.execute(
-        select(Game)
-        .options(selectinload(Game.home_team), selectinload(Game.away_team))
-        .order_by(Game.created_at.desc())
+async def list_games(
+    db: AsyncSession,
+    limit: Optional[int] = None,
+) -> List[Game]:
+    """Return Games in deterministic dashboard-recency order."""
+    recency = func.coalesce(
+        Game.scheduled_at,
+        Game.updated_at,
+        Game.created_at,
     )
+
+    query = (
+        select(Game)
+        .options(
+            selectinload(Game.home_team),
+            selectinload(Game.away_team),
+        )
+        .order_by(
+            recency.desc(),
+            Game.id.desc(),
+        )
+    )
+
+    if limit is not None:
+        query = query.limit(limit)
+
+    result = await db.execute(query)
     return list(result.scalars().all())
 
 

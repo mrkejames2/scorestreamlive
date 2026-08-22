@@ -51,6 +51,16 @@ export function getClock(gameId) {
   return requestJson(`/api/games/${encodeURIComponent(gameId)}/clock`);
 }
 
+export function configureClock(gameId, { expectedVersion, durationSeconds }) {
+  return requestJson(`/api/games/${encodeURIComponent(gameId)}/clock`, {
+    method: "PATCH",
+    payload: {
+      expected_version: expectedVersion,
+      duration_seconds: durationSeconds,
+    },
+  });
+}
+
 export function getScoringEvents(gameId) {
   return requestJson(`/api/games/${encodeURIComponent(gameId)}/scoring-events`);
 }
