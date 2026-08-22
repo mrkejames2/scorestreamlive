@@ -28,6 +28,8 @@ M14-B V2 — Game Library Dashboard
 M14-C — Game Library Search & Filter
 M14-D — Scalable Game Library Retrieval
 M14-E — Configurable Continuous Match Clock
+M14-HF1 — Match-Day Clock & Broadcast Controls
+M14-HF2 — Scoring Corrections & Test Clock
 ```
 
 Next milestone:
@@ -70,3 +72,15 @@ full-match threshold = 2H
 ```
 
 M14 has passed release validation, merged to `main`, deployed, and passed production acceptance. M15 — Accounts & Ownership — is now next.
+
+## M14 Final Hotfix Closure
+
+```text
+M14-HF1 production accepted
+M14-HF2 production accepted
+Production FAST/FULL validation complete
+Human verification complete
+M14 CLOSED
+```
+
+M15 — Accounts & Ownership — remains the next milestone.

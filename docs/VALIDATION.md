@@ -187,3 +187,39 @@ Boundary examples:
 40:59 -> +1
 41:00 -> +2
 ```
+
+## M14-HF2 Scoring Correction Contract
+
+Durable validation protects:
+
+```text
+ScoringEvent scorer PATCH
+ScoringEvent DELETE
+same-team scorer validation
+score preservation during scorer change
+score decrement during goal removal
+Control Center Change Scorer UI
+Control Center Remove Goal UI
+SCORE CORRECTION overlay event
+1 min (Test) clock preset
+continuous clock beyond regulation
+1-minute added-time boundaries
+```
+
+Boundary examples:
+
+```text
+elapsed=60 threshold=60 -> +0
+elapsed=61 threshold=60 -> +1
+elapsed=119 threshold=60 -> +1
+elapsed=120 threshold=60 -> +2
+```
+
+Production acceptance:
+
+```text
+FAST PASS
+FULL PASS
+11 / 11 domains PASS
+Human verification PASS
+```

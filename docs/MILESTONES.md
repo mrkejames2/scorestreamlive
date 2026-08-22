@@ -77,6 +77,8 @@ M14-B — Game Library Dashboard                 COMPLETE (V2)
 M14-C — Game Library Search & Filter           COMPLETE
 M14-D — Scalable Game Library Retrieval        COMPLETE
 M14-E — Configurable Continuous Match Clock    COMPLETE
+M14-HF1 — Match-Day Clock & Broadcast Controls COMPLETE
+M14-HF2 — Scoring Corrections & Test Clock      COMPLETE
 ```
 
 ### M14-0
@@ -165,6 +167,7 @@ Added configurable soccer half length using the existing authoritative GameClock
 Supported presets:
 
 ```text
+1 minute (Test)
 20 / 25 / 30 / 35 / 40 / 45 minutes
 ```
 
@@ -177,7 +180,7 @@ second-half clock resumes at H
 full-match regulation threshold = 2H
 ```
 
-Control Center and Overlay freeze regulation time at the threshold while `+N` added time advances.
+Control Center and Overlay keep the continuous elapsed clock running beyond the regulation threshold while `+N` indicates the added-time minute.
 
 Acceptance:
 
@@ -191,6 +194,49 @@ Checkpoint:
 
 ```text
 ca64d9f Complete M14-E configurable continuous match clock
+```
+
+### M14-HF1
+
+Post-release match-day reliability hotfix.
+
+```text
+Pause / Resume Match Clock
+Persistent Broadcast / Weather Delay Message
+Continuous elapsed clock through added time
+```
+
+Acceptance:
+
+```text
+FAST PASS
+FULL PASS
+HUMAN ACCEPTANCE PASS
+PRODUCTION ACCEPTANCE PASS
+```
+
+### M14-HF2
+
+Scoring-correction and test-clock hotfix.
+
+```text
+Edit scorer attribution on an existing goal
+Remove an accidental goal
+Correct team score automatically on removal
+Transient SCORE CORRECTION overlay banner
+1 min (Test) clock preset
+1-minute added-time regression boundaries
+```
+
+Acceptance:
+
+```text
+FAST PASS
+FULL PASS
+HUMAN VERIFICATION PASS
+PRODUCTION FAST PASS
+PRODUCTION FULL PASS
+11 / 11 domains PASS
 ```
 
 ### M14 Release Gate

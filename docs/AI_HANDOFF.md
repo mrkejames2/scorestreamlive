@@ -17,6 +17,8 @@ M14-B V2 — Game Library Dashboard              COMPLETE
 M14-C — Game Library Search & Filter           COMPLETE
 M14-D — Scalable Game Library Retrieval        COMPLETE
 M14-E — Configurable Continuous Match Clock    COMPLETE
+M14-HF1 — Match-Day Clock & Broadcast Controls COMPLETE
+M14-HF2 — Scoring Corrections & Test Clock      COMPLETE
 
 M14 — PRODUCTION COMPLETE
 ```
@@ -231,20 +233,17 @@ See root `BACKLOG.MD`. Do not improvise destructive cleanup.
 ## Resume Here
 
 ```text
-ACTIVE: Final M14 Release Gate
-FEATURE IMPLEMENTATION: COMPLETE
-CHECKPOINT: ca64d9f
+M14 — CLOSED / PRODUCTION COMPLETE
+M14-HF1 — PRODUCTION COMPLETE
+M14-HF2 — PRODUCTION COMPLETE
 BRANCH: main
+
+NEXT:
+M15 — Accounts & Ownership
+STATUS: NOT STARTED
 ```
 
-Next:
-
-1. run local `VALIDATION_SCOPE=release`;
-2. merge the complete M14 lineage into `main`;
-3. push `main`;
-4. run production-safe validation;
-5. mark M14 production complete;
-6. only then begin M15.
+Before beginning M15, define the authentication, ownership, authorization, and migration boundaries before implementation.
 
 ## M14-E Continuous Clock Contract
 
@@ -267,3 +266,34 @@ During added time, the regulation display freezes at the threshold and `+N` adva
 ```
 
 Never reintroduce fixed `2700` / `5400` lifecycle transition durations.
+
+## M14-HF2 Scoring Corrections
+
+Final production behavior:
+
+```text
+Change scorer updates ScoringEvent.player_id only.
+Game score is unchanged during scorer attribution correction.
+Remove Goal deletes the ScoringEvent and decrements the correct team score once.
+Correction operations emit transient SCORE CORRECTION messaging.
+1 min (Test) uses the same authoritative clock configuration path.
+```
+
+Validation:
+
+```text
+Local FAST PASS
+Local FULL PASS
+Production FAST PASS
+Production FULL PASS
+11 / 11 domains PASS
+Human verification PASS
+```
+
+Local validation should use:
+
+```text
+http://127.0.0.1:8000
+```
+
+Do not reintroduce the old regulation-time display clamp.

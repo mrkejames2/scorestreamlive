@@ -24,6 +24,8 @@ M14-B V2 — Game Library Dashboard              COMPLETE
 M14-C — Game Library Search & Filter           COMPLETE
 M14-D — Scalable Game Library Retrieval        COMPLETE
 M14-E — Configurable Continuous Match Clock    COMPLETE
+M14-HF1 — Match-Day Clock & Broadcast Controls COMPLETE
+M14-HF2 — Scoring Corrections & Test Clock      COMPLETE
 ```
 
 Current branch:
@@ -169,3 +171,70 @@ PASS
 M15 — Accounts & Ownership
 STATUS: NEXT / NOT STARTED
 ```
+
+## M14-HF1 / HF2 Production Closeout
+
+Field testing after the original M14 production release produced two focused match-day reliability hotfixes.
+
+### M14-HF1
+
+Delivered:
+
+```text
+Pause / Resume Match Clock
+Persistent Broadcast / Weather Delay Message
+Continuous elapsed clock during added time
+```
+
+Production verification:
+
+```text
+FAST PASS
+FULL PASS
+10 / 10 domains PASS
+Human production acceptance PASS
+```
+
+### M14-HF2
+
+Delivered:
+
+```text
+Change scorer on an existing ScoringEvent
+Unknown -> player
+player -> different player
+player -> Unknown
+Remove accidental goal
+Automatic team-score decrement on goal removal
+Transient SCORE CORRECTION overlay banner
+1 min (Test) clock preset
+Active 1-minute added-time boundary regression checks
+```
+
+Production verification:
+
+```text
+FAST PASS
+FULL PASS
+11 / 11 domains PASS
+Human verification PASS
+```
+
+Final scoring-correction invariants:
+
+```text
+Changing scorer attribution does not change the Game score.
+Removing an accidental goal decrements the correct team score exactly once.
+ScoringEvent history remains authoritative.
+```
+
+Final added-time validation model:
+
+```text
+1:00  regulation threshold
+1:01  1:01 +1
+1:59  1:59 +1
+2:00  2:00 +2
+```
+
+M14-HF1 and M14-HF2 are production complete. M14 is closed.
