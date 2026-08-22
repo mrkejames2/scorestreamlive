@@ -61,6 +61,27 @@ export function configureClock(gameId, { expectedVersion, durationSeconds }) {
   });
 }
 
+export function pauseClock(gameId, expectedVersion) {
+  return requestJson(`/api/games/${encodeURIComponent(gameId)}/clock/pause`, {
+    method: "POST",
+    payload: { expected_version: expectedVersion },
+  });
+}
+
+export function resumeClock(gameId, expectedVersion) {
+  return requestJson(`/api/games/${encodeURIComponent(gameId)}/clock/resume`, {
+    method: "POST",
+    payload: { expected_version: expectedVersion },
+  });
+}
+
+export function updateBroadcastMessage(gameId, message) {
+  return requestJson(`/api/games/${encodeURIComponent(gameId)}/broadcast-message`, {
+    method: "PATCH",
+    payload: { message },
+  });
+}
+
 export function getScoringEvents(gameId) {
   return requestJson(`/api/games/${encodeURIComponent(gameId)}/scoring-events`);
 }

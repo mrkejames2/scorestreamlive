@@ -35,6 +35,7 @@ def _serialize_game(game: Game) -> dict:
         } if game.away_team else None,
         "created_at": game.created_at.isoformat(),
         "updated_at": game.updated_at.isoformat(),
+        "broadcast_message": game.broadcast_message,
     }
 
 
@@ -165,5 +166,34 @@ async def update_game(db: AsyncSession, game_id: uuid.UUID, data: GameUpdate) ->
     )
     game = result.scalar_one()
 
+    await sio.emit("game:updated", _serialize_game(game))
+    return game
+
+async def update_broadcast_message(
+    db: AsyncSession,
+    game_id: uuid.UUID,
+    message: Optional[str],
+) -> Optional[Game]:
+    """Persist broadcast message and emit committed Game state."""
+    result = await db.execute(
+        select(Game)
+        .options(selectinload(Game.home_team), selectinload(Game.away_team))
+        .where(Game.id == game_id)
+    )
+    game = result.scalar_one_or_none()
+    if not game:
+        return None
+
+    normalized = (message or "").strip()
+    game.broadcast_message = normalized or None
+    game.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+
+    result = await db.execute(
+        select(Game)
+        .options(selectinload(Game.home_team), selectinload(Game.away_team))
+        .where(Game.id == game.id)
+    )
+    game = result.scalar_one()
     await sio.emit("game:updated", _serialize_game(game))
     return game

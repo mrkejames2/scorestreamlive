@@ -74,10 +74,7 @@ export function displaySeconds(clockState) {
   }
 
   if (clockState?.mode === "count_up") {
-    const duration = Number(clockState.duration_seconds || 0);
-    if (duration > 0) {
-      return Math.min(elapsed, duration);
-    }
+    return elapsed;
   }
 
   return elapsed;

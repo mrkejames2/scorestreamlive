@@ -175,10 +175,7 @@ function clockSecondsForDisplay() {
   }
 
   if (state.clock?.mode === "count_up") {
-    const duration = Number(state.clock.duration_seconds || 0);
-    if (duration > 0) {
-      return Math.min(elapsed, duration);
-    }
+    return elapsed;
   }
 
   return elapsed;
@@ -218,6 +215,19 @@ function setPresentationConnectionState() {
   }
 }
 
+function renderBroadcastMessage() {
+  const banner = byId("broadcast-message-banner");
+  const messageNode = byId("broadcast-message-text");
+
+  if (!banner || !messageNode) return;
+
+  const message =
+    String(state.game?.broadcast_message || "").trim();
+
+  messageNode.textContent = message;
+  banner.classList.toggle("hidden", !message);
+}
+
 function render() {
   if (!state.game) return;
 
@@ -234,6 +244,7 @@ function render() {
 
   applyOverlayTeamBrand("home", state.homeTeam);
   applyOverlayTeamBrand("away", state.awayTeam);
+  renderBroadcastMessage();
   setPresentationConnectionState();
 }
 
@@ -467,6 +478,7 @@ function installSocketHandlers(socket) {
     if (belongsToThisGame(payload)) void recoverAuthoritativeState();
   };
 
+  socket.on("game:updated", recoverIfThisGame);
   socket.on("game:score_updated", recoverIfThisGame);
 
   socket.on("scoring_event:created", (payload) => {

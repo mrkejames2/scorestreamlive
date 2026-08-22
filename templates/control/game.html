@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/static/css/control.css">
   <link rel="stylesheet" href="/static/css/control-d5.css">
   <link rel="stylesheet" href="/static/css/control-m14e.css">
+  <link rel="stylesheet" href="/static/css/m14-hf1-matchday.css">
 </head>
 <body class="m10e-matchday" data-game-id="{{ game_id }}">
   <main class="control-shell">
@@ -133,6 +134,10 @@
             <span class="muted">Current Half Length</span>
             <strong id="clock-duration-current">—</strong>
           </div>
+          <div class="match-clock-actions">
+            <button id="clock-pause-resume-button" class="primary-action match-clock-command" type="button" disabled>Pause Clock</button>
+            <span id="clock-pause-resume-note" class="muted">Available during the first and second half.</span>
+          </div>
           <form id="clock-duration-form">
             <div class="clock-duration-options" role="radiogroup" aria-label="Half length">
               <label class="clock-duration-option"><input type="radio" name="clock-duration-minutes" value="20"><span>20 min</span></label>
@@ -147,6 +152,29 @@
               <span id="clock-duration-note" class="muted clock-config-note">Clock must be stopped or paused to change half length.</span>
             </div>
           </form>
+        </article>
+      </section>
+
+      <section class="operator-grid">
+        <article class="card operator-card broadcast-message-card">
+          <div class="card-header">
+            <h2>Broadcast Message</h2>
+            <span id="broadcast-message-status" class="command-status">READY</span>
+          </div>
+          <p class="muted">Post a persistent message to the live overlay during weather delays, injuries, or other stoppages.</p>
+          <form id="broadcast-message-form">
+            <label class="broadcast-message-label" for="broadcast-message-input">Message</label>
+            <input id="broadcast-message-input" class="broadcast-message-input" type="text" maxlength="500" autocomplete="off" placeholder="WEATHER DELAY — PLAY SUSPENDED">
+            <div class="broadcast-message-actions">
+              <button id="broadcast-message-save" class="secondary-button" type="submit">Show Message</button>
+              <button id="broadcast-message-weather" class="secondary-button" type="button">Weather Delay</button>
+              <button id="broadcast-message-clear" class="secondary-button" type="button">Clear Message</button>
+            </div>
+          </form>
+          <div class="broadcast-message-current">
+            <span class="muted">Currently On Air</span>
+            <strong id="broadcast-message-current">None</strong>
+          </div>
         </article>
       </section>
 

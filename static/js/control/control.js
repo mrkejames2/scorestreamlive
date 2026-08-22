@@ -1,4 +1,7 @@
 import {
+  updateBroadcastMessage,
+  resumeClock,
+  pauseClock,
   configureClock,
   getClock,
   getGame,
@@ -46,6 +49,8 @@ const CLOCK_DURATION_MINUTES = [20, 25, 30, 35, 40, 45];
 let commandInFlight = false;
 let scoringCommandInFlight = false;
 let clockConfigInFlight = false;
+let clockCommandInFlight = false;
+let broadcastMessageInFlight = false;
 let operatorMessageTimer = null;
 let connectionController = null;
 
@@ -390,6 +395,8 @@ function renderStaticState() {
   renderLifecycleControls();
   renderScoringControls();
   renderClockConfiguration();
+  renderClockCommand();
+  renderBroadcastMessage();
 }
 
 function renderClock() {
@@ -420,6 +427,90 @@ function clockDurationSecondsForHalfLength(halfDurationSeconds) {
     return halfDurationSeconds * 2;
   }
   return halfDurationSeconds;
+}
+
+function clockCommandIsAllowed() {
+  return Boolean(
+    state.clock
+    && ["first_half", "second_half"].includes(state.lifecycle?.phase)
+    && ["running", "paused"].includes(state.clock?.status)
+  );
+}
+
+function renderClockCommand() {
+  const button = byId("clock-pause-resume-button");
+  if (!button) return;
+  const status = state.clock?.status;
+  button.disabled = !clockCommandIsAllowed() || clockCommandInFlight;
+  button.textContent = status === "paused" ? "Resume Clock" : "Pause Clock";
+  text(
+    "clock-pause-resume-note",
+    status === "paused"
+      ? "Clock is paused. Resume when play restarts."
+      : "Pause for weather, injury, or other match stoppages.",
+  );
+}
+
+async function runClockPauseResume() {
+  if (!state.clock || clockCommandInFlight || !clockCommandIsAllowed()) return;
+  const action = state.clock.status === "paused" ? "resume" : "pause";
+  clockCommandInFlight = true;
+  renderClockCommand();
+  try {
+    const updatedClock = action === "pause"
+      ? await pauseClock(gameIdFromPage(), state.clock.version)
+      : await resumeClock(gameIdFromPage(), state.clock.version);
+    state.clock = updatedClock;
+    updateServerOffset(updatedClock);
+    renderStaticState();
+    renderClock();
+    showOperatorMessage(
+      action === "pause" ? "Match clock paused." : "Match clock resumed.",
+      "success",
+      3500,
+    );
+  } catch (error) {
+    showOperatorMessage(
+      `Clock ${action} failed: ${error?.message || error}`,
+      "error",
+      7000,
+    );
+    try { await fetchAuthoritativeState(); } catch (_) {}
+  } finally {
+    clockCommandInFlight = false;
+    renderClockCommand();
+  }
+}
+
+function renderBroadcastMessage() {
+  const current = String(state.game?.broadcast_message || "").trim();
+  text("broadcast-message-current", current || "None");
+  const input = byId("broadcast-message-input");
+  if (input && document.activeElement !== input) input.value = current;
+  text(
+    "broadcast-message-status",
+    broadcastMessageInFlight ? "UPDATING..." : current ? "ON AIR" : "READY",
+  );
+}
+
+async function saveBroadcastMessage(message) {
+  if (broadcastMessageInFlight || !state.stateAuthoritative) return;
+  broadcastMessageInFlight = true;
+  renderBroadcastMessage();
+  try {
+    const game = await updateBroadcastMessage(gameIdFromPage(), message);
+    state.game = game;
+    renderBroadcastMessage();
+  } catch (error) {
+    showOperatorMessage(
+      `Broadcast message update failed: ${error?.message || error}`,
+      "error",
+      7000,
+    );
+  } finally {
+    broadcastMessageInFlight = false;
+    renderBroadcastMessage();
+  }
 }
 
 function renderClockConfiguration() {
@@ -794,6 +885,26 @@ byId("retry-button")?.addEventListener(
   "click",
   () => manualAuthoritativeRefresh(),
 );
+
+byId("clock-pause-resume-button")?.addEventListener("click", () => {
+  void runClockPauseResume();
+});
+
+byId("broadcast-message-form")?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  void saveBroadcastMessage(byId("broadcast-message-input")?.value || "");
+});
+
+byId("broadcast-message-weather")?.addEventListener("click", () => {
+  const message = "WEATHER DELAY — PLAY SUSPENDED";
+  const input = byId("broadcast-message-input");
+  if (input) input.value = message;
+  void saveBroadcastMessage(message);
+});
+
+byId("broadcast-message-clear")?.addEventListener("click", () => {
+  void saveBroadcastMessage("");
+});
 
 byId("clock-duration-form")?.addEventListener("submit", (event) => {
   event.preventDefault();
