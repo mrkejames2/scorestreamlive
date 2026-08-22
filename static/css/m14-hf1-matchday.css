@@ -1,0 +1,12 @@
+/* M14-HF1 Match-Day Clock & Broadcast Controls */
+.match-clock-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:14px 0 18px}
+.match-clock-command{min-width:150px}
+.broadcast-message-card{grid-column:1/-1}
+.broadcast-message-label{display:block;font-weight:800;margin-bottom:7px}
+.broadcast-message-input{width:100%;box-sizing:border-box;min-height:46px;border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:10px 12px;font:inherit;background:rgba(255,255,255,.06);color:inherit}
+.broadcast-message-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.broadcast-message-current{display:grid;gap:4px;margin-top:14px}
+.broadcast-overlay-banner{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);width:min(860px,calc(100% - 48px));box-sizing:border-box;padding:14px 22px;border-radius:12px;background:rgba(12,18,30,.94);border:2px solid rgba(255,209,102,.95);color:#fff;text-align:center;z-index:30}
+.broadcast-overlay-kicker{font-size:13px;font-weight:900;letter-spacing:.14em;color:#ffd166;margin-bottom:4px}
+.broadcast-overlay-message{font-size:clamp(20px,3vw,34px);font-weight:900;line-height:1.12}
+@media(max-width:600px){.broadcast-message-actions>button{flex:1 1 140px}.broadcast-overlay-banner{width:calc(100% - 24px);bottom:12px;padding:10px 14px}}

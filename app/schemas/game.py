@@ -35,6 +35,12 @@ class GameCreate(GameBase):
     pass
 
 
+class GameBroadcastMessageUpdate(BaseModel):
+    """Operator-controlled persistent broadcast message."""
+
+    message: Optional[str] = Field(None, max_length=500)
+
+
 class GameUpdate(BaseModel):
     """Fields allowed when updating a Game."""
 
@@ -57,3 +63,4 @@ class GameResponse(GameBase):
     away_team: Optional[TeamBrief] = None
     home_score: int
     away_score: int
+    broadcast_message: Optional[str] = None

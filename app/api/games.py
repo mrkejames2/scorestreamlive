@@ -7,8 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
-from app.schemas.game import GameCreate, GameUpdate, GameResponse
-from app.services.game_service import create_game, list_games, get_game, update_game
+from app.schemas.game import GameBroadcastMessageUpdate, GameCreate, GameUpdate, GameResponse
+from app.services.game_service import create_game, list_games, get_game, update_broadcast_message, update_game
 
 router = APIRouter(prefix="/api/games", tags=["games"])
 
@@ -45,6 +45,19 @@ async def retrieve(
 ):
     """Retrieve a single Game by ID."""
     game = await get_game(db, game_id)
+    if not game:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Game not found")
+    return game
+
+
+@router.patch("/{game_id}/broadcast-message", response_model=GameResponse)
+async def update_game_broadcast_message(
+    game_id: uuid.UUID,
+    data: GameBroadcastMessageUpdate,
+    db: AsyncSession = Depends(get_session),
+):
+    """Set or clear the persistent operator broadcast message."""
+    game = await update_broadcast_message(db, game_id, data.message)
     if not game:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Game not found")
     return game
