@@ -6,6 +6,7 @@
   <title>ScoreStreamLive Overlay</title>
   <link rel="stylesheet" href="/static/css/overlay.css">
   <link rel="stylesheet" href="/static/css/overlay-d6.css">
+  <link rel="stylesheet" href="/static/css/overlay-m14e.css">
 </head>
 <body data-game-id="{{ game_id }}">
   <main class="overlay-stage" aria-label="ScoreStreamLive broadcast scoreboard">
@@ -28,7 +29,10 @@
         <div class="match-topline">
           <span id="overlay-status-badge" class="status-badge" data-state="connecting">CONNECTING</span>
         </div>
-        <div id="clock-display" class="clock-display">00:00</div>
+        <div class="overlay-clock-row">
+          <div id="clock-display" class="clock-display">00:00</div>
+          <span id="overlay-added-time" class="overlay-added-time" aria-label="added time"></span>
+        </div>
         <div id="phase-display" class="phase-display">PREGAME</div>
       </div>
 

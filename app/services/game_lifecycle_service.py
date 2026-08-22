@@ -153,7 +153,7 @@ def _build_clock_values(
             {
                 "mode": "count_up",
                 "status": "running",
-                "duration_seconds": 2700,
+                "duration_seconds": clock.duration_seconds,
                 "elapsed_seconds": 0,
                 "running_since": now,
                 "updated_at": now,
@@ -186,12 +186,13 @@ def _build_clock_values(
                 "Clock must not be running before second half starts"
             )
 
+        half_duration_seconds = int(clock.duration_seconds)
         return (
             {
                 "mode": "count_up",
                 "status": "running",
-                "duration_seconds": 5400,
-                "elapsed_seconds": 2700,
+                "duration_seconds": half_duration_seconds * 2,
+                "elapsed_seconds": half_duration_seconds,
                 "running_since": now,
                 "updated_at": now,
             },

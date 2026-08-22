@@ -1,4 +1,5 @@
 import {
+  configureClock,
   getClock,
   getGame,
   getLifecycle,
@@ -40,8 +41,11 @@ const ACTION_LABELS = {
   end_game: "End Game",
 };
 
+const CLOCK_DURATION_MINUTES = [20, 25, 30, 35, 40, 45];
+
 let commandInFlight = false;
 let scoringCommandInFlight = false;
+let clockConfigInFlight = false;
 let operatorMessageTimer = null;
 let connectionController = null;
 
@@ -152,6 +156,13 @@ function mutationStateIsReady() {
     state.socketConnected
     && state.stateAuthoritative
     && state.connectionState === "live"
+  );
+}
+
+function clockConfigurationIsReady() {
+  return Boolean(
+    state.stateAuthoritative
+    && state.clock
   );
 }
 
@@ -378,6 +389,7 @@ function renderStaticState() {
   renderLiveMetadata();
   renderLifecycleControls();
   renderScoringControls();
+  renderClockConfiguration();
 }
 
 function renderClock() {
@@ -390,6 +402,97 @@ function renderClock() {
   text("clock-display", formatClock(displaySeconds(state.clock)));
   const added = soccerAddedTimeMinute(state.clock);
   text("added-time", added === null ? "" : `+${added}`);
+}
+
+function configuredHalfDurationSeconds() {
+  if (!state.clock) return 0;
+  const duration = Number(state.clock.duration_seconds || 0);
+  const phase = state.lifecycle?.phase;
+  if (["second_half", "full_time"].includes(phase)) {
+    return Math.floor(duration / 2);
+  }
+  return duration;
+}
+
+function clockDurationSecondsForHalfLength(halfDurationSeconds) {
+  const phase = state.lifecycle?.phase;
+  if (["second_half", "full_time"].includes(phase)) {
+    return halfDurationSeconds * 2;
+  }
+  return halfDurationSeconds;
+}
+
+function renderClockConfiguration() {
+  const form = byId("clock-duration-form");
+  if (!form || !state.clock) return;
+  const currentMinutes = configuredHalfDurationSeconds() / 60;
+  const running = state.clock.status === "running";
+  const ready = clockConfigurationIsReady();
+
+  text("clock-duration-current", Number.isInteger(currentMinutes) ? `${currentMinutes} min` : formatClock(state.clock.duration_seconds || 0));
+
+  for (const input of form.querySelectorAll('input[name="clock-duration-minutes"]')) {
+    input.checked = Number(input.value) === currentMinutes;
+    input.disabled = running || !ready || clockConfigInFlight;
+  }
+
+  const save = byId("clock-duration-save");
+  if (save) save.disabled = running || !ready || clockConfigInFlight;
+
+  text("clock-config-status", clockConfigInFlight ? "SAVING..." : running ? "LOCKED — RUNNING" : ready ? "READY" : "CONTROLS PAUSED");
+  text("clock-duration-note", running ? "Pause the clock before changing half length." : "Clock must be stopped or paused to change half length.");
+}
+
+async function saveClockDuration() {
+  if (!state.clock || clockConfigInFlight) return;
+
+  if (!clockConfigurationIsReady()) {
+    showOperatorMessage("Clock state is not authoritative yet. Refresh and try again.", "warning", 6000);
+    return;
+  }
+
+  if (state.clock.status === "running") {
+    showOperatorMessage("Pause the clock before changing half length.", "warning", 6000);
+    return;
+  }
+
+  const selected = document.querySelector('input[name="clock-duration-minutes"]:checked');
+  const selectedMinutes = Number(selected?.value);
+
+  if (!CLOCK_DURATION_MINUTES.includes(selectedMinutes)) {
+    showOperatorMessage("Choose a supported half length before saving.", "warning", 5000);
+    return;
+  }
+
+  const halfDurationSeconds = selectedMinutes * 60;
+  const durationSeconds = clockDurationSecondsForHalfLength(
+    halfDurationSeconds,
+  );
+  clockConfigInFlight = true;
+  renderClockConfiguration();
+
+  try {
+    const updatedClock = await configureClock(gameIdFromPage(), {
+      expectedVersion: state.clock.version,
+      durationSeconds,
+    });
+    state.clock = updatedClock;
+    updateServerOffset(state.clock);
+    renderStaticState();
+    renderClock();
+    showOperatorMessage(`Half length saved at ${selectedMinutes} minutes.`, "success", 3500);
+  } catch (error) {
+    if (error?.status === 409) {
+      setStateAuthoritative(false);
+      showOperatorMessage("The clock changed on another controller. Refreshing authoritative state.", "warning", 7000);
+      try { await fetchAuthoritativeState(); } catch (_) {}
+    } else {
+      showOperatorMessage(`Half length was not changed: ${error?.message || error}`, "error", 7000);
+    }
+  } finally {
+    clockConfigInFlight = false;
+    renderClockConfiguration();
+  }
 }
 
 function setConnectionUi(mode, detail = null) {
@@ -691,6 +794,11 @@ byId("retry-button")?.addEventListener(
   "click",
   () => manualAuthoritativeRefresh(),
 );
+
+byId("clock-duration-form")?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  void saveClockDuration();
+});
 
 for (const button of document.querySelectorAll(".lifecycle-button")) {
   button.addEventListener("click", () => runLifecycleAction(button.dataset.action));

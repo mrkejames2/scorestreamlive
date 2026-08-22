@@ -1,0 +1,4 @@
+/* M14-E broadcast added-time indicator */
+.overlay-clock-row{display:flex;align-items:baseline;justify-content:center;gap:8px}
+.overlay-added-time{min-width:28px;font-size:.52em;font-weight:900;line-height:1;color:#ffd166;letter-spacing:.02em}
+.overlay-added-time:empty{display:none}

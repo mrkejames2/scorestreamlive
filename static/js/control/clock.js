@@ -73,6 +73,13 @@ export function displaySeconds(clockState) {
     );
   }
 
+  if (clockState?.mode === "count_up") {
+    const duration = Number(clockState.duration_seconds || 0);
+    if (duration > 0) {
+      return Math.min(elapsed, duration);
+    }
+  }
+
   return elapsed;
 }
 
@@ -89,7 +96,7 @@ export function soccerAddedTimeMinute(clockState) {
   const elapsed = authoritativeElapsedSeconds(clockState);
   const duration = Number(clockState.duration_seconds || 0);
 
-  if (duration <= 0 || elapsed < duration) return null;
+  if (duration <= 0 || elapsed <= duration) return null;
 
   return Math.floor((elapsed - duration) / 60) + 1;
 }
