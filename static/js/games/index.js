@@ -62,6 +62,7 @@ const els = {
 const state = {
   teams: [],
   teamMap: new Map(),
+  teamsLoaded: false,
   selectedHomeId: null,
   selectedAwayId: null,
   creatingGame: false,
@@ -377,6 +378,19 @@ function buildTeamMap(teams) {
   return map;
 }
 
+async function ensureTeamsLoaded() {
+  if (state.teamsLoaded) {
+    return state.teams;
+  }
+
+  const teams = await api("/api/teams");
+  state.teams = teams;
+  state.teamMap = buildTeamMap(teams);
+  state.teamsLoaded = true;
+
+  return teams;
+}
+
 function getTeamFromMap(teamId, fallbackName) {
   return (
     state.teamMap.get(String(teamId))
@@ -415,8 +429,12 @@ async function hydrateGame(game) {
 
   return {
     game,
-    homeTeam: getTeamFromMap(game.home_team_id, "HOME"),
-    awayTeam: getTeamFromMap(game.away_team_id, "AWAY"),
+    homeTeam:
+      game.home_team
+      || getTeamFromMap(game.home_team_id, "HOME"),
+    awayTeam:
+      game.away_team
+      || getTeamFromMap(game.away_team_id, "AWAY"),
     lifecycle,
     clock,
   };
@@ -1090,15 +1108,27 @@ async function createInlineTeam(side) {
   }
 }
 
-function openNewGamePanel() {
+async function openNewGamePanel() {
   clearNewGameMessages();
   els.newGamePanel.classList.remove("hidden");
-  renderTeamResults("home");
-  renderTeamResults("away");
+  els.newGameButton.disabled = true;
 
-  window.requestAnimationFrame(() => {
-    els.gameName.focus();
-  });
+  try {
+    await ensureTeamsLoaded();
+    renderTeamResults("home");
+    renderTeamResults("away");
+
+    window.requestAnimationFrame(() => {
+      els.gameName.focus();
+    });
+  } catch (error) {
+    console.error("M14-D lazy Team load failed", error);
+    showNewGameError(
+      "Teams could not be loaded for Game creation. Refresh and try again.",
+    );
+  } finally {
+    els.newGameButton.disabled = false;
+  }
 }
 
 function closeNewGamePanel() {
@@ -1294,26 +1324,11 @@ async function loadGames(options = {}) {
   }
 
   try {
-    const [games, teams] = await Promise.all([
-      api("/api/games"),
-      api("/api/teams"),
-    ]);
-
-    state.teams = teams;
-    state.teamMap = buildTeamMap(teams);
-
-    if (state.selectedHomeId) {
-      applySelectedTeamBrand("home", state.selectedHomeId);
-    }
-    if (state.selectedAwayId) {
-      applySelectedTeamBrand("away", state.selectedAwayId);
-    }
-    const sortedGames = [...games].sort(
-      (a, b) => gameSortValue(b) - gameSortValue(a),
+    const games = await api(
+      `/api/games?limit=${MAX_VISIBLE_GAMES}`,
     );
 
-    const recentGames =
-      sortedGames.slice(0, MAX_VISIBLE_GAMES);
+    const recentGames = games;
     const hydrated = await mapWithConcurrency(
       recentGames,
       MAX_CONCURRENT_GAMES,
@@ -1406,7 +1421,7 @@ els.refresh.addEventListener("click", () => {
 });
 
 els.newGameButton.addEventListener("click", () => {
-  openNewGamePanel();
+  void openNewGamePanel();
 });
 
 els.cancelNewGame.addEventListener("click", () => {

@@ -1,8 +1,9 @@
 """Game REST API routes."""
 
 import uuid
+from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
@@ -26,10 +27,15 @@ async def create(
 
 @router.get("", response_model=list[GameResponse])
 async def list_all(
+    limit: Optional[int] = Query(
+        default=None,
+        ge=1,
+        le=100,
+    ),
     db: AsyncSession = Depends(get_session),
 ):
-    """List all Games."""
-    return await list_games(db)
+    """List Games, optionally bounded for dashboard retrieval."""
+    return await list_games(db, limit=limit)
 
 
 @router.get("/{game_id}", response_model=GameResponse)
