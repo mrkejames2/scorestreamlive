@@ -4,6 +4,7 @@ const gameId = document.body.dataset.gameId;
 
 const CLOCK_RESYNC_MS = 5000;
 const GOAL_BANNER_VISIBLE_MS = 5000;
+const SCORE_CORRECTION_VISIBLE_MS = 6000;
 const MATCH_STATE_BANNER_VISIBLE_MS = 5000;
 const DEFAULT_PRIMARY = "#2A77FF";
 const DEFAULT_SECONDARY = "#FFFFFF";
@@ -23,6 +24,7 @@ const state = {
   clockResyncing: false,
   hasAuthoritativeState: false,
   goalBannerTimeout: null,
+  scoreCorrectionBannerTimeout: null,
   lastGoalEventId: null,
   matchStateBannerTimeout: null,
   lastPresentedPhase: null,
@@ -319,6 +321,21 @@ function showGoalBanner(payload) {
   }, GOAL_BANNER_VISIBLE_MS);
 }
 
+function hideScoreCorrectionBanner() {
+  const banner = byId("score-correction-banner");
+  if (banner) banner.classList.add("hidden");
+}
+
+function showScoreCorrectionBanner(payload) {
+  const banner = byId("score-correction-banner");
+  const message = byId("score-correction-message");
+  if (!banner || !message) return;
+  message.textContent = String(payload?.message || "Score updated.");
+  banner.classList.remove("hidden");
+  if (state.scoreCorrectionBannerTimeout !== null) window.clearTimeout(state.scoreCorrectionBannerTimeout);
+  state.scoreCorrectionBannerTimeout = window.setTimeout(() => { hideScoreCorrectionBanner(); state.scoreCorrectionBannerTimeout = null; }, SCORE_CORRECTION_VISIBLE_MS);
+}
+
 function matchStateTitle(phase) {
   const titles = {
     first_half: "FIRST HALF",
@@ -484,6 +501,12 @@ function installSocketHandlers(socket) {
   socket.on("scoring_event:created", (payload) => {
     if (!belongsToThisGame(payload)) return;
     showGoalBanner(payload);
+    void recoverAuthoritativeState();
+  });
+
+  socket.on("scoring_event:corrected", (payload) => {
+    if (!belongsToThisGame(payload)) return;
+    showScoreCorrectionBanner(payload);
     void recoverAuthoritativeState();
   });
 

@@ -115,3 +115,14 @@ export function createScoringEvent(gameId, teamId, playerId = null) {
     },
   });
 }
+
+export function updateScoringEventScorer(eventId, playerId = null) {
+  return requestJson(`/api/scoring-events/${encodeURIComponent(eventId)}`, {
+    method: "PATCH",
+    payload: { player_id: playerId || null },
+  });
+}
+
+export function deleteScoringEvent(eventId) {
+  return requestJson(`/api/scoring-events/${encodeURIComponent(eventId)}`, { method: "DELETE" });
+}

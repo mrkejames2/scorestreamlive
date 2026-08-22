@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/static/css/overlay-d6.css">
   <link rel="stylesheet" href="/static/css/overlay-m14e.css">
   <link rel="stylesheet" href="/static/css/m14-hf1-matchday.css">
+  <link rel="stylesheet" href="/static/css/m14-hf2.css">
 </head>
 <body data-game-id="{{ game_id }}">
   <main class="overlay-stage" aria-label="ScoreStreamLive broadcast scoreboard">
@@ -57,6 +58,11 @@
       <div class="broadcast-overlay-kicker">MATCH UPDATE</div>
       <div id="broadcast-message-text"
            class="broadcast-overlay-message"></div>
+    </section>
+
+    <section id="score-correction-banner" class="score-correction-banner hidden" aria-live="assertive" aria-atomic="true">
+      <div class="score-correction-kicker">SCORE CORRECTION</div>
+      <div id="score-correction-message" class="score-correction-message"></div>
     </section>
 
     <section id="goal-banner" class="goal-banner hidden" aria-live="polite" aria-atomic="true">

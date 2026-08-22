@@ -19,6 +19,7 @@ export function connectControlSocket({
   onRecoveryFailed,
   onScoreUpdated,
   onScoringEventCreated,
+  onScoringEventCorrected,
   onPhaseUpdated,
   onClockUpdated,
   onAuthoritativeRefresh,
@@ -111,6 +112,12 @@ export function connectControlSocket({
     if (!isCurrentGame(payload, gameId)) return;
     setLastLiveEvent("scoring_event:created");
     onScoringEventCreated?.(payload);
+  });
+
+  socket.on("scoring_event:corrected", (payload) => {
+    if (!isCurrentGame(payload, gameId)) return;
+    setLastLiveEvent("scoring_event:corrected");
+    onScoringEventCorrected?.(payload);
   });
 
   socket.on("game:phase_updated", (payload) => {
