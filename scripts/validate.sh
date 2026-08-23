@@ -13,6 +13,7 @@ add 'Club Membership' scripts/regression/club_membership.sh
 add Authorization scripts/regression/authorization.sh
 add 'Account UX' scripts/regression/account_ux.sh
 add 'Account UX Polish' scripts/regression/account_ux_polish.sh
+add 'Navigation Discoverability' scripts/regression/navigation_discoverability.sh
 add 'Game Library' scripts/regression/game_library.sh
 add 'Game Dashboard' scripts/regression/game_dashboard.sh
 add 'Game Search/Filter' scripts/regression/game_search_filter.sh

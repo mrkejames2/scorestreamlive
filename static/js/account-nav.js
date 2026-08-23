@@ -14,7 +14,8 @@
     bar.className = "ssl-account-nav";
     bar.setAttribute("aria-label", "Authenticated navigation");
 
-    const brand = document.createElement("span");
+    const brand = document.createElement("a");
+    brand.href = "/games";
     brand.className = "ssl-nav-brand";
     brand.textContent = "SCORESTREAMLIVE";
 
@@ -32,17 +33,26 @@
     teams.className = "ssl-nav-link";
     teams.textContent = "Teams";
 
+    const account = document.createElement("a");
+    account.href = "/account";
+    account.className = "ssl-nav-link ssl-nav-account";
+    account.textContent = user.club_role === "DIRECTOR" ? "Club Admin" : "Account";
+
+    const identity = document.createElement("span");
+    identity.className = "ssl-nav-identity";
+
+    const identityName = document.createElement("strong");
+    identityName.textContent = user.display_name || user.email;
+
     const role = document.createElement("span");
     role.className = "ssl-nav-role";
     role.textContent = user.club_role || "";
 
-    const account = document.createElement("a");
-    account.href = "/account";
-    account.className = "ssl-nav-user";
-    account.textContent = user.display_name || user.email;
+    identity.append(identityName, role);
 
     const logout = document.createElement("button");
     logout.type = "button";
+    logout.className = "ssl-nav-logout";
     logout.textContent = "Logout";
     logout.addEventListener("click", async () => {
       logout.disabled = true;
@@ -53,7 +63,7 @@
       }
     });
 
-    bar.append(brand, clubName, games, teams, role, account, logout);
+    bar.append(brand, clubName, games, teams, account, identity, logout);
 
     const main = document.querySelector("main");
     if (main) document.body.insertBefore(bar, main);
