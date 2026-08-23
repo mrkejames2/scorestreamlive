@@ -10,6 +10,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api.auth import router as auth_router
+from app.api.clubs import router as clubs_router
 from app.api.control import router as control_router
 from app.api.game_clock import router as game_clock_router
 from app.api.game_lifecycle import router as game_lifecycle_router
@@ -96,6 +97,7 @@ app = FastAPI(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(auth_router)
+app.include_router(clubs_router)
 app.include_router(game_lifecycle_router)
 app.include_router(game_clock_router)
 app.include_router(scoring_events_router)
