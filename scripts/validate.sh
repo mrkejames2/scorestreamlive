@@ -14,6 +14,8 @@ add Authorization scripts/regression/authorization.sh
 add 'Account UX' scripts/regression/account_ux.sh
 add 'Account UX Polish' scripts/regression/account_ux_polish.sh
 add 'Navigation Discoverability' scripts/regression/navigation_discoverability.sh
+add 'Tenant Isolation' scripts/regression/tenant_isolation.sh
+add 'Release Readiness' scripts/regression/release_readiness.sh
 add 'Game Library' scripts/regression/game_library.sh
 add 'Game Dashboard' scripts/regression/game_dashboard.sh
 add 'Game Search/Filter' scripts/regression/game_search_filter.sh
