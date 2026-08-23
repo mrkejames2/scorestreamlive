@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Account — ScoreStreamLive</title>
+  <link rel="stylesheet" href="/static/css/account.css">
+</head>
+<body data-role="{{ current_user.club_role or '' }}">
+  <header class="ssl-global-nav" aria-label="ScoreStreamLive account navigation">
+    <div class="ssl-global-nav-inner">
+      <a class="ssl-brand" href="/games">
+        <span class="ssl-brand-mark">SSL</span>
+        <span><strong>ScoreStreamLive</strong><small>{{ club.name if club else 'Account' }}</small></span>
+      </a>
+      <nav class="ssl-nav-links" aria-label="Primary navigation">
+        <a href="/games">Games</a>
+        <a href="/teams">Teams</a>
+        <a class="active" href="/account" aria-current="page">Account</a>
+      </nav>
+      <div class="ssl-user-actions">
+        <div class="ssl-user-copy">
+          <strong>{{ current_user.display_name or current_user.email }}</strong>
+          <span>{{ current_user.club_role }}</span>
+        </div>
+        <form method="post" action="/logout">
+          <button class="button button-secondary button-compact" type="submit">Logout</button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <main class="account-shell">
+    <header class="account-header">
+      <div>
+        <div class="eyebrow">SCORESTREAMLIVE</div>
+        <h1>Account</h1>
+        <p class="subhead">Manage your Club access, users, and match-day assignments.</p>
+      </div>
+      <div class="header-actions">
+        <span class="status-chip" data-state="ready">{{ current_user.club_role }}</span>
+        <a class="button button-secondary" href="/games">Game Dashboard</a>
+        <a class="button button-secondary" href="/teams">Teams</a>
+      </div>
+    </header>
+
+    <section class="summary-grid" aria-label="Account summary">
+      <article class="summary-card"><span class="summary-label">Club</span><strong class="summary-value summary-value-text">{{ club.name if club else 'Not Assigned' }}</strong></article>
+      <article class="summary-card"><span class="summary-label">Signed In As</span><strong class="summary-value summary-value-text">{{ current_user.display_name or current_user.email }}</strong></article>
+      <article class="summary-card"><span class="summary-label">Role</span><strong class="summary-value summary-value-text">{{ current_user.club_role }}</strong></article>
+    </section>
+
+    {% if is_director %}
+    <section class="account-panel">
+      <div class="panel-heading">
+        <div>
+          <div class="eyebrow">CLUB ADMINISTRATION</div>
+          <h2>People & Access</h2>
+          <p>Create Club users and assign Managers and Operators to the resources they control.</p>
+        </div>
+      </div>
+      <div class="management-grid">
+        <article class="management-card">
+          <div class="card-heading"><div><span class="card-kicker">USERS</span><h3>Club Members</h3></div></div>
+          <p class="card-copy">Create Manager or Operator accounts for this Club.</p>
+          <form id="member-form" class="form-stack">
+            <label class="field"><span>Display Name</span><input id="member-name" type="text" placeholder="Example: Erica Smith"></label>
+            <label class="field"><span>Email</span><input id="member-email" type="email" placeholder="name@example.com" required></label>
+            <label class="field"><span>Role</span><select id="member-role"><option value="MANAGER">Manager</option><option value="OPERATOR">Operator</option></select></label>
+            <label class="field"><span>Temporary Password</span><input id="member-password" type="password" placeholder="Minimum 8 characters" required></label>
+            <button class="button button-primary" type="submit">Create Member</button>
+          </form>
+          <div id="member-message" class="form-message" role="status"></div>
+          <div id="members" class="assignment-list"></div>
+        </article>
+
+        <article class="management-card">
+          <div class="card-heading"><div><span class="card-kicker">TEAM ACCESS</span><h3>Team Managers</h3></div></div>
+          <p class="card-copy">Assign one or more Managers to Club Teams.</p>
+          <form id="team-form" class="form-stack">
+            <label class="field"><span>Team</span><select id="team-select"></select></label>
+            <label class="field"><span>Manager</span><select id="manager-select"></select></label>
+            <button class="button button-primary" type="submit">Assign Manager</button>
+          </form>
+          <div id="team-assignments" class="assignment-list"></div>
+        </article>
+
+        <article class="management-card">
+          <div class="card-heading"><div><span class="card-kicker">MATCH-DAY ACCESS</span><h3>Game Operators</h3></div></div>
+          <p class="card-copy">Assign a parent, volunteer, or operator to a specific Game.</p>
+          <form id="game-form" class="form-stack">
+            <label class="field"><span>Game</span><select id="game-select"></select></label>
+            <label class="field"><span>Operator</span><select id="operator-select"></select></label>
+            <button class="button button-primary" type="submit">Assign Operator</button>
+          </form>
+          <div id="game-assignments" class="assignment-list"></div>
+        </article>
+      </div>
+    </section>
+    {% else %}
+    <section class="account-panel">
+      <div class="panel-heading">
+        <div>
+          <div class="eyebrow">YOUR ACCESS</div>
+          <h2>{{ current_user.club_role|title }} Access</h2>
+          <p>Your Games and Teams are filtered automatically to the assignments provided by your Club Director.</p>
+        </div>
+      </div>
+      <div class="access-actions">
+        <a class="button button-primary" href="/games">Open My Games</a>
+        <a class="button button-secondary" href="/teams">Open My Teams</a>
+      </div>
+    </section>
+    {% endif %}
+  </main>
+  <script src="/static/js/account.js"></script>
+</body>
+</html>

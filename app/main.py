@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api.auth import router as auth_router
 from app.api.clubs import router as clubs_router
+from app.api.club_admin import router as club_admin_router
 from app.api.control import router as control_router
 from app.api.game_clock import router as game_clock_router
 from app.api.game_lifecycle import router as game_lifecycle_router
@@ -25,6 +26,7 @@ from app.logging_config import configure_logging
 from app.services.team_logo_storage import ensure_storage_dir
 from app.sockets import sio
 from app.web.auth import router as auth_web_router
+from app.web.account import router as account_web_router
 from app.web.games import router as games_web_router
 from app.web.game_setup import router as game_setup_web_router
 from app.web.game_detail import router as game_detail_web_router
@@ -98,6 +100,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(auth_router)
 app.include_router(clubs_router)
+app.include_router(club_admin_router)
 app.include_router(game_lifecycle_router)
 app.include_router(game_clock_router)
 app.include_router(scoring_events_router)
@@ -107,6 +110,7 @@ app.include_router(teams_router)
 app.include_router(team_logos_router)
 app.include_router(control_router)
 app.include_router(auth_web_router)
+app.include_router(account_web_router)
 app.include_router(games_web_router)
 app.include_router(game_setup_web_router)
 app.include_router(game_detail_web_router)

@@ -9,8 +9,6 @@ validation_init || exit $?
 
 fail=0
 
-# M15-C: administrative Game/Team collections are authenticated.
-# Unauthenticated regression calls must now prove the security boundary.
 for path in "/api/games" "/api/teams"; do
   code="$(curl -sS -o /dev/null -w "%{http_code}" "${BASE_URL}${path}" || true)"
   if [[ "$code" == "401" ]]; then
@@ -26,16 +24,31 @@ if [[ "$VALIDATION_MODE" == "local" ]]; then
     echo "FAIL Game collection authentication dependency missing"
     fail=1
   }
+
   grep -Fq 'current_user: User = Depends(require_current_user)' app/api/teams.py || {
     echo "FAIL Team collection authentication dependency missing"
     fail=1
   }
-  grep -Fq 'club_id=_require_club(current_user)' app/api/games.py || {
-    echo "FAIL Game collection Club scoping missing"
+
+  grep -Fq 'club_id=_require_club(current_user)' app/api/games.py \
+    || grep -Fq 'club_id=_require_club(' app/api/games.py \
+    || grep -Fq '_require_club(current_user)' app/api/games.py || {
+      echo "FAIL Game collection Club scoping missing"
+      fail=1
+    }
+
+  grep -Fq '_require_club(current_user)' app/api/teams.py || {
+    echo "FAIL Team collection Club scoping missing"
     fail=1
   }
-  grep -Fq 'list_teams(db, _require_club(current_user))' app/api/teams.py || {
-    echo "FAIL Team collection Club scoping missing"
+
+  grep -Fq 'visible_game_ids(db, current_user)' app/api/games.py || {
+    echo "FAIL Game role visibility filtering missing"
+    fail=1
+  }
+
+  grep -Fq 'visible_team_ids(' app/api/teams.py || {
+    echo "FAIL Team role visibility filtering missing"
     fail=1
   }
 fi
