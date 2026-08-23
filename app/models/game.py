@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Integer, String, DateTime, ForeignKey
+from sqlalchemy import DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -16,6 +16,13 @@ class Game(Base):
     __tablename__ = "games"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    club_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        ForeignKey("clubs.id", ondelete="RESTRICT"),
+        nullable=True,
+        index=True,
+    )
+    club: Mapped[Optional["Club"]] = relationship("Club")
+
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="scheduled")
     scheduled_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -30,5 +37,4 @@ class Game(Base):
 
     home_score: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     away_score: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    broadcast_message: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     broadcast_message: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)

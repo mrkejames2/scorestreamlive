@@ -8,40 +8,36 @@ source scripts/lib/validation.sh
 validation_init || exit $?
 
 fail=0
-games_tmp="$(mktemp)"
-teams_tmp="$(mktemp)"
-trap 'rm -f "$games_tmp" "$teams_tmp"' EXIT
 
-v_expect_http "/api/games" 200 || fail=1
-v_expect_http "/api/teams" 200 || fail=1
+# M15-C: administrative Game/Team collections are authenticated.
+# Unauthenticated regression calls must now prove the security boundary.
+for path in "/api/games" "/api/teams"; do
+  code="$(curl -sS -o /dev/null -w "%{http_code}" "${BASE_URL}${path}" || true)"
+  if [[ "$code" == "401" ]]; then
+    echo "PASS HTTP ${path} requires authentication -> 401"
+  else
+    echo "FAIL HTTP ${path} expected 401, got ${code}"
+    fail=1
+  fi
+done
 
-if ! curl -fsS "${BASE_URL}/api/games" -o "$games_tmp"; then
-  echo "FAIL could not download /api/games"
-  fail=1
-fi
-
-if ! curl -fsS "${BASE_URL}/api/teams" -o "$teams_tmp"; then
-  echo "FAIL could not download /api/teams"
-  fail=1
-fi
-
-if [[ "$fail" -eq 0 ]]; then
-  python3 - "$games_tmp" "$teams_tmp" <<'PY' || fail=1
-import json
-import sys
-from pathlib import Path
-
-for label, filename in (("games", sys.argv[1]), ("teams", sys.argv[2])):
-    try:
-        data = json.loads(Path(filename).read_text(encoding="utf-8"))
-    except Exception as exc:
-        raise SystemExit(f"FAIL {label} response is not valid JSON: {exc}")
-
-    if not isinstance(data, list):
-        raise SystemExit(f"FAIL {label} response is not a list")
-
-    print(f"PASS {label} collection shape ({len(data)} items)")
-PY
+if [[ "$VALIDATION_MODE" == "local" ]]; then
+  grep -Fq 'current_user: User = Depends(require_current_user)' app/api/games.py || {
+    echo "FAIL Game collection authentication dependency missing"
+    fail=1
+  }
+  grep -Fq 'current_user: User = Depends(require_current_user)' app/api/teams.py || {
+    echo "FAIL Team collection authentication dependency missing"
+    fail=1
+  }
+  grep -Fq 'club_id=_require_club(current_user)' app/api/games.py || {
+    echo "FAIL Game collection Club scoping missing"
+    fail=1
+  }
+  grep -Fq 'list_teams(db, _require_club(current_user))' app/api/teams.py || {
+    echo "FAIL Team collection Club scoping missing"
+    fail=1
+  }
 fi
 
 exit "$fail"

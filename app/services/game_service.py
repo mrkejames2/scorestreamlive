@@ -1,4 +1,4 @@
-"""Game service layer."""
+"""Game service layer with M15-C Club scoping."""
 
 import uuid
 from datetime import datetime, timezone
@@ -41,30 +41,36 @@ def _serialize_game(game: Game) -> dict:
 
 async def _validate_game_teams(
     db: AsyncSession,
+    club_id: uuid.UUID,
     home_team_id: Optional[uuid.UUID],
     away_team_id: Optional[uuid.UUID],
 ) -> None:
-    """Validate team references for a Game."""
+    """Validate Game Team references and enforce same-Club isolation."""
     if home_team_id and away_team_id and home_team_id == away_team_id:
         raise ValueError("Home and away teams must be different")
 
     if home_team_id:
         team = await db.get(Team, home_team_id)
-        if not team:
+        if not team or team.club_id != club_id:
             raise ValueError("Home team not found")
 
     if away_team_id:
         team = await db.get(Team, away_team_id)
-        if not team:
+        if not team or team.club_id != club_id:
             raise ValueError("Away team not found")
 
 
-async def create_game(db: AsyncSession, data: GameCreate) -> Game:
-    """Create and persist a new Game, then broadcast via Socket.IO."""
-    await _validate_game_teams(db, data.home_team_id, data.away_team_id)
+async def create_game(
+    db: AsyncSession,
+    data: GameCreate,
+    club_id: uuid.UUID,
+) -> Game:
+    """Create and persist a Club-scoped Game, then broadcast committed state."""
+    await _validate_game_teams(db, club_id, data.home_team_id, data.away_team_id)
 
     now = datetime.now(timezone.utc)
     game = Game(
+        club_id=club_id,
         name=data.name,
         status=data.status.value,
         scheduled_at=data.scheduled_at,
@@ -76,7 +82,6 @@ async def create_game(db: AsyncSession, data: GameCreate) -> Game:
     db.add(game)
     await db.commit()
 
-    # Re-query with relationships loaded for serialization
     result = await db.execute(
         select(Game)
         .options(selectinload(Game.home_team), selectinload(Game.away_team))
@@ -84,6 +89,7 @@ async def create_game(db: AsyncSession, data: GameCreate) -> Game:
     )
     game = result.scalar_one()
 
+    # M15-C repair: preserve the accepted post-commit creation event.
     await sio.emit("game:created", _serialize_game(game))
     return game
 
@@ -91,8 +97,9 @@ async def create_game(db: AsyncSession, data: GameCreate) -> Game:
 async def list_games(
     db: AsyncSession,
     limit: Optional[int] = None,
+    club_id: Optional[uuid.UUID] = None,
 ) -> List[Game]:
-    """Return Games in deterministic dashboard-recency order."""
+    """Return Games in deterministic dashboard-recency order, optionally Club-scoped."""
     recency = func.coalesce(
         Game.scheduled_at,
         Game.updated_at,
@@ -105,10 +112,14 @@ async def list_games(
             selectinload(Game.home_team),
             selectinload(Game.away_team),
         )
-        .order_by(
-            recency.desc(),
-            Game.id.desc(),
-        )
+    )
+
+    if club_id is not None:
+        query = query.where(Game.club_id == club_id)
+
+    query = query.order_by(
+        recency.desc(),
+        Game.id.desc(),
     )
 
     if limit is not None:
@@ -128,8 +139,12 @@ async def get_game(db: AsyncSession, game_id: uuid.UUID) -> Optional[Game]:
     return result.scalar_one_or_none()
 
 
-async def update_game(db: AsyncSession, game_id: uuid.UUID, data: GameUpdate) -> Optional[Game]:
-    """Update an existing Game, then broadcast the change via Socket.IO."""
+async def update_game(
+    db: AsyncSession,
+    game_id: uuid.UUID,
+    data: GameUpdate,
+) -> Optional[Game]:
+    """Update an existing Game, then broadcast committed state."""
     result = await db.execute(
         select(Game)
         .options(selectinload(Game.home_team), selectinload(Game.away_team))
@@ -139,10 +154,9 @@ async def update_game(db: AsyncSession, game_id: uuid.UUID, data: GameUpdate) ->
     if not game:
         return None
 
-    # Determine final team IDs for validation
     final_home = data.home_team_id if data.home_team_id is not None else game.home_team_id
     final_away = data.away_team_id if data.away_team_id is not None else game.away_team_id
-    await _validate_game_teams(db, final_home, final_away)
+    await _validate_game_teams(db, game.club_id, final_home, final_away)
 
     if data.name is not None:
         game.name = data.name
@@ -158,7 +172,6 @@ async def update_game(db: AsyncSession, game_id: uuid.UUID, data: GameUpdate) ->
     game.updated_at = datetime.now(timezone.utc)
     await db.commit()
 
-    # Re-query with fresh relationships
     result = await db.execute(
         select(Game)
         .options(selectinload(Game.home_team), selectinload(Game.away_team))
@@ -168,6 +181,7 @@ async def update_game(db: AsyncSession, game_id: uuid.UUID, data: GameUpdate) ->
 
     await sio.emit("game:updated", _serialize_game(game))
     return game
+
 
 async def update_broadcast_message(
     db: AsyncSession,

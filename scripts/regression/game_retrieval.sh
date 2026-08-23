@@ -8,56 +8,80 @@ source scripts/lib/validation.sh
 validation_init || exit $?
 
 fail=0
-tmp="$(mktemp)"
-trap 'rm -f "$tmp"' EXIT
 
-check_code() {
+check_unauthenticated() {
   local path="$1"
-  local expected="$2"
-  local label="$3"
+  local label="$2"
   local code
-  code="$(curl -sS -o "$tmp" -w "%{http_code}" "${BASE_URL}${path}" || true)"
-  if [[ "$code" == "$expected" ]]; then
-    echo "PASS $label -> HTTP $code"
+  code="$(curl -sS -o /dev/null -w "%{http_code}" "${BASE_URL}${path}" || true)"
+  if [[ "$code" == "401" ]]; then
+    echo "PASS $label requires authentication -> HTTP 401"
   else
-    echo "FAIL $label -> HTTP $code expected $expected"
+    echo "FAIL $label -> HTTP $code expected 401"
     fail=1
   fi
 }
 
-check_code "/api/games" 200 "unbounded Game list"
-check_code "/api/games?limit=1" 200 "bounded Game list limit=1"
-
-python3 - "$tmp" <<'PY' || fail=1
-import json, sys
-with open(sys.argv[1], encoding="utf-8") as fh:
-    data = json.load(fh)
-if not isinstance(data, list):
-    raise SystemExit("FAIL limit=1 did not return a JSON list")
-if len(data) > 1:
-    raise SystemExit(f"FAIL limit=1 returned {len(data)} Games")
-print(f"PASS limit=1 returned {len(data)} Game(s)")
-if data:
-    if "home_team" not in data[0] or "away_team" not in data[0]:
-        raise SystemExit("FAIL embedded Team briefs missing")
-    print("PASS embedded Team briefs preserved")
-PY
-
-for spec in "/api/games?limit=0:422" "/api/games?limit=101:422" "/api/games?limit=abc:422"; do
-  IFS=: read -r path expected <<<"$spec"
-  check_code "$path" "$expected" "invalid limit rejected"
-done
+# M15-C changed /api/games into an authenticated administrative collection.
+# Query validation happens behind the auth boundary, so an unauthenticated
+# caller receives 401 before it can observe list/limit behavior.
+check_unauthenticated "/api/games" "unbounded Game list"
+check_unauthenticated "/api/games?limit=1" "bounded Game list"
+check_unauthenticated "/api/games?limit=0" "invalid limit hidden behind auth"
+check_unauthenticated "/api/games?limit=101" "invalid limit hidden behind auth"
+check_unauthenticated "/api/games?limit=abc" "invalid limit hidden behind auth"
 
 if [[ "$VALIDATION_MODE" == "local" ]]; then
-  grep -Fq 'limit: Optional[int] = Query(' app/api/games.py || { echo "FAIL API Query limit missing"; fail=1; }
-  grep -Fq 'return await list_games(db, limit=limit)' app/api/games.py || { echo "FAIL API delegation missing"; fail=1; }
-  grep -Fq 'limit: Optional[int] = None' app/services/game_service.py || { echo "FAIL service limit missing"; fail=1; }
-  grep -Fq 'func.coalesce(' app/services/game_service.py || { echo "FAIL recency ordering missing"; fail=1; }
-  grep -Fq '.limit(limit)' app/services/game_service.py || { echo "FAIL SQL limit missing"; fail=1; }
-  grep -Fq '`/api/games?limit=${MAX_VISIBLE_GAMES}`' static/js/games/index.js || { echo "FAIL bounded browser request missing"; fail=1; }
-  grep -Fq 'async function ensureTeamsLoaded()' static/js/games/index.js || { echo "FAIL lazy Team loader missing"; fail=1; }
-  grep -Fq 'game.home_team' static/js/games/index.js || { echo "FAIL embedded home Team usage missing"; fail=1; }
-  grep -Fq 'game.away_team' static/js/games/index.js || { echo "FAIL embedded away Team usage missing"; fail=1; }
+  # Preserve the previously validated retrieval contract structurally while
+  # also proving the new Club-scoped delegation.
+  grep -Fq 'limit: Optional[int] = Query(' app/api/games.py || {
+    echo "FAIL API Query limit missing"
+    fail=1
+  }
+  grep -Fq 'return await list_games(db, limit=limit, club_id=_require_club(current_user))' app/api/games.py || {
+    echo "FAIL authenticated Club-scoped API delegation missing"
+    fail=1
+  }
+  grep -Fq 'limit: Optional[int] = None' app/services/game_service.py || {
+    echo "FAIL service limit missing"
+    fail=1
+  }
+  grep -Fq 'club_id: Optional[uuid.UUID] = None' app/services/game_service.py || {
+    echo "FAIL service Club scope parameter missing"
+    fail=1
+  }
+  grep -Fq 'func.coalesce(' app/services/game_service.py || {
+    echo "FAIL recency ordering missing"
+    fail=1
+  }
+  grep -Fq '.limit(limit)' app/services/game_service.py || {
+    echo "FAIL SQL limit missing"
+    fail=1
+  }
+  grep -Fq 'selectinload(Game.home_team)' app/services/game_service.py || {
+    echo "FAIL embedded home Team loading missing"
+    fail=1
+  }
+  grep -Fq 'selectinload(Game.away_team)' app/services/game_service.py || {
+    echo "FAIL embedded away Team loading missing"
+    fail=1
+  }
+  grep -Fq '`/api/games?limit=${MAX_VISIBLE_GAMES}`' static/js/games/index.js || {
+    echo "FAIL bounded browser request missing"
+    fail=1
+  }
+  grep -Fq 'async function ensureTeamsLoaded()' static/js/games/index.js || {
+    echo "FAIL lazy Team loader missing"
+    fail=1
+  }
+  grep -Fq 'game.home_team' static/js/games/index.js || {
+    echo "FAIL embedded home Team usage missing"
+    fail=1
+  }
+  grep -Fq 'game.away_team' static/js/games/index.js || {
+    echo "FAIL embedded away Team usage missing"
+    fail=1
+  }
 
   load_block="$(awk '/async function loadGames\(options = \{\}\)/{c=1} c{print} c&&/^}/{exit}' static/js/games/index.js)"
   if grep -Fq 'api("/api/teams")' <<<"$load_block"; then

@@ -394,28 +394,18 @@ function showMatchStateBanner(phase) {
 }
 
 async function loadAuthoritativeState() {
-  const game = await api(`/api/games/${gameId}`);
+  const snapshot = await api(`/api/public/games/${gameId}/overlay-state`);
 
-  const [homeTeam, awayTeam, lifecycle, clock, homeRoster, awayRoster] =
-    await Promise.all([
-      api(`/api/teams/${game.home_team_id}`),
-      api(`/api/teams/${game.away_team_id}`),
-      api(`/api/games/${gameId}/lifecycle`),
-      api(`/api/games/${gameId}/clock`),
-      api(`/api/teams/${game.home_team_id}/players`),
-      api(`/api/teams/${game.away_team_id}/players`),
-    ]);
-
-  state.game = game;
-  state.homeTeam = homeTeam;
-  state.awayTeam = awayTeam;
-  state.lifecycle = lifecycle;
-  state.clock = clock;
-  state.homeRoster = homeRoster;
-  state.awayRoster = awayRoster;
+  state.game = snapshot.game;
+  state.homeTeam = snapshot.home_team;
+  state.awayTeam = snapshot.away_team;
+  state.lifecycle = snapshot.lifecycle;
+  state.clock = snapshot.clock;
+  state.homeRoster = snapshot.home_roster || [];
+  state.awayRoster = snapshot.away_roster || [];
   state.hasAuthoritativeState = true;
 
-  captureClockAnchor(clock);
+  captureClockAnchor(state.clock);
   render();
 
   byId("overlay-scoreboard").classList.remove("overlay-loading");

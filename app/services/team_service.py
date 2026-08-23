@@ -1,4 +1,4 @@
-"""Team service layer."""
+"""Team service layer with M15-C Club scoping."""
 
 import uuid
 from datetime import datetime, timezone
@@ -26,10 +26,15 @@ def _serialize_team(team: Team) -> dict:
     }
 
 
-async def create_team(db: AsyncSession, data: TeamCreate) -> Team:
-    """Create and persist a new Team, then broadcast via Socket.IO."""
+async def create_team(
+    db: AsyncSession,
+    data: TeamCreate,
+    club_id: uuid.UUID,
+) -> Team:
+    """Create and persist a Club-scoped Team, then broadcast committed state."""
     now = datetime.now(timezone.utc)
     team = Team(
+        club_id=club_id,
         name=data.name,
         short_name=data.short_name,
         logo_url=data.logo_url,
@@ -46,9 +51,13 @@ async def create_team(db: AsyncSession, data: TeamCreate) -> Team:
     return team
 
 
-async def list_teams(db: AsyncSession) -> List[Team]:
-    """Return all Teams ordered by creation time (newest first)."""
-    result = await db.execute(select(Team).order_by(Team.created_at.desc()))
+async def list_teams(db: AsyncSession, club_id: uuid.UUID) -> List[Team]:
+    """Return Teams for one Club ordered newest first."""
+    result = await db.execute(
+        select(Team)
+        .where(Team.club_id == club_id)
+        .order_by(Team.created_at.desc())
+    )
     return list(result.scalars().all())
 
 
@@ -63,7 +72,7 @@ async def update_team(
     team_id: uuid.UUID,
     data: TeamUpdate,
 ) -> Optional[Team]:
-    """Update an existing Team, then broadcast the change via Socket.IO."""
+    """Update an existing Team, then broadcast committed state."""
     result = await db.execute(select(Team).where(Team.id == team_id))
     team = result.scalar_one_or_none()
     if not team:
