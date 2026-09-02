@@ -246,6 +246,13 @@ async def update_scoring_event_scorer(
     event = await db.get(ScoringEvent, event_id)
     if not event:
         raise ValueError("Scoring event not found")
+
+    # M16-D: an identical correction is a true no-op. Do not commit and do
+    # not emit correction events for a command that changes no authoritative
+    # data.
+    if event.player_id == player_id:
+        return event
+
     previous_player = await db.get(Player, event.player_id) if event.player_id else None
     player = None
     if player_id is not None:

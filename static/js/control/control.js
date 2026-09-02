@@ -168,7 +168,7 @@ function mutationStateIsReady() {
 
 function clockConfigurationIsReady() {
   return Boolean(
-    state.stateAuthoritative
+    mutationStateIsReady()
     && state.clock
   );
 }
@@ -212,6 +212,10 @@ function scoringTeamName(event) {
   return "Unknown Team";
 }
 
+function scoreline() {
+  return `${state.game?.home_score ?? 0}–${state.game?.away_score ?? 0}`;
+}
+
 function formatEventTime(event) {
   const elapsed = Number(event.game_elapsed_seconds);
 
@@ -239,34 +243,80 @@ function scoringRosterForEvent(event) {
 
 async function changeScoringEventScorer(event, select) {
   if (scoringCommandInFlight) return;
+  if (!mutationStateIsReady()) {
+    showOperatorMessage(
+      "Scoring corrections are paused until authoritative game state is confirmed.",
+      "warning",
+      6000,
+    );
+    return;
+  }
+
+  const selectedPlayerId = select.value || null;
+  const currentPlayerId = event.player_id || null;
+  if (selectedPlayerId === currentPlayerId) {
+    showOperatorMessage("Scorer is already correct. No change was sent.", "info", 3500);
+    return;
+  }
+
   scoringCommandInFlight = true;
+  renderScoring();
   try {
-    await updateScoringEventScorer(event.id, select.value || null);
-    showOperatorMessage("Goal scorer corrected.", "success", 3500);
+    await updateScoringEventScorer(event.id, selectedPlayerId);
     await fetchAuthoritativeState();
+    const correctedPlayer = selectedPlayerId
+      ? [...state.homeRoster, ...state.awayRoster].find(
+        (candidate) => candidate.id === selectedPlayerId,
+      )
+      : null;
+    const correctedName = correctedPlayer
+      ? playerDisplayName(correctedPlayer)
+      : "Unknown scorer";
+    showOperatorMessage(
+      `Score correction — ${correctedName} scored.`,
+      "success",
+      4500,
+    );
   } catch (error) {
     showOperatorMessage(`Scorer correction failed: ${error?.message || error}`, "error", 7000);
+    try { await fetchAuthoritativeState(); } catch (_) {}
   } finally {
     scoringCommandInFlight = false;
     renderScoringControls();
     renderScoring();
+    syncMatchDayUx();
   }
 }
 
 async function removeScoringEvent(event) {
   if (scoringCommandInFlight) return;
+  if (!mutationStateIsReady()) {
+    showOperatorMessage(
+      "Goal corrections are paused until authoritative game state is confirmed.",
+      "warning",
+      6000,
+    );
+    return;
+  }
   if (!window.confirm("Remove this goal? The team score will be reduced by 1.")) return;
   scoringCommandInFlight = true;
+  renderScoring();
   try {
     await deleteScoringEvent(event.id);
-    showOperatorMessage("Goal removed and score corrected.", "success", 3500);
     await fetchAuthoritativeState();
+    showOperatorMessage(
+      `Goal removed — score corrected to ${scoreline()}.`,
+      "success",
+      4500,
+    );
   } catch (error) {
     showOperatorMessage(`Goal removal failed: ${error?.message || error}`, "error", 7000);
+    try { await fetchAuthoritativeState(); } catch (_) {}
   } finally {
     scoringCommandInFlight = false;
     renderScoringControls();
     renderScoring();
+    syncMatchDayUx();
   }
 }
 
@@ -274,6 +324,7 @@ function renderScoring() {
   const container = byId("scoring-list");
   container.replaceChildren();
   if (!state.scoringEvents.length) { const empty=document.createElement("div"); empty.className="empty-state"; empty.textContent="No scoring events."; container.appendChild(empty); return; }
+  const correctionReady = mutationStateIsReady() && !scoringCommandInFlight;
   for (const event of [...state.scoringEvents].reverse()) {
     const row=document.createElement("div"); row.className="scoring-event scoring-event-correctable";
     const time=document.createElement("div"); time.className="scoring-time"; time.textContent=formatEventTime(event);
@@ -285,8 +336,9 @@ function renderScoring() {
     const unknown=document.createElement("option"); unknown.value=""; unknown.textContent="Unknown Scorer"; select.appendChild(unknown);
     for (const rp of scoringRosterForEvent(event)) { const option=document.createElement("option"); option.value=rp.id; const jersey=rp.jersey_number==null?"":`#${rp.jersey_number} `; option.textContent=`${jersey}${playerDisplayName(rp)}`; select.appendChild(option); }
     select.value=event.player_id||"";
-    const changeButton=document.createElement("button"); changeButton.type="button"; changeButton.className="secondary-button scoring-correction-button"; changeButton.textContent="Change Scorer"; changeButton.disabled=scoringCommandInFlight; changeButton.addEventListener("click",()=>void changeScoringEventScorer(event,select));
-    const removeButton=document.createElement("button"); removeButton.type="button"; removeButton.className="secondary-button scoring-remove-button"; removeButton.textContent="Remove Goal"; removeButton.disabled=scoringCommandInFlight; removeButton.addEventListener("click",()=>void removeScoringEvent(event));
+    select.disabled=!correctionReady;
+    const changeButton=document.createElement("button"); changeButton.type="button"; changeButton.className="secondary-button scoring-correction-button"; changeButton.textContent="Change Scorer"; changeButton.disabled=!correctionReady; changeButton.addEventListener("click",()=>void changeScoringEventScorer(event,select));
+    const removeButton=document.createElement("button"); removeButton.type="button"; removeButton.className="secondary-button scoring-remove-button"; removeButton.textContent="Remove Goal"; removeButton.disabled=!correctionReady; removeButton.addEventListener("click",()=>void removeScoringEvent(event));
     correction.append(select,changeButton,removeButton); row.append(time,detail,correction); container.appendChild(row);
   }
 }
@@ -347,7 +399,13 @@ function syncMatchDayUx() {
   text("ux-connection-chip", connectionLabel);
 
   let operatorState = "READY";
-  if (commandInFlight || scoringCommandInFlight) {
+  if (
+    commandInFlight
+    || scoringCommandInFlight
+    || clockConfigInFlight
+    || clockCommandInFlight
+    || broadcastMessageInFlight
+  ) {
     operatorState = "UPDATING";
   } else if (!mutationStateIsReady()) {
     operatorState = "PAUSED";
@@ -458,7 +516,8 @@ function clockDurationSecondsForHalfLength(halfDurationSeconds) {
 
 function clockCommandIsAllowed() {
   return Boolean(
-    state.clock
+    mutationStateIsReady()
+    && state.clock
     && ["first_half", "second_half"].includes(state.lifecycle?.phase)
     && ["running", "paused"].includes(state.clock?.status)
   );
@@ -483,6 +542,7 @@ async function runClockPauseResume() {
   const action = state.clock.status === "paused" ? "resume" : "pause";
   clockCommandInFlight = true;
   renderClockCommand();
+  syncMatchDayUx();
   try {
     const updatedClock = action === "pause"
       ? await pauseClock(gameIdFromPage(), state.clock.version)
@@ -497,15 +557,28 @@ async function runClockPauseResume() {
       3500,
     );
   } catch (error) {
-    showOperatorMessage(
-      `Clock ${action} failed: ${error?.message || error}`,
-      "error",
-      7000,
-    );
+    if (error?.status === 409) {
+      setStateAuthoritative(false);
+      renderClockCommand();
+      renderScoring();
+      syncMatchDayUx();
+      showOperatorMessage(
+        "Another controller changed the clock first. Your command was not retried. Reloading authoritative state.",
+        "warning",
+        7000,
+      );
+    } else {
+      showOperatorMessage(
+        `Clock ${action} failed: ${error?.message || error}`,
+        "error",
+        7000,
+      );
+    }
     try { await fetchAuthoritativeState(); } catch (_) {}
   } finally {
     clockCommandInFlight = false;
     renderClockCommand();
+    syncMatchDayUx();
   }
 }
 
@@ -524,6 +597,7 @@ async function saveBroadcastMessage(message) {
   if (broadcastMessageInFlight || !state.stateAuthoritative) return;
   broadcastMessageInFlight = true;
   renderBroadcastMessage();
+  syncMatchDayUx();
   try {
     const game = await updateBroadcastMessage(gameIdFromPage(), message);
     state.game = game;
@@ -537,6 +611,7 @@ async function saveBroadcastMessage(message) {
   } finally {
     broadcastMessageInFlight = false;
     renderBroadcastMessage();
+    syncMatchDayUx();
   }
 }
 
@@ -588,6 +663,7 @@ async function saveClockDuration() {
   );
   clockConfigInFlight = true;
   renderClockConfiguration();
+  syncMatchDayUx();
 
   try {
     const updatedClock = await configureClock(gameIdFromPage(), {
@@ -602,7 +678,7 @@ async function saveClockDuration() {
   } catch (error) {
     if (error?.status === 409) {
       setStateAuthoritative(false);
-      showOperatorMessage("The clock changed on another controller. Refreshing authoritative state.", "warning", 7000);
+      showOperatorMessage("Another controller changed the clock. Reloading authoritative state.", "warning", 7000);
       try { await fetchAuthoritativeState(); } catch (_) {}
     } else {
       showOperatorMessage(`Half length was not changed: ${error?.message || error}`, "error", 7000);
@@ -610,6 +686,7 @@ async function saveClockDuration() {
   } finally {
     clockConfigInFlight = false;
     renderClockConfiguration();
+    syncMatchDayUx();
   }
 }
 
@@ -662,6 +739,9 @@ function setConnectionUi(mode, detail = null) {
   renderLiveMetadata();
   renderLifecycleControls();
   renderScoringControls();
+  renderScoring();
+  renderClockConfiguration();
+  renderClockCommand();
   syncMatchDayUx();
 }
 
@@ -722,8 +802,27 @@ async function fetchAuthoritativeState({ showLoading = false } = {}) {
   }
 }
 
+function lifecycleConfirmation(action) {
+  if (action === "end_first_half") {
+    return "End the first half? This will pause the match clock and move the game to halftime.";
+  }
+  if (action === "end_game") {
+    return "End the game? This will move the game to FULL TIME and end match-day lifecycle control.";
+  }
+  return null;
+}
+
 async function runLifecycleAction(action) {
   if (commandInFlight) return;
+
+  if (!mutationStateIsReady()) {
+    showOperatorMessage(
+      "Lifecycle controls are paused until authoritative game state is confirmed.",
+      "warning",
+      6000,
+    );
+    return;
+  }
 
   const expectedAction = LIFECYCLE_ACTION_BY_PHASE[state.lifecycle?.phase] ?? null;
   if (action !== expectedAction) {
@@ -744,8 +843,12 @@ async function runLifecycleAction(action) {
     return;
   }
 
+  const confirmation = lifecycleConfirmation(action);
+  if (confirmation && !window.confirm(confirmation)) return;
+
   commandInFlight = true;
   renderLifecycleControls();
+  syncMatchDayUx();
   const label = ACTION_LABELS[action] || action;
 
   try {
@@ -769,10 +872,13 @@ async function runLifecycleAction(action) {
       setStateAuthoritative(false);
       renderLifecycleControls();
       renderScoringControls();
+      renderScoring();
+      renderClockConfiguration();
+      renderClockCommand();
       syncMatchDayUx();
 
       showOperatorMessage(
-        "Another controller changed the game first. Your command was not retried. ScoreStreamLive is refreshing the latest game state.",
+        "Another controller changed the game first. Your command was not retried. Reloading authoritative state.",
         "warning",
         7000,
       );
@@ -790,6 +896,7 @@ async function runLifecycleAction(action) {
   } finally {
     commandInFlight = false;
     renderLifecycleControls();
+    syncMatchDayUx();
   }
 }
 
@@ -820,8 +927,19 @@ async function runScoringAction(side) {
   }
 
   const playerId = select?.value || null;
+  const scoringPlayer = playerId
+    ? (side === "home" ? state.homeRoster : state.awayRoster).find(
+      (candidate) => candidate.id === playerId,
+    )
+    : null;
+  const scoringLabel = scoringPlayer
+    ? playerDisplayName(scoringPlayer)
+    : "Unknown scorer";
+
   scoringCommandInFlight = true;
   renderScoringControls();
+  renderScoring();
+  syncMatchDayUx();
 
   try {
     await createScoringEvent(gameIdFromPage(), team.id, playerId);
@@ -831,7 +949,11 @@ async function runScoringAction(side) {
     // The empty value corresponds to "Team Goal / Unknown Scorer".
     if (select) select.value = "";
 
-    showOperatorMessage(`${team.name} goal recorded.`, "success", 3000);
+    showOperatorMessage(
+      `${team.name} goal recorded — ${scoringLabel}.`,
+      "success",
+      4000,
+    );
   } catch (error) {
     showOperatorMessage(`Goal was not recorded: ${error?.message || error}`, "error", 7000);
     try {
@@ -841,6 +963,7 @@ async function runScoringAction(side) {
     scoringCommandInFlight = false;
     renderScoringControls();
     renderScoring();
+    syncMatchDayUx();
   }
 }
 
@@ -902,6 +1025,9 @@ async function manualAuthoritativeRefresh() {
   await fetchAuthoritativeState({ showLoading: true });
   renderLifecycleControls();
   renderScoringControls();
+  renderScoring();
+  renderClockConfiguration();
+  renderClockCommand();
   syncMatchDayUx();
 }
 
