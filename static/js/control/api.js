@@ -103,8 +103,26 @@ export function transitionLifecycle(
   );
 }
 
+function newScoringRequestId() {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
 
-export function createScoringEvent(gameId, teamId, playerId = null) {
+  // Browser fallback for older WebViews. It is only a command identity; the
+  // server remains authoritative for all scoring state.
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (token) => {
+    const value = Math.floor(Math.random() * 16);
+    const nibble = token === "x" ? value : ((value & 0x3) | 0x8);
+    return nibble.toString(16);
+  });
+}
+
+export function createScoringEvent(
+  gameId,
+  teamId,
+  playerId = null,
+  requestId = null,
+) {
+  const commandRequestId = requestId || newScoringRequestId();
+
   return requestJson(`/api/scoring-events`, {
     method: "POST",
     payload: {
@@ -112,6 +130,7 @@ export function createScoringEvent(gameId, teamId, playerId = null) {
       team_id: teamId,
       player_id: playerId || null,
       event_type: "goal",
+      request_id: commandRequestId,
     },
   });
 }

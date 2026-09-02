@@ -64,10 +64,10 @@ if [[ "$VALIDATION_MODE" == "local" ]]; then
     echo "FAIL Alembic current did not complete successfully (rc=$rc)"
     echo "$alembic_output"
     fail=1
-  elif grep -Fq '20260824_0012' <<<"$alembic_output"; then
-    echo "PASS Alembic head 0012"
+  elif grep -Fq '20260902_0013' <<<"$alembic_output"; then
+    echo "PASS Alembic head 20260902_0013"
   else
-    echo "FAIL Alembic expected 20260824_0012"
+    echo "FAIL Alembic expected 20260902_0013"
     echo "$alembic_output"
     fail=1
   fi

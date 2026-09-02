@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from typing import List, Optional
 
 from sqlalchemy import select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.game import Game
@@ -23,6 +24,7 @@ def _serialize_scoring_event(event: ScoringEvent) -> dict:
         "team_id": str(event.team_id),
         "player_id": str(event.player_id) if event.player_id else None,
         "event_type": event.event_type,
+        "request_id": str(event.request_id) if event.request_id else None,
         "game_elapsed_seconds": event.game_elapsed_seconds,
         "created_at": event.created_at.isoformat(),
     }
@@ -69,10 +71,56 @@ def _authoritative_elapsed_seconds(
     return max(0, elapsed)
 
 
+def _same_scoring_command(
+    event: ScoringEvent,
+    data: ScoringEventCreate,
+) -> bool:
+    """Return True only when an idempotency replay matches the original."""
+    return (
+        event.game_id == data.game_id
+        and event.team_id == data.team_id
+        and event.player_id == data.player_id
+        and event.event_type == data.event_type
+    )
+
+
+async def _existing_request(
+    db: AsyncSession,
+    request_id: Optional[uuid.UUID],
+) -> Optional[ScoringEvent]:
+    if request_id is None:
+        return None
+
+    result = await db.execute(
+        select(ScoringEvent).where(
+            ScoringEvent.request_id == request_id
+        )
+    )
+    return result.scalar_one_or_none()
+
+
+def _validate_idempotent_replay(
+    event: ScoringEvent,
+    data: ScoringEventCreate,
+) -> None:
+    if not _same_scoring_command(event, data):
+        raise ValueError(
+            "request_id was already used for a different scoring command"
+        )
+
+
 async def create_scoring_event(
     db: AsyncSession, data: ScoringEventCreate
 ) -> ScoringEvent:
-    """Create a scoring event and atomically increment the Game score."""
+    """Create one goal transaction, idempotent when request_id is supplied."""
+
+    # M16-A fast replay path. This is intentionally server-side: browser
+    # button disabling alone is not the authority for duplicate protection.
+    existing = await _existing_request(db, data.request_id)
+    if existing is not None:
+        _validate_idempotent_replay(existing, data)
+        return existing
+
     # 1. Validate Game exists
     game = await db.get(Game, data.game_id)
     if not game:
@@ -91,10 +139,6 @@ async def create_scoring_event(
             raise ValueError("Player does not belong to the scoring Team")
 
     # 4. Read the persisted GameClock, if this Game has one.
-    #
-    # Scoring existed before the clock domain, so absence of a clock remains
-    # valid for backwards compatibility. For M8/M9/M10 games, exactly one
-    # clock exists because game_clocks.game_id is unique.
     clock_result = await db.execute(
         select(GameClock).where(GameClock.game_id == data.game_id)
     )
@@ -108,15 +152,15 @@ async def create_scoring_event(
         now,
     )
 
-    # 6. Create ScoringEvent.
-    #
-    # game_elapsed_seconds is server-computed. It is never accepted from the
-    # browser, and created_at remains available as audit/debug metadata.
+    # 6. Create ScoringEvent. request_id is caller-generated but is only a
+    # command identity; score, event time, and all domain validation remain
+    # server authoritative.
     scoring_event = ScoringEvent(
         game_id=data.game_id,
         team_id=data.team_id,
         player_id=data.player_id,
         event_type=data.event_type,
+        request_id=data.request_id,
         game_elapsed_seconds=game_elapsed_seconds,
         created_at=now,
     )
@@ -136,14 +180,30 @@ async def create_scoring_event(
             .values(away_score=Game.away_score + 1)
         )
 
-    # 8. Single commit: scoring event + score increment remain one transaction.
-    await db.commit()
+    # 8. Single commit. The unique request_id index closes the concurrent
+    # replay race. If another request with the same identity committed first,
+    # this entire transaction (including score increment) rolls back.
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+
+        if data.request_id is None:
+            raise
+
+        existing = await _existing_request(db, data.request_id)
+        if existing is None:
+            raise
+
+        _validate_idempotent_replay(existing, data)
+        return existing
 
     # 9. Refresh committed state
     await db.refresh(scoring_event)
     await db.refresh(game)
 
-    # 10. Emit Socket.IO domain events
+    # 10. Emit Socket.IO domain events only for the newly committed command.
+    # An idempotent replay returns above and does not emit a duplicate goal.
     await sio.emit(
         "scoring_event:created",
         _serialize_scoring_event(scoring_event),
@@ -169,6 +229,7 @@ async def get_game_scoring_events(
         )
     )
     return list(result.scalars().all())
+
 
 def _player_display_name(player: Optional[Player]) -> str:
     if player is None:
@@ -204,7 +265,14 @@ async def update_scoring_event_scorer(
     else:
         message = f"Goal credited to {corrected_name}."
     await sio.emit("scoring_event:updated", _serialize_scoring_event(event))
-    await sio.emit("scoring_event:corrected", {**_serialize_scoring_event(event), "correction_type": "scorer_changed", "message": message})
+    await sio.emit(
+        "scoring_event:corrected",
+        {
+            **_serialize_scoring_event(event),
+            "correction_type": "scorer_changed",
+            "message": message,
+        },
+    )
     return event
 
 
@@ -225,6 +293,16 @@ async def delete_scoring_event(db: AsyncSession, event_id: uuid.UUID) -> None:
     await db.delete(event)
     await db.commit()
     await db.refresh(game)
-    await sio.emit("scoring_event:deleted", {**payload, "correction_type": "goal_removed"})
+    await sio.emit(
+        "scoring_event:deleted",
+        {**payload, "correction_type": "goal_removed"},
+    )
     await sio.emit("game:score_updated", _serialize_game_score(game))
-    await sio.emit("scoring_event:corrected", {**payload, "correction_type": "goal_removed", "message": "Goal removed."})
+    await sio.emit(
+        "scoring_event:corrected",
+        {
+            **payload,
+            "correction_type": "goal_removed",
+            "message": "Goal removed.",
+        },
+    )

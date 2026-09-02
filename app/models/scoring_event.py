@@ -30,6 +30,12 @@ class ScoringEvent(Base):
     )
     event_type: Mapped[str] = mapped_column(String(50), nullable=False)
 
+    # M16-A durable command identity. Nullable keeps historical rows and
+    # legacy callers compatible; new Control Center scoring commands supply it.
+    request_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        nullable=True,
+    )
+
     # Durable authoritative match-clock snapshot at the moment the scoring
     # transaction is accepted. Nullable only for historical pre-M10-E rows.
     game_elapsed_seconds: Mapped[Optional[int]] = mapped_column(
@@ -44,4 +50,9 @@ class ScoringEvent(Base):
 
     __table_args__ = (
         Index("ix_scoring_events_game_id", "game_id"),
+        Index(
+            "ux_scoring_events_request_id",
+            "request_id",
+            unique=True,
+        ),
     )
