@@ -28,6 +28,7 @@ add 'Match-Day Recovery' scripts/regression/match_day_recovery.sh
 add 'Socket Reliability/Isolation' scripts/regression/socket_reliability_isolation.sh
 add 'Security/Tenant Hardening' scripts/regression/security_tenant_hardening.sh
 add 'Operator UX/Data Integrity' scripts/regression/operator_ux_data_integrity.sh
+add 'Production Operations/Final Release Gate' scripts/regression/production_operations_final_release.sh
 if [[ "$VALIDATION_SCOPE" == release ]]; then add Recovery scripts/regression/recovery.sh; fi
 fails=0
 echo '========================================'
