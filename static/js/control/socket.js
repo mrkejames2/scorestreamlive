@@ -9,6 +9,29 @@ function isCurrentGame(payload, gameId) {
   return payload && String(payload.game_id) === String(gameId);
 }
 
+function subscribeToControlGame(socket, gameId) {
+  return new Promise((resolve, reject) => {
+    socket.timeout(5000).emit(
+      "game:subscribe",
+      {
+        game_id: String(gameId),
+        audience: "control",
+      },
+      (error, response) => {
+        if (error) {
+          reject(new Error("Socket game subscription timed out"));
+          return;
+        }
+        if (!response || response.status !== "ok") {
+          reject(new Error(response?.reason || "Socket game subscription denied"));
+          return;
+        }
+        resolve(response);
+      },
+    );
+  });
+}
+
 export function connectControlSocket({
   gameId,
   onTransportConnected,
@@ -32,6 +55,10 @@ export function connectControlSocket({
 
   const socket = window.io(window.location.origin, {
     path: "/socket.io",
+    auth: {
+      game_id: String(gameId),
+      audience: "control",
+    },
     transports: ["polling", "websocket"],
     reconnection: true,
     reconnectionAttempts: Infinity,
@@ -78,7 +105,19 @@ export function connectControlSocket({
     setStateAuthoritative(false);
     setConnectionState("recovering");
     onTransportConnected?.();
-    await recoverAuthoritativeState();
+
+    try {
+      // Room membership is transport scope only. It must be established
+      // before the authoritative HTTP refresh marks this controller live.
+      await subscribeToControlGame(socket, gameId);
+      await recoverAuthoritativeState();
+    } catch (error) {
+      setSocketConnected(false);
+      setStateAuthoritative(false);
+      setConnectionState("recovering");
+      onRecoveryFailed?.(error);
+      console.error("Control socket subscription failed", error);
+    }
   });
 
   socket.on("disconnect", () => {
@@ -102,6 +141,8 @@ export function connectControlSocket({
     onReconnectAttempt?.();
   });
 
+  // Payload filtering remains as defense-in-depth even though the server now
+  // scopes delivery to the subscribed game room.
   socket.on("game:score_updated", (payload) => {
     if (!isCurrentGame(payload, gameId)) return;
     setLastLiveEvent("game:score_updated");
