@@ -20,6 +20,7 @@ from app.api.players import router as players_router
 from app.api.scoring_events import router as scoring_events_router
 from app.api.team_logos import router as team_logos_router
 from app.api.teams import router as teams_router
+from app.auth.security import enforce_production_security_settings
 from app.config import settings
 from app.database import check_database_connection, engine, get_safe_database_url
 from app.logging_config import configure_logging
@@ -38,6 +39,7 @@ configure_logging(settings.LOG_LEVEL)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger = logging.getLogger("app")
+    enforce_production_security_settings()
     logger.info(
         "CONFIG DIAGNOSTIC — env=%s host=%s port=%s name=%s user=%s password_set=%s url=%s",
         settings.APP_ENV,
@@ -123,6 +125,10 @@ async def log_requests(request: Request, call_next):
     response = await call_next(request)
     duration_ms = (time.time() - start_time) * 1000
 
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "same-origin"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+
     logger = logging.getLogger("app")
     logger.info(
         "HTTP request",
@@ -177,5 +183,8 @@ async def info():
         "environment": settings.APP_ENV,
     }
 
+
+if settings.APP_ENV == "production":
+    sio.handlers.get("/", {}).pop("test:broadcast", None)
 
 socket_app = socketio.ASGIApp(sio, other_asgi_app=app)

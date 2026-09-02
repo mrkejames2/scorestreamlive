@@ -26,6 +26,7 @@ add 'Match-Day Hotfix' scripts/regression/match_day_hotfix.sh
 add 'Scoring Corrections' scripts/regression/scoring_corrections.sh
 add 'Match-Day Recovery' scripts/regression/match_day_recovery.sh
 add 'Socket Reliability/Isolation' scripts/regression/socket_reliability_isolation.sh
+add 'Security/Tenant Hardening' scripts/regression/security_tenant_hardening.sh
 if [[ "$VALIDATION_SCOPE" == release ]]; then add Recovery scripts/regression/recovery.sh; fi
 fails=0
 echo '========================================'

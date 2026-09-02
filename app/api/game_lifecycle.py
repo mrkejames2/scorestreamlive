@@ -3,11 +3,16 @@
 import logging
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.authorization import can_operate_game, can_view_game, deny_not_found
+from app.auth.dependencies import require_current_user
+from app.auth.security import require_same_origin_mutation
 from app.database import get_session
+from app.models.game import Game
+from app.models.user import User
 from app.schemas.game_lifecycle import (
     GameLifecycleCreate,
     GameLifecycleResponse,
@@ -43,6 +48,26 @@ def _conflict(exc: LifecycleConflictError) -> HTTPException:
     )
 
 
+async def _require_game_access(
+    db: AsyncSession,
+    current_user: User,
+    game_id: uuid.UUID,
+    *,
+    operate: bool,
+) -> None:
+    game = await db.get(Game, game_id)
+    if not game:
+        deny_not_found("Game")
+
+    allowed = (
+        await can_operate_game(db, current_user, game)
+        if operate
+        else await can_view_game(db, current_user, game)
+    )
+    if not allowed:
+        deny_not_found("Game")
+
+
 @router.post(
     "/games/{game_id}/lifecycle",
     response_model=GameLifecycleResponse,
@@ -51,8 +76,13 @@ def _conflict(exc: LifecycleConflictError) -> HTTPException:
 async def create_game_lifecycle(
     game_id: uuid.UUID,
     _: GameLifecycleCreate,
+    request: Request,
+    current_user: User = Depends(require_current_user),
     db: AsyncSession = Depends(get_session),
 ):
+    require_same_origin_mutation(request)
+    await _require_game_access(db, current_user, game_id, operate=True)
+
     try:
         lifecycle = await create_lifecycle(db, game_id)
     except LifecycleNotFoundError as exc:
@@ -69,8 +99,11 @@ async def create_game_lifecycle(
 )
 async def get_game_lifecycle(
     game_id: uuid.UUID,
+    current_user: User = Depends(require_current_user),
     db: AsyncSession = Depends(get_session),
 ):
+    await _require_game_access(db, current_user, game_id, operate=False)
+
     lifecycle = await get_lifecycle(db, game_id)
 
     if not lifecycle:
@@ -89,8 +122,13 @@ async def get_game_lifecycle(
 async def transition_game_lifecycle(
     game_id: uuid.UUID,
     data: GameLifecycleTransition,
+    request: Request,
+    current_user: User = Depends(require_current_user),
     db: AsyncSession = Depends(get_session),
 ):
+    require_same_origin_mutation(request)
+    await _require_game_access(db, current_user, game_id, operate=True)
+
     try:
         lifecycle, clock_state = await transition_lifecycle(
             db,
@@ -102,11 +140,6 @@ async def transition_game_lifecycle(
     except LifecycleConflictError as exc:
         raise _conflict(exc)
 
-    # The lifecycle + clock transaction has already committed successfully.
-    #
-    # transition_id is transport-only correlation metadata. It allows
-    # connected clients to recognize that game:phase_updated and
-    # clock:updated came from the same atomic Game transition.
     transition_id = uuid.uuid4()
 
     lifecycle_event = serialize_lifecycle_state(lifecycle)
@@ -115,23 +148,9 @@ async def transition_game_lifecycle(
     clock_event = dict(clock_state)
     clock_event["transition_id"] = str(transition_id)
 
-    # Convert the COMPLETE Socket.IO payloads to JSON-safe values.
-    #
-    # This safely handles:
-    # - UUID
-    # - datetime
-    # - nested values
-    #
-    # Do not manually convert individual fields.
     lifecycle_event = jsonable_encoder(lifecycle_event)
     clock_event = jsonable_encoder(clock_event)
 
-    # Deterministic post-commit ordering:
-    #
-    # 1. Game lifecycle meaning
-    # 2. Matching clock state
-    #
-    # Both describe state that is already committed to PostgreSQL.
     try:
         await sio.emit(
             "game:phase_updated",
@@ -144,13 +163,6 @@ async def transition_game_lifecycle(
         )
 
     except Exception:
-        # Socket.IO is not the persistence boundary.
-        #
-        # The database transaction already committed, so a transport
-        # failure must not convert a successful business transaction
-        # into an HTTP 500 or roll back committed state.
-        #
-        # Validation will detect missing real-time events.
         logger.exception(
             "Failed to emit M9 lifecycle transition events",
             extra={
