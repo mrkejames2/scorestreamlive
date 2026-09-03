@@ -41,3 +41,21 @@ h1,h2,h3,p{margin-top:0}h1{margin-bottom:8px;font-size:clamp(34px,5vw,54px);line
 @media(max-width:760px){.ssl-global-nav-inner{grid-template-columns:1fr auto;gap:12px;padding:10px 0}.ssl-nav-links{grid-column:1/-1;grid-row:2}.ssl-user-copy{display:none}.account-header{align-items:flex-start;flex-direction:column}.header-actions{justify-content:flex-start}}
 @media(max-width:560px){.ssl-global-nav-inner,.account-shell{width:calc(100% - 20px)}.summary-grid{grid-template-columns:1fr}.management-grid,.panel-heading{padding-left:13px;padding-right:13px}.header-actions{display:grid;width:100%;grid-template-columns:1fr 1fr}.header-actions .status-chip{grid-column:1/-1;justify-self:start}.header-actions .button{width:100%}.ssl-brand small{display:none}.access-actions{flex-direction:column}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+/* M17-A Club User Administration */
+.member-row{align-items:flex-start}
+.member-copy{min-width:0;overflow:hidden}
+.member-assignments{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.member-actions{display:flex;flex:0 0 auto;align-items:center;gap:8px}
+.member-status{display:inline-flex;align-items:center;justify-content:center;padding:5px 7px;border:1px solid rgba(255,255,255,.10);border-radius:999px;font-size:8px;font-weight:950;letter-spacing:.09em}
+.member-status.active{background:rgba(27,154,92,.14);color:#8ee1b7}
+.member-status.inactive{background:rgba(194,61,61,.12);color:#ffb2b2}
+.member-editor{margin-top:18px;padding:14px;border:1px solid rgba(119,168,255,.24);border-radius:12px;background:rgba(42,119,255,.06)}
+.member-editor[hidden]{display:none}
+.editor-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.editor-heading h4{margin:0;color:#eef4ff;font-size:17px}
+.assignment-summary{padding:10px;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:rgba(255,255,255,.035)}
+.assignment-summary strong{display:block;margin-bottom:4px;font-size:11px}
+.editor-warning{min-height:0;color:#ffd59a;font-size:11px;line-height:1.45;white-space:pre-line}
+#editor-message{color:#9fd0ff}
+@media(max-width:560px){.member-row{align-items:stretch;flex-direction:column}.member-actions{justify-content:space-between}.member-assignments{white-space:normal}}

@@ -6,7 +6,7 @@
   <title>Account — ScoreStreamLive</title>
   <link rel="stylesheet" href="/static/css/account.css">
 </head>
-<body data-role="{{ current_user.club_role or '' }}">
+<body data-role="{{ current_user.club_role or '' }}" data-user-id="{{ current_user.id }}">
   <header class="ssl-global-nav" aria-label="ScoreStreamLive account navigation">
     <div class="ssl-global-nav-inner">
       <a class="ssl-brand" href="/games">
@@ -56,13 +56,13 @@
         <div>
           <div class="eyebrow">CLUB ADMINISTRATION</div>
           <h2>People & Access</h2>
-          <p>Create Club users and assign Managers and Operators to the resources they control.</p>
+          <p>Manage Club users, roles, account status, and the Teams or Games they control.</p>
         </div>
       </div>
       <div class="management-grid">
         <article class="management-card">
           <div class="card-heading"><div><span class="card-kicker">USERS</span><h3>Club Members</h3></div></div>
-          <p class="card-copy">Create Manager or Operator accounts for this Club.</p>
+          <p class="card-copy">Create Manager or Operator accounts. Temporary-password account creation remains available for compatibility until invitation-based onboarding is introduced.</p>
           <form id="member-form" class="form-stack">
             <label class="field"><span>Display Name</span><input id="member-name" type="text" placeholder="Example: Erica Smith"></label>
             <label class="field"><span>Email</span><input id="member-email" type="email" placeholder="name@example.com" required></label>
@@ -72,11 +72,44 @@
           </form>
           <div id="member-message" class="form-message" role="status"></div>
           <div id="members" class="assignment-list"></div>
+
+          <section id="member-editor" class="member-editor" hidden aria-live="polite">
+            <div class="editor-heading">
+              <div>
+                <span class="card-kicker">MANAGE MEMBER</span>
+                <h4 id="editor-name">Member</h4>
+                <div id="editor-email" class="muted"></div>
+              </div>
+              <button id="editor-close" class="button button-secondary button-compact" type="button">Close</button>
+            </div>
+            <form id="member-edit-form" class="form-stack">
+              <label class="field"><span>Role</span>
+                <select id="editor-role">
+                  <option value="DIRECTOR">Director</option>
+                  <option value="MANAGER">Manager</option>
+                  <option value="OPERATOR">Operator</option>
+                </select>
+              </label>
+              <label class="field"><span>Status</span>
+                <select id="editor-active">
+                  <option value="true">Active</option>
+                  <option value="false">Inactive</option>
+                </select>
+              </label>
+              <div class="assignment-summary">
+                <strong>Current Assignments</strong>
+                <div id="editor-assignments" class="muted"></div>
+              </div>
+              <div id="editor-warning" class="editor-warning"></div>
+              <button class="button button-primary" type="submit">Save Changes</button>
+            </form>
+            <div id="editor-message" class="form-message" role="status"></div>
+          </section>
         </article>
 
         <article class="management-card">
           <div class="card-heading"><div><span class="card-kicker">TEAM ACCESS</span><h3>Team Managers</h3></div></div>
-          <p class="card-copy">Assign one or more Managers to Club Teams.</p>
+          <p class="card-copy">Assign one or more active Managers to Club Teams.</p>
           <form id="team-form" class="form-stack">
             <label class="field"><span>Team</span><select id="team-select"></select></label>
             <label class="field"><span>Manager</span><select id="manager-select"></select></label>
@@ -87,7 +120,7 @@
 
         <article class="management-card">
           <div class="card-heading"><div><span class="card-kicker">MATCH-DAY ACCESS</span><h3>Game Operators</h3></div></div>
-          <p class="card-copy">Assign a parent, volunteer, or operator to a specific Game.</p>
+          <p class="card-copy">Assign an active Operator to a specific Game.</p>
           <form id="game-form" class="form-stack">
             <label class="field"><span>Game</span><select id="game-select"></select></label>
             <label class="field"><span>Operator</span><select id="operator-select"></select></label>
