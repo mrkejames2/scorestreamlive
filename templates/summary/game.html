@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ScoreStreamLive — Game Summary</title>
+  <link rel="stylesheet" href="/static/css/game-summary.css">
+</head>
+<body data-game-id="{{ game_id }}" data-summary-surface="summary">
+  <main class="summary-shell" id="summary-shell" aria-live="polite">
+    <header class="summary-brand">ScoreStreamLive</header>
+
+    <section class="summary-status">
+      <div class="summary-phase" id="summary-phase">LOADING</div>
+      <div class="summary-game-name" id="summary-game-name"></div>
+      <div class="summary-scheduled" id="summary-scheduled"></div>
+    </section>
+
+    <section class="scoreboard" aria-label="Game score">
+      <article class="team-card" id="home-team-card">
+        <div class="team-logo-shell">
+          <img class="team-logo hidden" id="home-logo" alt="">
+          <div class="team-logo-fallback" id="home-logo-fallback">HOME</div>
+        </div>
+        <div class="team-name" id="home-name">HOME</div>
+        <div class="team-score" id="home-score">0</div>
+      </article>
+
+      <div class="score-divider">—</div>
+
+      <article class="team-card" id="away-team-card">
+        <div class="team-logo-shell">
+          <img class="team-logo hidden" id="away-logo" alt="">
+          <div class="team-logo-fallback" id="away-logo-fallback">AWAY</div>
+        </div>
+        <div class="team-name" id="away-name">AWAY</div>
+        <div class="team-score" id="away-score">0</div>
+      </article>
+    </section>
+
+    <section class="scoring-panel">
+      <h2>Scoring Summary</h2>
+      <div id="scoring-events" class="scoring-events"></div>
+      <p id="no-scoring-events" class="empty-state hidden">No goals recorded.</p>
+    </section>
+
+    <p id="summary-error" class="summary-error hidden">Game summary is unavailable.</p>
+  </main>
+
+  <script src="/static/vendor/socket.io.min.js"></script>
+  <script type="module" src="/static/js/public-game-summary.js"></script>
+</body>
+</html>

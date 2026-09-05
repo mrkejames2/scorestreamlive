@@ -17,6 +17,7 @@ from app.api.game_clock import router as game_clock_router
 from app.api.game_lifecycle import router as game_lifecycle_router
 from app.api.games import router as games_router
 from app.api.players import router as players_router
+from app.api.public_summary import router as public_summary_router
 from app.api.scoring_events import router as scoring_events_router
 from app.api.team_logos import router as team_logos_router
 from app.api.teams import router as teams_router
@@ -108,6 +109,7 @@ app.include_router(game_clock_router)
 app.include_router(scoring_events_router)
 app.include_router(games_router)
 app.include_router(players_router)
+app.include_router(public_summary_router)
 app.include_router(teams_router)
 app.include_router(team_logos_router)
 app.include_router(control_router)

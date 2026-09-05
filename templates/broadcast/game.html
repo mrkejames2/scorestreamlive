@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1280,initial-scale=1">
+  <title>ScoreStreamLive — Broadcast Summary</title>
+  <link rel="stylesheet" href="/static/css/broadcast-summary.css">
+</head>
+<body data-game-id="{{ game_id }}" data-summary-surface="broadcast">
+  <main class="broadcast-scene" id="summary-shell">
+    <header class="broadcast-brand">ScoreStreamLive</header>
+    <div class="broadcast-phase" id="summary-phase">LOADING</div>
+    <div class="broadcast-game-name" id="summary-game-name"></div>
+    <div class="broadcast-scheduled hidden" id="summary-scheduled"></div>
+
+    <section class="broadcast-scoreboard">
+      <article class="broadcast-team" id="home-team-card">
+        <div class="broadcast-logo-shell">
+          <img class="broadcast-logo hidden" id="home-logo" alt="">
+          <div class="broadcast-logo-fallback" id="home-logo-fallback">HOME</div>
+        </div>
+        <div class="broadcast-team-name" id="home-name">HOME</div>
+      </article>
+
+      <div class="broadcast-score-block">
+        <span id="home-score">0</span>
+        <span class="broadcast-score-divider">—</span>
+        <span id="away-score">0</span>
+      </div>
+
+      <article class="broadcast-team" id="away-team-card">
+        <div class="broadcast-logo-shell">
+          <img class="broadcast-logo hidden" id="away-logo" alt="">
+          <div class="broadcast-logo-fallback" id="away-logo-fallback">AWAY</div>
+        </div>
+        <div class="broadcast-team-name" id="away-name">AWAY</div>
+      </article>
+    </section>
+
+    <section class="broadcast-scoring-panel">
+      <h2>Scoring Summary</h2>
+      <div id="scoring-events" class="broadcast-scoring-events"></div>
+      <p id="no-scoring-events" class="broadcast-empty hidden">No goals recorded.</p>
+    </section>
+
+    <p id="summary-error" class="broadcast-error hidden">Game summary is unavailable.</p>
+  </main>
+
+  <script src="/static/vendor/socket.io.min.js"></script>
+  <script type="module" src="/static/js/public-game-summary.js"></script>
+</body>
+</html>

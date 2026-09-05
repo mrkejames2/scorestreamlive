@@ -31,6 +31,7 @@ add 'Operator UX/Data Integrity' scripts/regression/operator_ux_data_integrity.s
 add 'Production Operations/Final Release Gate' scripts/regression/production_operations_final_release.sh
 add 'Club User Administration' scripts/regression/club_user_administration.sh
 add 'Team & Game Lifecycle' scripts/regression/team_game_lifecycle.sh
+add 'Post-Game Summary & Broadcast Scene' scripts/regression/post_game_summary_broadcast.sh
 if [[ "$VALIDATION_SCOPE" == release ]]; then add Recovery scripts/regression/recovery.sh; fi
 fails=0
 echo '========================================'
