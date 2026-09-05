@@ -50,6 +50,32 @@
       <article class="summary-card"><span class="summary-label">Role</span><strong class="summary-value summary-value-text">{{ current_user.club_role }}</strong></article>
     </section>
 
+    <section id="password-security" class="account-panel">
+      <div class="panel-heading">
+        <div>
+          <div class="eyebrow">SECURITY</div>
+          <h2>Change Password</h2>
+          <p>Changing your password keeps this browser signed in and revokes other authenticated sessions.</p>
+        </div>
+      </div>
+      {% if request.query_params.get("password_changed") %}
+      <div class="form-message" role="status">Password changed successfully.</div>
+      {% endif %}
+      {% if request.query_params.get("password_error") == "current" %}
+      <div class="editor-warning" role="alert">Current password is incorrect.</div>
+      {% elif request.query_params.get("password_error") == "mismatch" %}
+      <div class="editor-warning" role="alert">New passwords do not match.</div>
+      {% elif request.query_params.get("password_error") == "policy" %}
+      <div class="editor-warning" role="alert">New password must be at least 10 characters.</div>
+      {% endif %}
+      <form method="post" action="/account/change-password" class="form-stack" style="max-width:520px">
+        <label class="field"><span>Current Password</span><input name="current_password" type="password" autocomplete="current-password" required></label>
+        <label class="field"><span>New Password</span><input name="new_password" type="password" minlength="10" autocomplete="new-password" required></label>
+        <label class="field"><span>Confirm New Password</span><input name="new_password_confirm" type="password" minlength="10" autocomplete="new-password" required></label>
+        <button class="button button-primary" type="submit">Change Password</button>
+      </form>
+    </section>
+
     {% if is_director %}
     <section class="account-panel">
       <div class="panel-heading">

@@ -19,3 +19,11 @@ async def send_invitation_email(*,email,display_name,club_name,inviter_name,acti
     if settings.EMAIL_DELIVERY_MODE!="smtp": raise EmailDeliveryError("Email delivery is not configured")
     msg=EmailMessage(); msg["Subject"]="You've been invited to ScoreStreamLive"; msg["From"]=f"{settings.EMAIL_FROM_NAME} <{settings.EMAIL_FROM_ADDRESS}>"; msg["To"]=email; msg.set_content(body)
     await asyncio.to_thread(_send,msg)
+
+async def send_password_reset_email(*,email,display_name,reset_url,expires_at):
+    body=f"{display_name or 'Hello'},\n\nA password reset was requested for your ScoreStreamLive account.\n\nReset your password:\n{reset_url}\n\nThis link expires at {expires_at.isoformat()}. If you did not request this, ignore this email.\n"
+    if settings.EMAIL_DELIVERY_MODE=="log":
+        logger.info("Password reset email (development log delivery) — to=%s reset_url=%s",email,reset_url,extra={"event":"password_reset.email.logged"}); return
+    if settings.EMAIL_DELIVERY_MODE!="smtp": raise EmailDeliveryError("Email delivery is not configured")
+    msg=EmailMessage(); msg["Subject"]="Reset your ScoreStreamLive password"; msg["From"]=f"{settings.EMAIL_FROM_NAME} <{settings.EMAIL_FROM_ADDRESS}>"; msg["To"]=email; msg.set_content(body)
+    await asyncio.to_thread(_send,msg)

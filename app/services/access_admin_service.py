@@ -13,6 +13,7 @@ from app.models.team_manager import TeamManager
 from app.models.user import User
 from app.models.user_session import UserSession
 from app.services.auth_service import get_user_by_email, hash_password, normalize_email
+from app.services.password_recovery_service import revoke_outstanding_password_resets
 
 
 class AccessAdminNotFound(ValueError):
@@ -212,6 +213,11 @@ async def update_club_member(
             # authenticated browser sessions at the source as well.
             await db.execute(
                 delete(UserSession).where(UserSession.user_id == user.id)
+            )
+            await revoke_outstanding_password_resets(
+                db,
+                user.id,
+                commit=False,
             )
 
     user.updated_at = datetime.now(timezone.utc)

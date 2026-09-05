@@ -33,6 +33,7 @@ add 'Club User Administration' scripts/regression/club_user_administration.sh
 add 'Team & Game Lifecycle' scripts/regression/team_game_lifecycle.sh
 add 'Post-Game Summary & Broadcast Scene' scripts/regression/post_game_summary_broadcast.sh
 add 'User Invitation & Account Activation' scripts/regression/user_invitation_activation.sh
+add 'Account Recovery & User Lifecycle' scripts/regression/account_recovery_user_lifecycle.sh
 if [[ "$VALIDATION_SCOPE" == release ]]; then add Recovery scripts/regression/recovery.sh; fi
 fails=0
 echo '========================================'
