@@ -48,12 +48,10 @@ need_text docs/milestones/m16/M16E_PRODUCTION_OPERATIONS_FINAL_RELEASE.md 'Produ
 need_text docs/milestones/m16/M16E_PRODUCTION_OPERATIONS_FINAL_RELEASE.md 'Production FULL' 'production FULL gate documented'
 need_text docs/milestones/m16/M16E_PRODUCTION_OPERATIONS_FINAL_RELEASE.md 'M16 PRODUCTION MVP HARDENING = COMPLETE' 'M16 completion declaration documented'
 
-# No schema or infrastructure expansion belongs in M16-E.
-if find alembic/versions -maxdepth 1 -type f -name '202609*_*.py' -printf '%f\n' | grep -v '^20260902_0013_add_scoring_request_id.py$' | grep -q .; then
-  no 'unexpected September 2026 Alembic migration added'
-else
-  pass 'Alembic head remains M16-A migration 20260902_0013'
-fi
+# Preserve the M16 schema milestone itself. Later milestone migrations are valid
+# descendants and must not make the historical M16-E regression fail.
+need_file alembic/versions/20260902_0013_add_scoring_request_id.py
+pass 'M16-A migration remains present; later milestone migrations permitted'
 
 for term in redis kafka nats rabbitmq celery kubernetes; do
   if grep -Eqi "(^|[^[:alnum:]_])${term}([^[:alnum:]_]|$)" app/auth/security.py entrypoint.sh render.yaml 2>/dev/null; then

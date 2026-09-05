@@ -21,6 +21,7 @@ def _serialize_team(team: Team) -> dict:
         "logo_url": team.logo_url,
         "primary_color": team.primary_color,
         "secondary_color": team.secondary_color,
+        "archived_at": team.archived_at.isoformat() if team.archived_at else None,
         "created_at": team.created_at.isoformat(),
         "updated_at": team.updated_at.isoformat(),
     }
@@ -51,11 +52,16 @@ async def create_team(
     return team
 
 
-async def list_teams(db: AsyncSession, club_id: uuid.UUID) -> List[Team]:
+async def list_teams(
+    db: AsyncSession,
+    club_id: uuid.UUID,
+    archived: bool = False,
+) -> List[Team]:
     """Return Teams for one Club ordered newest first."""
     result = await db.execute(
         select(Team)
         .where(Team.club_id == club_id)
+        .where(Team.archived_at.is_not(None) if archived else Team.archived_at.is_(None))
         .order_by(Team.created_at.desc())
     )
     return list(result.scalars().all())
@@ -77,6 +83,8 @@ async def update_team(
     team = result.scalar_one_or_none()
     if not team:
         return None
+    if team.archived_at is not None:
+        raise ValueError("Archived Teams are read-only")
 
     if data.name is not None:
         team.name = data.name
@@ -108,6 +116,8 @@ async def set_team_logo_url(
 
     if not team:
         return None
+    if team.archived_at is not None:
+        raise ValueError("Archived Teams are read-only")
 
     team.logo_url = logo_url
     team.updated_at = datetime.now(timezone.utc)

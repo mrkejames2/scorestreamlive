@@ -67,6 +67,9 @@ async def _require_game_access(
     if not allowed:
         deny_not_found("Game")
 
+    if operate and game.archived_at is not None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Archived Games are read-only")
+
 
 @router.post(
     "/games/{game_id}/clock",

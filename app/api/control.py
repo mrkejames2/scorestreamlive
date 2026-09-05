@@ -61,6 +61,9 @@ async def game_control_page(
     if not game or not await can_operate_game(db, current_user, game):
         deny_not_found("Game")
 
+    if game.archived_at is not None:
+        deny_not_found("Game")
+
     return templates.TemplateResponse(
         request=request,
         name="control/game.html",

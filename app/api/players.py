@@ -31,6 +31,9 @@ async def create(
     if not team or not await can_manage_team(db, current_user, team):
         deny_not_found("Team")
 
+    if team.archived_at is not None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Archived Teams are read-only")
+
     try:
         return await create_player(db, data)
     except ValueError as e:
@@ -76,6 +79,9 @@ async def update(
     team = await db.get(Team, player.team_id)
     if not team or not await can_manage_team(db, current_user, team):
         deny_not_found("Player")
+
+    if team.archived_at is not None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Archived Teams are read-only")
 
     try:
         player = await update_player(db, player_id, data)

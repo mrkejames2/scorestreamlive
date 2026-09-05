@@ -57,6 +57,7 @@ class GameResponse(GameBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
+    archived_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
     home_team: Optional[TeamBrief] = None

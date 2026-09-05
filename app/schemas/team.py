@@ -55,5 +55,6 @@ class TeamResponse(TeamBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
+    archived_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime

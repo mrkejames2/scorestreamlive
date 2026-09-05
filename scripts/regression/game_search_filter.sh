@@ -71,11 +71,11 @@ if [[ "$VALIDATION_MODE" == "local" ]]; then
     echo "PASS no server-side Game search/filter query"
   fi
 
-  if find alembic/versions -maxdepth 1 -type f \( -iname '*m14*' -o -iname '*0014*' \) | grep -q .; then
-    echo "FAIL unexpected M14 database migration"
+  if find alembic/versions -maxdepth 1 -type f -iname '*m14*' | grep -q .; then
+    echo "FAIL unexpected M14-named database migration"
     fail=1
   else
-    echo "PASS no M14 database migration"
+    echo "PASS no M14-named database migration"
   fi
 fi
 

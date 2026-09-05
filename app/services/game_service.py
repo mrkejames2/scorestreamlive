@@ -33,6 +33,7 @@ def _serialize_game(game: Game) -> dict:
             "name": game.away_team.name,
             "short_name": game.away_team.short_name,
         } if game.away_team else None,
+        "archived_at": game.archived_at.isoformat() if game.archived_at else None,
         "created_at": game.created_at.isoformat(),
         "updated_at": game.updated_at.isoformat(),
         "broadcast_message": game.broadcast_message,
@@ -51,12 +52,12 @@ async def _validate_game_teams(
 
     if home_team_id:
         team = await db.get(Team, home_team_id)
-        if not team or team.club_id != club_id:
+        if not team or team.club_id != club_id or team.archived_at is not None:
             raise ValueError("Home team not found")
 
     if away_team_id:
         team = await db.get(Team, away_team_id)
-        if not team or team.club_id != club_id:
+        if not team or team.club_id != club_id or team.archived_at is not None:
             raise ValueError("Away team not found")
 
 
@@ -98,6 +99,7 @@ async def list_games(
     db: AsyncSession,
     limit: Optional[int] = None,
     club_id: Optional[uuid.UUID] = None,
+    archived: bool = False,
 ) -> List[Game]:
     """Return Games in deterministic dashboard-recency order, optionally Club-scoped."""
     recency = func.coalesce(
@@ -116,6 +118,8 @@ async def list_games(
 
     if club_id is not None:
         query = query.where(Game.club_id == club_id)
+
+    query = query.where(Game.archived_at.is_not(None) if archived else Game.archived_at.is_(None))
 
     query = query.order_by(
         recency.desc(),
