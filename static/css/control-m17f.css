@@ -1,0 +1,25 @@
+.m17f-workflow-card { margin-top: 16px; }
+.m17f-readiness-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:12px; }
+.m17f-readiness-item { border:1px solid rgba(148,163,184,.25); border-radius:10px; padding:10px 12px; background:rgba(15,23,42,.35); }
+.m17f-readiness-item span,.m17f-primary-copy,.m17f-activity-phase { display:block; font-size:.78rem; opacity:.75; }
+.m17f-readiness-item strong { display:block; margin-top:4px; }
+.m17f-primary-action-row { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+#m17f-primary-action { min-width:220px; min-height:48px; }
+.m17f-readonly-banner { margin-top:12px; padding:10px 12px; border-radius:10px; font-weight:700; border:1px solid rgba(245,158,11,.45); background:rgba(245,158,11,.12); }
+.m17f-activity-list { display:grid; gap:8px; margin-top:10px; }
+.m17f-activity-row { display:grid; grid-template-columns:48px 1fr; gap:10px; padding:9px 0; border-bottom:1px solid rgba(148,163,184,.18); }
+.m17f-activity-minute { font-weight:800; }
+.m17f-activity-detail { min-width:0; }
+.m17f-empty { padding:12px 0; opacity:.7; }
+.m17f-postgame-actions { margin-top:16px; }
+.m17f-postgame-links { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+@media (max-width:760px) {
+  .m17f-readiness-grid { grid-template-columns:1fr 1fr; }
+  .m17f-primary-action-row { align-items:stretch; flex-direction:column; }
+  #m17f-primary-action { width:100%; }
+}
+@media (max-width:480px) {
+  .m17f-readiness-grid { grid-template-columns:1fr; }
+  .m17f-postgame-links { flex-direction:column; }
+  .m17f-postgame-links .secondary-button { width:100%; }
+}

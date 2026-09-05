@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/static/css/control-m14e.css">
   <link rel="stylesheet" href="/static/css/m14-hf1-matchday.css">
   <link rel="stylesheet" href="/static/css/m14-hf2.css">
+  <link rel="stylesheet" href="/static/css/control-m17f.css">
   <link rel="stylesheet" href="/static/css/account-nav.css">
 </head>
 <body class="m10e-matchday" data-game-id="{{ game_id }}">
@@ -35,6 +36,27 @@
       <div class="match-status-item"><span>Phase</span><strong id="ux-phase-chip">PREGAME</strong></div>
       <div class="match-status-item"><span>Connection</span><strong id="ux-connection-chip">CONNECTING</strong></div>
       <div class="match-status-item"><span>Operator</span><strong id="ux-operator-chip">READY</strong></div>
+    </section>
+
+    <section id="m17f-match-readiness" class="card m17f-workflow-card">
+      <div class="card-header"><h2>Match Readiness</h2><span id="m17f-ready-state" class="command-status">VERIFYING</span></div>
+      <p class="muted">Confirm the key match details before starting. Missing rosters are informational; Unknown Scorer remains available.</p>
+      <div class="m17f-readiness-grid">
+        <div class="m17f-readiness-item"><span>Home Team</span><strong id="m17f-ready-home">-</strong></div>
+        <div class="m17f-readiness-item"><span>Away Team</span><strong id="m17f-ready-away">-</strong></div>
+        <div class="m17f-readiness-item"><span>Rosters</span><strong id="m17f-ready-rosters">-</strong></div>
+        <div class="m17f-readiness-item"><span>Half Length</span><strong id="m17f-ready-duration">-</strong></div>
+        <div class="m17f-readiness-item"><span>Score</span><strong id="m17f-ready-score">0-0</strong></div>
+      </div>
+      <div id="m17f-readonly-banner" class="m17f-readonly-banner hidden"></div>
+    </section>
+
+    <section class="card m17f-workflow-card">
+      <div class="card-header"><h2>Next Match Action</h2></div>
+      <div class="m17f-primary-action-row">
+        <button id="m17f-primary-action" class="primary-action" type="button" disabled>Waiting for Live State</button>
+        <span id="m17f-primary-note" class="m17f-primary-copy">Controls remain paused until authoritative state is confirmed.</span>
+      </div>
     </section>
 
     <section id="loading-state" class="status-panel">
@@ -221,6 +243,22 @@
         </article>
       </section>
 
+      <section class="operator-grid">
+        <article class="card operator-card">
+          <div class="card-header"><h2>Recent Match Activity</h2><span id="m17f-activity-phase" class="command-status">PREGAME</span></div>
+          <div id="m17f-recent-activity" class="m17f-activity-list"><div class="m17f-empty">No scoring activity yet.</div></div>
+        </article>
+      </section>
+
+      <section id="m17f-postgame-actions" class="card m17f-postgame-actions hidden">
+        <div class="card-header"><h2>Full Time</h2></div>
+        <strong id="m17f-final-score">Final score</strong>
+        <div class="m17f-postgame-links">
+          <a id="m17f-summary-link" class="secondary-button" href="#">View Match Summary</a>
+          <a id="m17f-broadcast-link" class="secondary-button" href="#">View Broadcast Scene</a>
+        </div>
+      </section>
+
       <section class="details-grid secondary-game-info">
         <article class="card">
           <div class="card-header">
@@ -269,6 +307,7 @@
   <script src="/static/vendor/socket.io.min.js"></script>
   <script type="module" src="/static/js/control/control.js"></script>
   <script type="module" src="/static/js/control/control-branding.js"></script>
+  <script type="module" src="/static/js/control/m17f-workflow.js"></script>
   <script src="/static/js/account-nav.js"></script>
 </body>
 </html>

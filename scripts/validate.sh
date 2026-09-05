@@ -34,6 +34,7 @@ add 'Team & Game Lifecycle' scripts/regression/team_game_lifecycle.sh
 add 'Post-Game Summary & Broadcast Scene' scripts/regression/post_game_summary_broadcast.sh
 add 'User Invitation & Account Activation' scripts/regression/user_invitation_activation.sh
 add 'Account Recovery & User Lifecycle' scripts/regression/account_recovery_user_lifecycle.sh
+add 'Match-Day Workflow & Operator Polish' scripts/regression/match_day_workflow_operator_polish.sh
 if [[ "$VALIDATION_SCOPE" == release ]]; then add Recovery scripts/regression/recovery.sh; fi
 fails=0
 echo '========================================'
