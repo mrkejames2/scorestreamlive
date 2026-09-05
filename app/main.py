@@ -16,6 +16,7 @@ from app.api.control import router as control_router
 from app.api.game_clock import router as game_clock_router
 from app.api.game_lifecycle import router as game_lifecycle_router
 from app.api.games import router as games_router
+from app.api.invitations import router as invitations_router
 from app.api.players import router as players_router
 from app.api.public_summary import router as public_summary_router
 from app.api.scoring_events import router as scoring_events_router
@@ -29,6 +30,7 @@ from app.services.team_logo_storage import ensure_storage_dir
 from app.sockets import sio
 from app.web.auth import router as auth_web_router
 from app.web.account import router as account_web_router
+from app.web.activation import router as activation_web_router
 from app.web.games import router as games_web_router
 from app.web.game_setup import router as game_setup_web_router
 from app.web.game_detail import router as game_detail_web_router
@@ -108,6 +110,7 @@ app.include_router(game_lifecycle_router)
 app.include_router(game_clock_router)
 app.include_router(scoring_events_router)
 app.include_router(games_router)
+app.include_router(invitations_router)
 app.include_router(players_router)
 app.include_router(public_summary_router)
 app.include_router(teams_router)
@@ -115,6 +118,7 @@ app.include_router(team_logos_router)
 app.include_router(control_router)
 app.include_router(auth_web_router)
 app.include_router(account_web_router)
+app.include_router(activation_web_router)
 app.include_router(games_web_router)
 app.include_router(game_setup_web_router)
 app.include_router(game_detail_web_router)

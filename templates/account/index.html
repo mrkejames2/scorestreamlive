@@ -62,16 +62,17 @@
       <div class="management-grid">
         <article class="management-card">
           <div class="card-heading"><div><span class="card-kicker">USERS</span><h3>Club Members</h3></div></div>
-          <p class="card-copy">Create Manager or Operator accounts. Temporary-password account creation remains available for compatibility until invitation-based onboarding is introduced.</p>
+          <p class="card-copy">Invite people to your Club as Managers or Operators. They choose their own password during activation.</p>
           <form id="member-form" class="form-stack">
             <label class="field"><span>Display Name</span><input id="member-name" type="text" placeholder="Example: Erica Smith"></label>
             <label class="field"><span>Email</span><input id="member-email" type="email" placeholder="name@example.com" required></label>
             <label class="field"><span>Role</span><select id="member-role"><option value="MANAGER">Manager</option><option value="OPERATOR">Operator</option></select></label>
-            <label class="field"><span>Temporary Password</span><input id="member-password" type="password" placeholder="Minimum 8 characters" required></label>
-            <button class="button button-primary" type="submit">Create Member</button>
+            <button class="button button-primary" type="submit">Send Invitation</button>
           </form>
           <div id="member-message" class="form-message" role="status"></div>
-          <div id="members" class="assignment-list"></div>
+          <div id="invitation-preview" class="form-message"></div>
+          <h4>Pending Invitations</h4><div id="pending-invitations" class="assignment-list"></div>
+          <h4>Club Members</h4><div id="members" class="assignment-list"></div>
 
           <section id="member-editor" class="member-editor" hidden aria-live="polite">
             <div class="editor-heading">

@@ -35,6 +35,14 @@ def _get_auth_session_days() -> int:
     return value if value > 0 else 30
 
 
+def _get_positive_int(name: str, default: int) -> int:
+    try:
+        value = int(os.getenv(name, str(default)))
+    except (ValueError, TypeError):
+        return default
+    return value if value > 0 else default
+
+
 def _get_bool(name: str, default: bool) -> bool:
     """Read a conservative boolean environment setting."""
     raw = os.getenv(name)
@@ -75,6 +83,18 @@ class Settings:
         "AUTH_SESSION_COOKIE_SECURE",
         os.getenv("APP_ENV", "development") == "production",
     )
+
+    # M17-D invitation/email delivery.
+    PUBLIC_BASE_URL: str = os.getenv("PUBLIC_BASE_URL", "http://localhost:8000")
+    INVITATION_TTL_HOURS: int = _get_positive_int("INVITATION_TTL_HOURS", 72)
+    EMAIL_DELIVERY_MODE: str = os.getenv("EMAIL_DELIVERY_MODE", "log").strip().lower()
+    SMTP_HOST: str = os.getenv("SMTP_HOST", "")
+    SMTP_PORT: int = _get_positive_int("SMTP_PORT", 587)
+    SMTP_USERNAME: str = os.getenv("SMTP_USERNAME", "")
+    SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
+    SMTP_USE_TLS: bool = _get_bool("SMTP_USE_TLS", True)
+    EMAIL_FROM_ADDRESS: str = os.getenv("EMAIL_FROM_ADDRESS", "")
+    EMAIL_FROM_NAME: str = os.getenv("EMAIL_FROM_NAME", "ScoreStreamLive")
 
 
 settings = Settings()

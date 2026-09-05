@@ -16,7 +16,6 @@ from app.services.access_admin_service import (
     assign_game_operator,
     assign_team_manager,
     assignments,
-    create_club_member,
     get_club_member,
     list_club_members,
     member_assignments,
@@ -26,13 +25,6 @@ from app.services.access_admin_service import (
 )
 
 router = APIRouter(prefix="/api/admin", tags=["club-admin"])
-
-
-class MemberCreate(BaseModel):
-    email: str
-    display_name: str | None = None
-    role: ClubRole
-    temporary_password: str
 
 
 class MemberUpdate(BaseModel):
@@ -130,26 +122,6 @@ async def patch_member(
         ) from exc
 
     return member(user, user_assignments)
-
-
-@router.post("/members", status_code=201)
-async def create_member(
-    data: MemberCreate,
-    current_user: User = Depends(require_current_user),
-    db: AsyncSession = Depends(get_session),
-):
-    try:
-        user = await create_club_member(
-            db,
-            director(current_user),
-            data.email,
-            data.display_name,
-            data.role,
-            data.temporary_password,
-        )
-    except ValueError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-    return member(user)
 
 
 @router.get("/assignments")

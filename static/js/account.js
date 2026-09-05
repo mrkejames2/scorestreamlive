@@ -14,6 +14,7 @@ async function req(path, opt = {}) {
 }
 
 let members = [];
+let invitations = [];
 let teams = [];
 let games = [];
 let asgn = {team_managers: [], game_operators: []};
@@ -72,8 +73,9 @@ function describeAssignments(memberId) {
 
 async function load() {
   if (document.body.dataset.role !== "DIRECTOR") return;
-  [members, teams, games, asgn] = await Promise.all([
+  [members, invitations, teams, games, asgn] = await Promise.all([
     req("/api/admin/members"),
+    req("/api/admin/invitations"),
     req("/api/teams"),
     req("/api/games"),
     req("/api/admin/assignments")
@@ -116,6 +118,29 @@ function renderMembers() {
   });
 }
 
+function showInvitationPreview(url) {
+  const container = $("invitation-preview");
+  if (!container) return;
+  clear(container);
+  if (!url) return;
+
+  const message = document.createElement("span");
+  message.textContent = "Invitation created in local development mode. ";
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.target = "_blank";
+  link.rel = "noopener";
+  link.textContent = "Open Activation Link";
+
+  container.append(message, link);
+}
+
+function renderInvitations() {
+  const c=$("pending-invitations"); if(!c)return; clear(c);
+  invitations.filter(x=>x.status==="PENDING").forEach(x=>{const row=document.createElement("div");row.className="item";const label=document.createElement("span");label.textContent=`${x.display_name||x.email} · ${x.club_role}`;const r=document.createElement("button");r.type="button";r.textContent="Resend";r.onclick=async()=>{const y=await req(`/api/admin/invitations/${x.id}/resend`,{method:"POST"}); showInvitationPreview(y.delivery_preview_url); await load();};const v=document.createElement("button");v.type="button";v.textContent="Revoke";v.onclick=async()=>{await req(`/api/admin/invitations/${x.id}`,{method:"DELETE"});await load();};row.append(label,r,v);c.append(row);});
+}
+
 function renderSelectors() {
   for (const [id, role] of [["manager-select", "MANAGER"], ["operator-select", "OPERATOR"]]) {
     const select = $(id);
@@ -156,6 +181,7 @@ function renderAssignments() {
 
 function render() {
   renderMembers();
+  renderInvitations();
   renderSelectors();
   renderAssignments();
 
@@ -260,23 +286,11 @@ $("member-edit-form")?.addEventListener("submit", async event => {
 $("editor-close")?.addEventListener("click", closeEditor);
 
 $("member-form")?.addEventListener("submit", async event => {
-  event.preventDefault();
-  $("member-message").textContent = "";
+  event.preventDefault(); $("member-message").textContent = "";
   try {
-    await req("/api/admin/members", {
-      method: "POST",
-      body: JSON.stringify({
-        display_name: $("member-name").value,
-        email: $("member-email").value,
-        role: $("member-role").value,
-        temporary_password: $("member-password").value
-      })
-    });
-    event.target.reset();
-    await load();
-  } catch (error) {
-    $("member-message").textContent = error.message;
-  }
+    const invitation=await req("/api/admin/invitations",{method:"POST",body:JSON.stringify({display_name:$("member-name").value,email:$("member-email").value,role:$("member-role").value})});
+    event.target.reset(); $("member-message").textContent="Invitation created."; showInvitationPreview(invitation.delivery_preview_url); await load();
+  } catch(error){ $("member-message").textContent=error.message; }
 });
 
 $("team-form")?.addEventListener("submit", async event => {

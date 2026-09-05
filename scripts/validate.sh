@@ -32,6 +32,7 @@ add 'Production Operations/Final Release Gate' scripts/regression/production_ope
 add 'Club User Administration' scripts/regression/club_user_administration.sh
 add 'Team & Game Lifecycle' scripts/regression/team_game_lifecycle.sh
 add 'Post-Game Summary & Broadcast Scene' scripts/regression/post_game_summary_broadcast.sh
+add 'User Invitation & Account Activation' scripts/regression/user_invitation_activation.sh
 if [[ "$VALIDATION_SCOPE" == release ]]; then add Recovery scripts/regression/recovery.sh; fi
 fails=0
 echo '========================================'
