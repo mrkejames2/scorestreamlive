@@ -35,6 +35,7 @@ add 'Post-Game Summary & Broadcast Scene' scripts/regression/post_game_summary_b
 add 'User Invitation & Account Activation' scripts/regression/user_invitation_activation.sh
 add 'Account Recovery & User Lifecycle' scripts/regression/account_recovery_user_lifecycle.sh
 add 'Match-Day Workflow & Operator Polish' scripts/regression/match_day_workflow_operator_polish.sh
+add 'Compact Broadcast Overlay & Brand Integration' scripts/regression/compact_broadcast_overlay_brand.sh
 if [[ "$VALIDATION_SCOPE" == release ]]; then add Recovery scripts/regression/recovery.sh; fi
 fails=0
 echo '========================================'

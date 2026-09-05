@@ -291,12 +291,18 @@ function hideGoalBanner() {
   }, 240);
 }
 
-function showGoalBanner(payload) {
+async function showGoalBanner(payload) {
   if (!payload || payload.event_type !== "goal") return;
 
   const eventId = String(payload.id || "");
   if (eventId && eventId === state.lastGoalEventId) return;
   state.lastGoalEventId = eventId || null;
+
+  const banner = byId("goal-banner");
+  if (!banner) {
+    console.warn("M17-G goal banner missing from DOM");
+    return;
+  }
 
   const team = teamForId(payload.team_id);
   const scorerName = playerDisplayName(payload.player_id);
@@ -304,12 +310,42 @@ function showGoalBanner(payload) {
 
   applyGoalBannerBrand(team);
 
-  byId("goal-team-name").textContent = team?.short_name || team?.name || "GOAL";
-  byId("goal-scorer-name").textContent = scorerName || "TEAM GOAL";
-  byId("goal-minute").textContent = minute;
+  let phase = String(state.lifecycle?.phase || "").trim();
 
-  const banner = byId("goal-banner");
-  if (state.goalBannerTimeout !== null) window.clearTimeout(state.goalBannerTimeout);
+  try {
+    const snapshot = await api(`/api/public/games/${gameId}/overlay-state`);
+    const freshPhase = String(snapshot?.lifecycle?.phase || "").trim();
+    if (freshPhase) {
+      phase = freshPhase;
+      state.lifecycle = { ...(state.lifecycle || {}), ...snapshot.lifecycle };
+    }
+  } catch (error) {
+    console.warn("M17-G goal phase refresh failed; using current presentation state", error);
+  }
+
+  const teamNameNode = byId("goal-team-name");
+  const scorerNode = byId("goal-scorer-name");
+  const goalMeta = byId("goal-meta");
+
+  if (teamNameNode) {
+    teamNameNode.textContent = team?.short_name || team?.name || "GOAL";
+  }
+  if (scorerNode) {
+    scorerNode.textContent = scorerName || "TEAM GOAL";
+  }
+
+  const renderedPhase = String(byId("phase-display")?.textContent || "").trim();
+  const half = phase ? phaseLabel(phase) : renderedPhase;
+
+  if (goalMeta) {
+    goalMeta.textContent = [minute, half].filter(Boolean).join(" • ");
+  } else {
+    console.warn("M17-G goal metadata node missing from DOM");
+  }
+
+  if (state.goalBannerTimeout !== null) {
+    window.clearTimeout(state.goalBannerTimeout);
+  }
 
   banner.classList.remove("hidden", "goal-banner-exit", "goal-banner-enter");
   void banner.offsetWidth;
@@ -329,11 +365,28 @@ function hideScoreCorrectionBanner() {
 function showScoreCorrectionBanner(payload) {
   const banner = byId("score-correction-banner");
   const message = byId("score-correction-message");
+  const meta = byId("score-correction-meta");
   if (!banner || !message) return;
-  message.textContent = String(payload?.message || "Score updated.");
+
+  const team = teamForId(payload?.team_id);
+  const teamName = team?.name || team?.short_name || "Team";
+  const status = String(payload?.message || "Score updated.").replace(/[.]+$/, "");
+  message.textContent = `${teamName} — ${status}`;
+
+  if (meta) {
+    const minute = scoringMinute(payload);
+    const phase = phaseLabel(state.lifecycle?.phase);
+    meta.textContent = [minute, phase].filter(Boolean).join(" • ");
+  }
+
   banner.classList.remove("hidden");
-  if (state.scoreCorrectionBannerTimeout !== null) window.clearTimeout(state.scoreCorrectionBannerTimeout);
-  state.scoreCorrectionBannerTimeout = window.setTimeout(() => { hideScoreCorrectionBanner(); state.scoreCorrectionBannerTimeout = null; }, SCORE_CORRECTION_VISIBLE_MS);
+  if (state.scoreCorrectionBannerTimeout !== null) {
+    window.clearTimeout(state.scoreCorrectionBannerTimeout);
+  }
+  state.scoreCorrectionBannerTimeout = window.setTimeout(() => {
+    hideScoreCorrectionBanner();
+    state.scoreCorrectionBannerTimeout = null;
+  }, SCORE_CORRECTION_VISIBLE_MS);
 }
 
 function matchStateTitle(phase) {
@@ -490,7 +543,7 @@ function installSocketHandlers(socket) {
 
   socket.on("scoring_event:created", (payload) => {
     if (!belongsToThisGame(payload)) return;
-    showGoalBanner(payload);
+    void showGoalBanner(payload);
     void recoverAuthoritativeState();
   });
 

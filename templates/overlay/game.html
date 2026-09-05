@@ -9,8 +9,9 @@
   <link rel="stylesheet" href="/static/css/overlay-m14e.css">
   <link rel="stylesheet" href="/static/css/m14-hf1-matchday.css">
   <link rel="stylesheet" href="/static/css/m14-hf2.css">
+  <link rel="stylesheet" href="/static/css/overlay-m17g.css">
 </head>
-<body data-game-id="{{ game_id }}">
+<body data-game-id="{{ game_id }}" data-overlay-layout="compact">
   <main class="overlay-stage" aria-label="ScoreStreamLive broadcast scoreboard">
     <section id="overlay-scoreboard" class="overlay-scoreboard overlay-loading">
       <div class="brand-rail"><span class="brand-mark">SSL</span></div>
@@ -61,23 +62,27 @@
     </section>
 
     <section id="score-correction-banner" class="score-correction-banner hidden" aria-live="assertive" aria-atomic="true">
-      <div class="score-correction-kicker">SCORE CORRECTION</div>
-      <div id="score-correction-message" class="score-correction-message"></div>
+      <div class="score-correction-icon" aria-hidden="true">&#8636;</div>
+      <div class="score-correction-copy">
+        <div class="score-correction-kicker">SCORE CORRECTION</div>
+        <div id="score-correction-message" class="score-correction-message"></div>
+        <div id="score-correction-meta" class="score-correction-meta"></div>
+      </div>
     </section>
 
     <section id="goal-banner" class="goal-banner hidden" aria-live="polite" aria-atomic="true">
-      <div class="goal-banner-accent"></div>
+      <div class="goal-banner-callout" aria-hidden="true">
+        <span class="goal-banner-ball">&#9917;</span>
+        <span class="goal-banner-word">GOAL!</span>
+      </div>
       <div id="goal-banner-logo-shell" class="goal-banner-logo-shell" aria-hidden="true">
         <span id="goal-banner-logo-fallback" class="goal-banner-logo-fallback">G</span>
         <img id="goal-banner-logo" class="goal-banner-logo hidden" alt="">
       </div>
       <div class="goal-banner-copy">
-        <div class="goal-banner-kicker">
-          <span class="goal-word">GOAL</span>
-          <span id="goal-minute" class="goal-minute"></span>
-        </div>
+        <div id="goal-scorer-name" class="goal-scorer-name">TEAM GOAL</div>
+        <div id="goal-meta" class="goal-banner-meta"></div>
         <div id="goal-team-name" class="goal-team-name"></div>
-        <div id="goal-scorer-name" class="goal-scorer-name"></div>
       </div>
     </section>
 
@@ -96,6 +101,7 @@
 
   <script src="/static/vendor/socket.io.min.js"></script>
   <script src="/static/js/overlay/socket-context.js"></script>
+  <script src="/static/js/overlay/m17g-layout.js"></script>
   <script type="module" src="/static/js/overlay/overlay.js"></script>
 </body>
 </html>
