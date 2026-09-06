@@ -1,0 +1,115 @@
+/* M17-H REPAIR5 — Team card/detail metadata contrast
+   Presentation only. Preserves team branding data/colors.
+*/
+
+/* ---------- Teams list cards ---------- */
+
+.teams-shell .team-card {
+  background: #ffffff !important;
+  color: #172b3a !important;
+  border-color: #d5dee5 !important;
+}
+
+.teams-shell .team-card .team-name {
+  color: #172b3a !important;
+}
+
+.teams-shell .team-card .team-short-name {
+  color: #4e7fc9 !important;
+}
+
+.teams-shell .team-card .branding-row code,
+.teams-shell .team-card .primary-color,
+.teams-shell .team-card .secondary-color {
+  color: #53636f !important;
+  font-weight: 750 !important;
+}
+
+.teams-shell .team-card .team-meta .detail-label {
+  color: #6b7a86 !important;
+  font-weight: 900 !important;
+}
+
+.teams-shell .team-card .team-id {
+  color: #53636f !important;
+  font-weight: 650 !important;
+}
+
+.teams-shell .team-card .future-note {
+  color: #6b7a86 !important;
+  font-weight: 650 !important;
+}
+
+.teams-shell .team-card .team-card-actions {
+  border-top-color: #d5dee5 !important;
+}
+
+.teams-shell .team-card .color-swatch {
+  border-color: #aeb9c2 !important;
+  box-shadow: 0 0 0 1px rgba(23,43,58,.04);
+}
+
+/* Keep white/very-light color values readable without changing their actual team color. */
+.teams-shell .team-card .secondary-swatch {
+  background-image:
+    linear-gradient(45deg, #eef2f5 25%, transparent 25%),
+    linear-gradient(-45deg, #eef2f5 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #eef2f5 75%),
+    linear-gradient(-45deg, transparent 75%, #eef2f5 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+}
+
+/* ---------- Team detail hero ---------- */
+
+.detail-shell .hero {
+  background: #ffffff !important;
+  color: #172b3a !important;
+  border-color: #d5dee5 !important;
+}
+
+.detail-shell .hero .identity h1,
+.detail-shell .hero #team-name {
+  color: #172b3a !important;
+}
+
+.detail-shell .hero .short-name,
+.detail-shell .hero #team-short {
+  color: #4e7fc9 !important;
+}
+
+.detail-shell .hero .colors code,
+.detail-shell .hero #primary-color,
+.detail-shell .hero #secondary-color,
+.detail-shell .hero .team-id,
+.detail-shell .hero #team-id {
+  color: #53636f !important;
+  font-weight: 700 !important;
+}
+
+.detail-shell .hero .swatch {
+  border-color: #aeb9c2 !important;
+}
+
+/* ---------- Supporting team-management copy ---------- */
+
+.teams-shell .panel-heading p,
+.teams-shell .subhead,
+.detail-shell .roster-panel p,
+.detail-shell .visible-count,
+.detail-shell .player-meta,
+.detail-shell .player-id {
+  color: #5f6f7a !important;
+}
+
+/* Customer-facing footer labels should remain suppressed by M17-H. */
+.teams-footer,
+.detail-shell footer {
+  color: transparent !important;
+  font-size: 0 !important;
+}
+
+.teams-footer > *,
+.detail-shell footer > * {
+  display: none !important;
+}

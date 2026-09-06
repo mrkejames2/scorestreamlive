@@ -1,0 +1,142 @@
+/* M17-H REPAIR4
+   1) Games page: move the inner dashboard content away from the panel edge.
+   2) Control page: restore readable contrast for team names and roster rows.
+   Presentation only.
+*/
+
+/* ---------- Games inner content gutter ---------- */
+
+@media (min-width: 901px) {
+  body:has(.ssl-account-nav) .games-panel {
+    padding: 0 32px 32px !important;
+  }
+
+  body:has(.ssl-account-nav) .games-panel > .panel-heading,
+  body:has(.ssl-account-nav) .games-panel > .games-list,
+  body:has(.ssl-account-nav) .games-panel > .empty-state,
+  body:has(.ssl-account-nav) .games-panel > section,
+  body:has(.ssl-account-nav) .games-panel > header,
+  body:has(.ssl-account-nav) .games-panel > nav {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  body:has(.ssl-account-nav) .games-panel .panel-heading {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  body:has(.ssl-account-nav) .games-panel .game-card {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  body:has(.ssl-account-nav) .games-panel .empty-state {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* The library heading should align to the same desktop content grid. */
+  body:has(.ssl-account-nav) .games-header {
+    padding-left: 32px !important;
+    padding-right: 32px !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .games-panel {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    padding-bottom: 20px !important;
+  }
+
+  .games-panel .panel-heading,
+  .games-panel .game-card {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+/* ---------- Control scoreboard contrast ---------- */
+
+/* M17-H's global dark-text rule must not override the intentional dark
+   branded team panels used by the Control Center scoreboard. */
+.control-shell .branded-control-scoreboard .team-panel,
+.control-shell .branded-control-scoreboard .branded-team-panel {
+  color: #f4f7fb !important;
+}
+
+.control-shell .branded-control-scoreboard .team-name,
+.control-shell .branded-control-scoreboard .control-team-short-name {
+  color: #f4f7fb !important;
+  text-shadow: 0 1px 1px rgba(0,0,0,.22);
+}
+
+.control-shell .branded-control-scoreboard .team-label {
+  color: #aebed0 !important;
+}
+
+.control-shell .branded-control-scoreboard .control-team-short-name {
+  opacity: .92;
+}
+
+/* Preserve strong readability in the light center score panel. */
+.control-shell .branded-control-scoreboard .score-panel,
+.control-shell .branded-control-scoreboard .score-panel .score,
+.control-shell .branded-control-scoreboard .score-panel .clock-display {
+  color: #172b3a !important;
+}
+
+.control-shell .branded-control-scoreboard .phase-display {
+  color: #6b7a86 !important;
+}
+
+/* ---------- Control roster contrast ---------- */
+
+/* Use light roster rows inside the light application card instead of
+   dark rows with inherited dark text. */
+.control-shell .roster-list .roster-player {
+  border: 1px solid #d5dee5 !important;
+  background: #f7f9fb !important;
+  color: #172b3a !important;
+  box-shadow: none !important;
+}
+
+.control-shell .roster-list .roster-player .jersey {
+  color: #536b7c !important;
+  font-weight: 900 !important;
+}
+
+.control-shell .roster-list .roster-player .player-name {
+  color: #172b3a !important;
+  font-weight: 800 !important;
+}
+
+.control-shell .roster-list .roster-player:hover {
+  border-color: rgba(254,101,5,.34) !important;
+  background: #fff8f3 !important;
+}
+
+/* Keep other roster/detail card text readable on the M17-H light surface. */
+.control-shell .roster-grid .card,
+.control-shell .details-grid .card {
+  color: #172b3a !important;
+}
+
+.control-shell .roster-grid .card h2,
+.control-shell .details-grid .card h2 {
+  color: #172b3a !important;
+}
+
+/* ---------- Responsive control readability ---------- */
+
+@media (max-width: 800px) {
+  .control-shell .branded-control-scoreboard .team-name {
+    color: #f4f7fb !important;
+  }
+
+  .control-shell .roster-list .roster-player {
+    min-height: 52px;
+    align-items: center;
+  }
+}

@@ -1,0 +1,44 @@
+/* M17-H REPAIR3 — Games page content gutter / alignment */
+
+@media (min-width: 901px) {
+  body:has(.ssl-account-nav) .games-shell {
+    width: min(1180px, calc(100% - 72px)) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-top: 28px !important;
+    padding-bottom: 36px !important;
+  }
+
+  body:has(.ssl-account-nav) .games-header,
+  body:has(.ssl-account-nav) .games-panel,
+  body:has(.ssl-account-nav) .summary-grid,
+  body:has(.ssl-account-nav) .new-game-panel {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  body:has(.ssl-account-nav) .games-header {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  body:has(.ssl-account-nav) .games-panel {
+    overflow: hidden !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .games-shell {
+    width: calc(100% - 24px) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-top: 18px !important;
+    padding-bottom: 28px !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .games-shell {
+    width: calc(100% - 16px) !important;
+  }
+}

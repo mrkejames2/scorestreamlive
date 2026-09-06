@@ -1,0 +1,143 @@
+/* M17-H REPAIR6 — Game Setup / Rosters contrast
+   Presentation only. Keeps team colors/branding while restoring readable text.
+*/
+
+/* ---------- Game summary ---------- */
+
+.setup-shell .game-summary {
+  border-color: #d5dee5 !important;
+  background: #ffffff !important;
+  color: #172b3a !important;
+  box-shadow: 0 6px 18px rgba(11,36,53,.06) !important;
+}
+
+.setup-shell .game-summary .team-summary-name {
+  color: #172b3a !important;
+  font-weight: 900 !important;
+}
+
+.setup-shell .game-summary .roster-count {
+  color: #5f6f7a !important;
+}
+
+.setup-shell .game-summary .versus {
+  color: #7d8b96 !important;
+}
+
+.setup-shell .game-summary .side-label {
+  color: #4e7fc9 !important;
+}
+
+/* Preserve team-specific brand colors in the badges/accents. */
+.setup-shell .game-summary .team-brand {
+  color: var(--team-secondary) !important;
+}
+
+/* ---------- Roster cards ---------- */
+
+.setup-shell .roster-card {
+  border-color: #d5dee5 !important;
+  background: #ffffff !important;
+  color: #172b3a !important;
+  box-shadow: 0 6px 18px rgba(11,36,53,.06) !important;
+}
+
+.setup-shell .roster-card-heading {
+  border-bottom-color: #d5dee5 !important;
+  background: #fbfcfd !important;
+}
+
+.setup-shell .roster-card-heading h2 {
+  color: #172b3a !important;
+}
+
+.setup-shell .roster-card .side-label {
+  color: #4e7fc9 !important;
+}
+
+.setup-shell .count-badge {
+  background: #eef2f5 !important;
+  color: #172b3a !important;
+  border: 1px solid #d5dee5 !important;
+}
+
+/* ---------- Add-player forms ---------- */
+
+.setup-shell .player-form {
+  border-bottom-color: #d5dee5 !important;
+  background: #f8fafb !important;
+}
+
+.setup-shell .player-form label {
+  color: #53636f !important;
+}
+
+.setup-shell .player-form small {
+  color: #7c8992 !important;
+}
+
+.setup-shell .player-form input {
+  border-color: #bdc9d2 !important;
+  background: #ffffff !important;
+  color: #172b3a !important;
+}
+
+.setup-shell .player-form input:focus {
+  border-color: #fe6505 !important;
+  box-shadow: 0 0 0 3px rgba(254,101,5,.12) !important;
+}
+
+/* ---------- Player rows ---------- */
+
+.setup-shell .roster-list {
+  background: #ffffff !important;
+}
+
+.setup-shell .player-row {
+  border-bottom-color: #e1e7eb !important;
+  background: #ffffff !important;
+  color: #172b3a !important;
+}
+
+.setup-shell .player-row:hover {
+  background: #fff8f3 !important;
+}
+
+.setup-shell .jersey-number {
+  border: 1px solid #d5dee5 !important;
+  background: #eef2f5 !important;
+  color: #536b7c !important;
+}
+
+.setup-shell .player-name {
+  color: #172b3a !important;
+  font-weight: 800 !important;
+}
+
+.setup-shell .roster-empty {
+  color: #6b7a86 !important;
+  background: #ffffff !important;
+}
+
+/* Hide remaining milestone footer copy from customer-facing roster setup. */
+.setup-shell .setup-footer {
+  color: transparent !important;
+  font-size: 0 !important;
+}
+
+.setup-shell .setup-footer > * {
+  display: none !important;
+}
+
+/* ---------- Mobile ---------- */
+
+@media (max-width: 620px) {
+  .setup-shell .game-summary,
+  .setup-shell .roster-card {
+    border-radius: 14px !important;
+  }
+
+  .setup-shell .player-row {
+    min-height: 52px !important;
+  }
+}
