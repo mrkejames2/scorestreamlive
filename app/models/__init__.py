@@ -17,6 +17,10 @@ from app.models.game_clock import GameClock
 from app.models.game_lifecycle import GameLifecycle
 from app.models.team_manager import TeamManager
 from app.models.game_operator import GameOperator
+from app.models.plan import Plan, Entitlement, PlanEntitlement
+from app.models.subscription import Subscription
+from app.models.billing_external_reference import BillingExternalReference
+from app.models.billing_event import BillingEvent
 
 __all__ = [
     "Club",
@@ -32,4 +36,10 @@ __all__ = [
     "GameLifecycle",
     "TeamManager",
     "GameOperator",
+    "Plan",
+    "Entitlement",
+    "PlanEntitlement",
+    "Subscription",
+    "BillingExternalReference",
+    "BillingEvent",
 ]

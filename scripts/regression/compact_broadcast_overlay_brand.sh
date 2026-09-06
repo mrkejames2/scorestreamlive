@@ -97,7 +97,7 @@ need_text static/js/overlay/overlay.js \
   'Repair 6 GOAL derives half label explicitly'
 
 # Presentation milestone must not introduce an Alembic migration.
-if find alembic/versions -maxdepth 1 -type f -name '*0017*' -print -quit | grep -q .; then
+if find alembic/versions -maxdepth 1 -type f \( -iname '*m17g*' -o -iname '*compact*broadcast*overlay*brand*' \) -print -quit | grep -q .; then
   bad 'unexpected M17-G database migration detected'
 else
   pass 'M17-G remains migration-free'

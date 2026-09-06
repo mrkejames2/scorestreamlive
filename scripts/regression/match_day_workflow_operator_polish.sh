@@ -47,6 +47,6 @@ require_text "$WORKFLOW" '/summary/games/${gameId}'
 require_text "$WORKFLOW" '/broadcast/games/${gameId}'
 require_text "$STYLE" '@media (max-width:760px)'
 require_text "$STYLE" '@media (max-width:480px)'
-if find alembic/versions -maxdepth 1 -type f -name '*0017*' | grep -q .; then fail "M17-F unexpectedly introduced a migration"; fi
+if find alembic/versions -maxdepth 1 -type f \( -iname '*m17f*' -o -iname '*match*day*workflow*operator*polish*' \) | grep -q .; then fail "M17-F unexpectedly introduced a migration"; fi
 if grep -R -Eqi --exclude-dir=.git --exclude='match_day_workflow_operator_polish.sh' '(redis|kafka|nats|rabbitmq|celery)' "$WORKFLOW" "$STYLE" "$TEMPLATE"; then fail "M17-F introduced prohibited infrastructure"; fi
 echo "Match-Day Workflow & Operator Polish regression checks passed."

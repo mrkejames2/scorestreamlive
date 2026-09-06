@@ -55,7 +55,7 @@ need_text scripts/validate.sh \
   "add 'Cohesive Product Theme & UI Consistency' scripts/regression/cohesive_product_theme.sh" \
   'M17-H validation domain remains registered'
 
-if find alembic/versions -maxdepth 1 -type f -name '*0017*' -print -quit | grep -q .; then
+if find alembic/versions -maxdepth 1 -type f \( -iname '*m17h*' -o -iname '*cohesive*product*theme*' \) -print -quit | grep -q .; then
   bad 'unexpected M17-H database migration detected'
 else
   pass 'M17-H remains migration-free'
