@@ -56,7 +56,7 @@ Production Human Acceptance   PASS
 Until those production gates pass:
 
 ```text
-M17 PRODUCTION COMPLETE = NOT YET DECLARED
+M17 PRODUCTION COMPLETE = DECLARED
 ```
 
 ## Current product capability
