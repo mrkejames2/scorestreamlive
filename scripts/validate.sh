@@ -37,6 +37,7 @@ add 'Account Recovery & User Lifecycle' scripts/regression/account_recovery_user
 add 'Match-Day Workflow & Operator Polish' scripts/regression/match_day_workflow_operator_polish.sh
 add 'Compact Broadcast Overlay & Brand Integration' scripts/regression/compact_broadcast_overlay_brand.sh
 add 'Cohesive Product Theme & UI Consistency' scripts/regression/cohesive_product_theme.sh
+add 'Production Supportability' scripts/regression/production_supportability.sh
 if [[ "$VALIDATION_SCOPE" == release ]]; then add Recovery scripts/regression/recovery.sh; fi
 fails=0
 echo '========================================'

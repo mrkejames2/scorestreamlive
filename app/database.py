@@ -1,6 +1,7 @@
 """Database connection layer."""
 
 import logging
+import time
 from urllib.parse import quote_plus
 
 from sqlalchemy import text
@@ -57,15 +58,22 @@ async def get_session() -> AsyncSession:
         yield session
 
 
-async def check_database_connection() -> bool:
-    """Execute a lightweight connectivity check against PostgreSQL."""
+async def check_database_health() -> dict:
+    """Return read-only PostgreSQL connectivity status and latency."""
+    started = time.perf_counter()
     safe_url = get_safe_database_url()
     try:
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
-        logger.info("Database connection OK: %s", safe_url)
-        return True
+        latency_ms = round((time.perf_counter() - started) * 1000, 2)
+        logger.info(
+            "Database connection OK: %s",
+            safe_url,
+            extra={"event": "database.connection.success", "latency_ms": latency_ms},
+        )
+        return {"status": "ok", "latency_ms": latency_ms}
     except Exception as exc:
+        latency_ms = round((time.perf_counter() - started) * 1000, 2)
         logger.warning(
             "Database connection FAILED for %s — error: %s",
             safe_url,
@@ -73,6 +81,13 @@ async def check_database_connection() -> bool:
             extra={
                 "event": "database.connection.failure",
                 "error_type": type(exc).__name__,
+                "latency_ms": latency_ms,
             },
         )
-        return False
+        return {"status": "unavailable", "latency_ms": latency_ms}
+
+
+async def check_database_connection() -> bool:
+    """Execute a lightweight connectivity check against PostgreSQL."""
+    result = await check_database_health()
+    return result["status"] == "ok"

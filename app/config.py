@@ -22,7 +22,6 @@ def _get_team_logo_max_bytes() -> int:
         value = int(os.getenv("TEAM_LOGO_MAX_BYTES", "2097152"))
     except (ValueError, TypeError):
         return 2 * 1024 * 1024
-
     return value if value > 0 else 2 * 1024 * 1024
 
 
@@ -58,6 +57,10 @@ class Settings:
     APP_NAME: str = os.getenv("APP_NAME", "ScoreStreamLive")
     APP_ENV: str = os.getenv("APP_ENV", "development")
     APP_VERSION: str = os.getenv("APP_VERSION", "0.5.0")
+    APP_RELEASE: str = os.getenv(
+        "APP_RELEASE",
+        os.getenv("RENDER_GIT_COMMIT", "unknown"),
+    ).strip() or "unknown"
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
     DB_HOST: str = os.getenv("DB_HOST", "postgres")
     DB_PORT: int = _get_db_port()
@@ -66,14 +69,12 @@ class Settings:
     DB_PASSWORD: str = os.getenv("DB_PASSWORD", "change-me")
     SOCKET_CORS_ORIGINS: str = os.getenv("SOCKET_CORS_ORIGINS", "")
 
-    # M12-D2 Team-logo storage.
     TEAM_LOGO_STORAGE_DIR: str = os.getenv(
         "TEAM_LOGO_STORAGE_DIR",
         "static/uploads/team-logos",
     )
     TEAM_LOGO_MAX_BYTES: int = _get_team_logo_max_bytes()
 
-    # M15-A authentication/session foundation.
     AUTH_SESSION_COOKIE_NAME: str = os.getenv(
         "AUTH_SESSION_COOKIE_NAME",
         "scorestreamlive_session",
@@ -84,7 +85,6 @@ class Settings:
         os.getenv("APP_ENV", "development") == "production",
     )
 
-    # M17-D invitation/email delivery.
     PUBLIC_BASE_URL: str = os.getenv("PUBLIC_BASE_URL", "http://localhost:8000")
     INVITATION_TTL_HOURS: int = _get_positive_int("INVITATION_TTL_HOURS", 72)
     PASSWORD_RESET_TTL_MINUTES: int = _get_positive_int("PASSWORD_RESET_TTL_MINUTES", 60)

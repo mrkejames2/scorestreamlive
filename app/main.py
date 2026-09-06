@@ -2,6 +2,7 @@
 
 import logging
 import time
+import uuid
 from contextlib import asynccontextmanager
 
 import socketio
@@ -20,12 +21,13 @@ from app.api.invitations import router as invitations_router
 from app.api.players import router as players_router
 from app.api.public_summary import router as public_summary_router
 from app.api.scoring_events import router as scoring_events_router
+from app.api.support import router as support_router
 from app.api.team_logos import router as team_logos_router
 from app.api.teams import router as teams_router
 from app.auth.security import enforce_production_security_settings
 from app.config import settings
 from app.database import check_database_connection, engine, get_safe_database_url
-from app.logging_config import configure_logging
+from app.logging_config import configure_logging, reset_request_id, set_request_id
 from app.services.team_logo_storage import ensure_storage_dir
 from app.sockets import sio
 from app.web.auth import router as auth_web_router
@@ -56,13 +58,15 @@ async def lifespan(app: FastAPI):
         extra={"event": "config.diagnostic"},
     )
     logger.info(
-        "Application startup — env=%s version=%s",
+        "Application startup — env=%s version=%s release=%s",
         settings.APP_ENV,
         settings.APP_VERSION,
+        settings.APP_RELEASE,
         extra={
             "event": "application.startup",
             "environment": settings.APP_ENV,
             "version": settings.APP_VERSION,
+            "release": settings.APP_RELEASE,
         },
     )
 
@@ -75,7 +79,6 @@ async def lifespan(app: FastAPI):
     )
 
     db_ready = await check_database_connection()
-
     if db_ready:
         logger.info(
             "Database connection established",
@@ -117,6 +120,7 @@ app.include_router(public_summary_router)
 app.include_router(teams_router)
 app.include_router(team_logos_router)
 app.include_router(control_router)
+app.include_router(support_router)
 app.include_router(auth_web_router)
 app.include_router(account_web_router)
 app.include_router(activation_web_router)
@@ -129,27 +133,48 @@ app.include_router(teams_web_router)
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    start_time = time.time()
-    response = await call_next(request)
-    duration_ms = (time.time() - start_time) * 1000
-
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["Referrer-Policy"] = "same-origin"
-    response.headers["X-Frame-Options"] = "SAMEORIGIN"
-
+    request_id = str(uuid.uuid4())
+    context_token = set_request_id(request_id)
+    start_time = time.perf_counter()
     logger = logging.getLogger("app")
-    logger.info(
-        "HTTP request",
-        extra={
-            "event": "http.request",
-            "method": request.method,
-            "path": request.url.path,
-            "status_code": response.status_code,
-            "duration_ms": round(duration_ms, 2),
-        },
-    )
 
-    return response
+    try:
+        response = await call_next(request)
+        duration_ms = (time.perf_counter() - start_time) * 1000
+
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["Referrer-Policy"] = "same-origin"
+        response.headers["X-Frame-Options"] = "SAMEORIGIN"
+        response.headers["X-Request-ID"] = request_id
+        response.headers["X-ScoreStreamLive-Release"] = settings.APP_RELEASE
+
+        logger.info(
+            "HTTP request",
+            extra={
+                "event": "http.request",
+                "method": request.method,
+                "path": request.url.path,
+                "status_code": response.status_code,
+                "duration_ms": round(duration_ms, 2),
+                "release": settings.APP_RELEASE,
+            },
+        )
+        return response
+    except Exception:
+        duration_ms = (time.perf_counter() - start_time) * 1000
+        logger.exception(
+            "Unhandled HTTP request exception",
+            extra={
+                "event": "http.request.exception",
+                "method": request.method,
+                "path": request.url.path,
+                "duration_ms": round(duration_ms, 2),
+                "release": settings.APP_RELEASE,
+            },
+        )
+        raise
+    finally:
+        reset_request_id(context_token)
 
 
 @app.get("/client")
@@ -163,6 +188,7 @@ async def root():
         "status": "running",
         "environment": settings.APP_ENV,
         "version": settings.APP_VERSION,
+        "release": settings.APP_RELEASE,
     }
 
 
@@ -188,6 +214,7 @@ async def info():
     return {
         "application": settings.APP_NAME,
         "version": settings.APP_VERSION,
+        "release": settings.APP_RELEASE,
         "environment": settings.APP_ENV,
     }
 
