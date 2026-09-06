@@ -1,168 +1,199 @@
 # ScoreStreamLive Architecture
 
-## Release / Development State
+## Release state
 
 ```text
-M0–M13 PRODUCTION COMPLETE
-M14 PRODUCTION COMPLETE
-M14-0 / M14-A / M14-B / M14-C / M14-D / M14-E COMPLETE
+M0-M16  production baseline established
+M17-A   Club User Administration & Lifecycle Safety             COMPLETE
+M17-B   Team & Game Lifecycle Management                        COMPLETE
+M17-C   Post-Game Summary & Broadcast Scene                     COMPLETE
+M17-D   User Invitation & Account Activation                    COMPLETE
+M17-E   Account Recovery & User Lifecycle                       COMPLETE
+M17-F   Match-Day Workflow & Operator Polish                    COMPLETE
+M17-G   Compact Broadcast Overlay & Brand Integration           COMPLETE
+M17-H   Cohesive Product Theme & UI Consistency                 COMPLETE
+M17-I   Production Supportability                               COMPLETE
+M17-J   Customer Readiness & Production Release Gate            RELEASE CANDIDATE
 ```
 
-## Runtime Architecture
+## Runtime architecture
 
 ```text
 Browser / API Client
-        │
-   ┌────┴────┐
-   │         │
+        |
+   +----+----+
+   |         |
  REST     Socket.IO
-   │         │
-   └────┬────┘
-        │
+   |         |
+   +----+----+
+        |
       FastAPI
-        │
-      Services
-        │
-  SQLAlchemy Async
-        │
-    PostgreSQL
+        |
+     Services
+        |
+ SQLAlchemy Async
+        |
+   PostgreSQL
 ```
 
-## State Ownership
+## Authoritative-state contract
 
-PostgreSQL is authoritative for persistent Game, Team, Player, score, ScoringEvent, GameClock, GameLifecycle, and Team-branding metadata.
+PostgreSQL is authoritative for persistent Game, Team, Player, score,
+ScoringEvent, GameClock, GameLifecycle, Club, account, assignment, and Team
+branding metadata.
 
 REST is the durable mutation boundary.
 
-Socket.IO distributes committed state after successful mutations.
+Socket.IO is committed-state notification transport. It is not an independent
+state authority.
 
-## Current Domain
-
-```text
-Game
-├── Home Team
-│   └── Players (derived roster)
-├── Away Team
-│   └── Players (derived roster)
-├── Score
-├── ScoringEvents
-├── GameClock
-└── GameLifecycle
-```
-
-Roster is derived from `Player.team_id`; there is no Roster table.
-
-## Mutation Rule
+The mutation rule remains:
 
 ```text
 Validate
-↓
-Mutate
-↓
-COMMIT
-↓
-Reload
-↓
-Emit
+  -> Mutate
+  -> COMMIT
+  -> Reload
+  -> Emit
 ```
 
-## Team / Roster Management Architecture
+GameClock remains timestamp-anchor based. There is no per-second authoritative
+database write and no per-second authoritative Socket.IO tick.
 
-M13 added a product-management layer around existing Team and Player domains.
-
-Team branding metadata (`logo_url`, primary/secondary colors) remains persistent Team state. Logo image bytes are not stored in PostgreSQL.
-
-Player membership remains represented only by `Player.team_id`.
-
-## Existing Match Architecture
-
-Scoring, clock, lifecycle, Control Center, Overlay, and pre-game setup remain unchanged in architectural responsibility.
-
-GameClock remains timestamp-anchor based with no per-second authoritative DB writes or Socket.IO tick.
-
-Lifecycle remains separate from clock time and uses committed transactional transitions.
-
-## M14 Game Library Architecture
-
-M14 adds discovery/presentation around persisted Game state.
+## Core architectural invariants
 
 ```text
-Persisted Game
-    │
-    ├── Game fields
-    ├── GameLifecycle
-    └── GameClock
-          ↓
-Canonical Game Library Classification
-          ├── upcoming
-          ├── live
-          ├── completed
-          └── cancelled
-          ↓
-Game Library Dashboard
-          ↓
-Search & Filter
-          ↓
-Bounded Scalable Retrieval
+PostgreSQL = authoritative persistent state
+REST       = durable mutation boundary
+Socket.IO  = committed-state notification transport
+Club       = tenant boundary
 ```
 
-Canonical classification is presentation/domain interpretation. It is not a new persistence authority.
+These invariants remain protected throughout M17 and the M17-J production
+release gate.
 
-M14 must not solve display problems by synchronizing lifecycle state back into `Game.status`.
+## Tenant and authorization boundary
 
-Protected M14 boundaries:
+Club is the tenant boundary.
+
+Authenticated private resources are authorized through the established
+Director, Manager, and Operator role/assignment model. Direct cross-Club IDs
+must not become an authorization bypass.
+
+The public Overlay remains intentionally unauthenticated. Control and private
+management APIs remain authenticated and authorized.
+
+## Team and roster model
+
+A Team owns persistent branding metadata such as logo URL and Team colors.
+Uploaded logo bytes live outside PostgreSQL.
+
+Roster membership remains represented by `Player.team_id`; there is no
+independent Roster persistence authority.
+
+## Match-day model
+
+A Game composes:
 
 ```text
-No new state authority
-No lifecycle redesign
-No timer redesign
-No per-second authoritative tick
-No unnecessary database migration
-No distributed infrastructure
+Game
+|- Home Team
+|  `- Players
+|- Away Team
+|  `- Players
+|- Score
+|- ScoringEvents
+|- GameClock
+`- GameLifecycle
 ```
 
-## Product Surfaces
+Scoring history remains authoritative. A scorer-attribution correction does not
+change the Game score; removal of an accidental goal changes the score exactly
+once.
+
+Lifecycle remains separate from clock time and uses committed transitions.
+
+## Account and customer administration
+
+M17 adds the customer-facing account lifecycle needed for Club operation:
+
+- Director user administration
+- Team and Game lifecycle management
+- invitations and activation
+- account recovery
+- safe user lifecycle controls
+- role/assignment-aware navigation and product surfaces
+
+These capabilities do not create a second ownership or tenant model.
+
+## Broadcast architecture
+
+The broadcast Overlay is a public read/presentation surface backed by
+authoritative Game state. Team branding and compact broadcast presentation are
+presentation concerns, not new state authorities.
+
+Control remains the authenticated operator surface.
+
+## Production supportability
+
+M17-I adds:
+
+- exact deployment identity (`APP_RELEASE`)
+- `X-Request-ID`
+- `X-ScoreStreamLive-Release`
+- structured correlation-aware logging
+- logging redaction defense
+- Director-only read-only support diagnostics
+- PostgreSQL readiness/latency diagnostics
+- incident triage documentation
+
+`/health/live` remains dependency-free liveness.
+
+`/health/ready` remains PostgreSQL-backed readiness.
+
+Diagnostics do not return credentials, raw environment variables, cookies,
+tokens, or cross-Club data.
+
+## Product surfaces
+
+Primary surfaces include:
 
 ```text
 /teams
 /teams/{team_id}
 /games
-/games/{game_id}/setup
 /games/{game_id}
+/games/{game_id}/setup
 /control/games/{game_id}
 /overlay/games/{game_id}
+/api/support/diagnostics
 ```
 
-## Validation Architecture
+## Validation architecture
 
-Active M14+ validation is domain-based.
+`scripts/validate.sh` is the active domain-based cumulative harness.
+
+For M17-J the expected durable domains are 35, ending with:
 
 ```text
-scripts/validate.sh
-      │
-      ├── Health
-      ├── Web Surfaces
-      ├── API Reads
-      ├── Architecture
-      ├── Game Library
-      ├── Game Dashboard
-      ├── Game Search/Filter
-      ├── Game Retrieval
-      ├── Game Clock Configuration
-      └── Recovery (release only)
+33  Cohesive Product Theme & UI Consistency
+34  Production Supportability
+35  Customer Readiness & Production Release Gate
 ```
 
-Durable current regression protection lives under `scripts/regression/`.
+Historical milestone validators are acceptance records, not a recursive
+execution chain.
 
-Historical milestone validators remain acceptance records and are not recursively executed by the active orchestrator.
+Production release-gate checks must remain non-destructive.
 
-## Infrastructure Not Present
+## Infrastructure deliberately not present
 
 ```text
 Redis
 NATS
 Kafka
 RabbitMQ
+Celery
 Kubernetes
 event sourcing
 CQRS
@@ -172,24 +203,12 @@ per-Game timer workers
 
 Do not introduce these without explicit architectural approval.
 
-## M14-E Continuous Match Clock
+## M17-J boundary
 
-GameClock remains timestamp-anchor based with no per-second database write and no per-second authoritative Socket.IO tick.
+M17-J is a release/readiness milestone. It does not introduce a new product
+feature, database migration, state authority, Socket.IO protocol, or deployment
+topology.
 
-Configured half length is `H`.
-
-```text
-START_FIRST_HALF:
-  elapsed = 0
-  regulation threshold = H
-
-START_SECOND_HALF:
-  elapsed = H
-  regulation threshold = 2H
-```
-
-Control Center and Overlay derive added-time presentation from authoritative GameClock state.
-
-During added time, the regulation clock display freezes at the current threshold and `+N` advances.
-
-Lifecycle transitions must derive thresholds from configured `H` and must not restore hard-coded `2700` / `5400` values.
+M17 is not production complete until the cumulative M17-J release candidate is
+merged to `main`, Render deploys it, production validation passes, and
+production Human Acceptance passes.
