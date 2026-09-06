@@ -22,6 +22,7 @@ from app.api.players import router as players_router
 from app.api.public_summary import router as public_summary_router
 from app.api.scoring_events import router as scoring_events_router
 from app.api.support import router as support_router
+from app.api.public_signup import router as public_signup_router
 from app.api.team_logos import router as team_logos_router
 from app.api.teams import router as teams_router
 from app.auth.security import enforce_production_security_settings
@@ -38,6 +39,7 @@ from app.web.games import router as games_web_router
 from app.web.game_setup import router as game_setup_web_router
 from app.web.game_detail import router as game_detail_web_router
 from app.web.teams import router as teams_web_router
+from app.web.signup import router as signup_web_router
 
 configure_logging(settings.LOG_LEVEL)
 
@@ -121,6 +123,7 @@ app.include_router(teams_router)
 app.include_router(team_logos_router)
 app.include_router(control_router)
 app.include_router(support_router)
+app.include_router(public_signup_router)
 app.include_router(auth_web_router)
 app.include_router(account_web_router)
 app.include_router(activation_web_router)
@@ -129,6 +132,7 @@ app.include_router(games_web_router)
 app.include_router(game_setup_web_router)
 app.include_router(game_detail_web_router)
 app.include_router(teams_web_router)
+app.include_router(signup_web_router)
 
 
 @app.middleware("http")

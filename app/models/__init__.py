@@ -21,6 +21,7 @@ from app.models.plan import Plan, Entitlement, PlanEntitlement
 from app.models.subscription import Subscription
 from app.models.billing_external_reference import BillingExternalReference
 from app.models.billing_event import BillingEvent
+from app.models.signup_intent import SignupIntent
 
 __all__ = [
     "Club",
@@ -42,4 +43,5 @@ __all__ = [
     "Subscription",
     "BillingExternalReference",
     "BillingEvent",
+    "SignupIntent",
 ]
