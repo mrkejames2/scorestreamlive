@@ -22,6 +22,8 @@ from app.models.subscription import Subscription
 from app.models.billing_external_reference import BillingExternalReference
 from app.models.billing_event import BillingEvent
 from app.models.signup_intent import SignupIntent
+from app.models.billing_price_reference import BillingPriceReference
+from app.models.checkout_attempt import CheckoutAttempt
 
 __all__ = [
     "Club",
@@ -44,4 +46,6 @@ __all__ = [
     "BillingExternalReference",
     "BillingEvent",
     "SignupIntent",
+    "BillingPriceReference",
+    "CheckoutAttempt",
 ]

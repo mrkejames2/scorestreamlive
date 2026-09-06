@@ -97,6 +97,8 @@ class Settings:
     SMTP_USE_TLS: bool = _get_bool("SMTP_USE_TLS", True)
     EMAIL_FROM_ADDRESS: str = os.getenv("EMAIL_FROM_ADDRESS", "")
     EMAIL_FROM_NAME: str = os.getenv("EMAIL_FROM_NAME", "ScoreStreamLive")
+    BILLING_PROVIDER: str = os.getenv("BILLING_PROVIDER", "stripe")
+    STRIPE_SECRET_KEY: str = os.getenv("STRIPE_SECRET_KEY", "")
 
 
 settings = Settings()

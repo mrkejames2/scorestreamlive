@@ -37,7 +37,7 @@ need_text app/billing/provider.py "verify_webhook" "provider contract reserves v
 need_text app/models/billing_event.py "external_event_id" "billing events track provider event identity"
 need_text app/models/billing_event.py "payload_digest" "billing event audit avoids requiring raw payload storage"
 need_text app/models/billing_external_reference.py "resource_type" "provider IDs use external references"
-need_text app/models/billing_external_reference.py "club_id IS NOT NULL AND subscription_id IS NULL" "external references have exactly one application owner"
+need_text app/models/billing_external_reference.py "CASE WHEN signup_intent_id IS NOT NULL THEN 1 ELSE 0 END" "external references have exactly one application owner"
 need_text app/models/plan.py "class PlanEntitlement" "plan entitlement mapping exists"
 
 for f in app/models/*.py app/services/*.py app/billing/*.py; do

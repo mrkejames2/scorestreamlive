@@ -9,3 +9,4 @@ requests==2.34.2
 jinja2
 python-multipart
 argon2-cffi==23.1.0
+stripe==15.6.1
