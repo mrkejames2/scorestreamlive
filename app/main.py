@@ -179,17 +179,12 @@ async def log_requests(request: Request, call_next):
 
 @app.get("/client")
 async def client_page():
-    return FileResponse("static/index.html")
+    return FileResponse("static/technical-client.html")
 
 
 @app.api_route("/", methods=["GET", "HEAD"])
 async def root():
-    return {
-        "status": "running",
-        "environment": settings.APP_ENV,
-        "version": settings.APP_VERSION,
-        "release": settings.APP_RELEASE,
-    }
+    return FileResponse("static/index.html")
 
 
 @app.api_route("/health/live", methods=["GET", "HEAD"])

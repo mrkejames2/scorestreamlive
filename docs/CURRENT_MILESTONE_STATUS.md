@@ -18,7 +18,7 @@ M17-F  Match-Day Workflow & Operator Polish                    CLOSED
 M17-G  Compact Broadcast Overlay & Brand Integration           CLOSED
 M17-H  Cohesive Product Theme & UI Consistency                 CLOSED
 M17-I  Production Supportability                               CLOSED
-M17-J  Customer Readiness & Production Release Gate            RELEASE CANDIDATE
+M17-J  Customer Readiness & Production Release Gate            PRODUCTION COMPLETE
 ```
 
 M17-J is the final M17 milestone.

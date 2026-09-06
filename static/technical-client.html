@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ScoreStreamLive — Technical Validation Client</title>
+  <style>
+    body{font-family:system-ui,-apple-system,sans-serif;max-width:1180px;margin:30px auto;padding:0 18px;background:#f6f7f9;color:#20242a}
+    .section{background:white;border:1px solid #dfe3e8;border-radius:8px;padding:16px;margin:16px 0}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+    .metric{border:1px solid #e3e6ea;background:#fafbfc;border-radius:6px;padding:10px}
+    .label{font-size:11px;text-transform:uppercase;color:#66717f}.value{font-family:ui-monospace,monospace;margin-top:4px;overflow-wrap:anywhere}
+    .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}button,input{padding:9px 10px;margin:3px;font-size:14px}button{cursor:pointer}
+    #clock-display{font-size:46px;font-weight:800;font-variant-numeric:tabular-nums}#added-time{font-size:24px;font-weight:700;margin-left:8px}
+    .status{padding:9px 12px;border-radius:6px;font-weight:700}.connected{background:#dff4e4;color:#17652b}.disconnected{background:#f8dddd;color:#781f1f}
+    .log{height:220px;overflow:auto;border:1px solid #d8dde3;background:#fbfbfc;padding:8px;font-family:ui-monospace,monospace;font-size:12px}.entry{padding:3px 0;border-bottom:1px solid #eceff2;overflow-wrap:anywhere}code{background:#f0f2f4;padding:1px 4px;border-radius:4px}
+  </style>
+  <link rel="stylesheet" href="/static/css/product-theme-m17h.css?v=m17h-r1">
+  <link rel="icon" href="/static/brand/scorestreamlive-mark.svg?v=m17h-1" type="image/svg+xml">
+</head>
+<body>
+  <h1>ScoreStreamLive — Technical Validation Client</h1>
+  <p>Development diagnostics only. This is not the production Game Controller.</p>
+  <div class="section"><h2>Socket.IO</h2><div id="connection-status" class="status disconnected">Disconnected</div><div>Socket ID: <span id="socket-id">-</span></div><div class="row"><button id="btn-ping">Ping</button><button id="btn-reconnect">Force Disconnect / Reconnect</button></div></div>
+  <div class="section"><h2>M9 Lifecycle + M8 Clock</h2><div class="row"><label>Game ID</label><input id="game-id" size="40" placeholder="Existing Game UUID"><button id="btn-refresh">Refresh State</button><button id="btn-create-lifecycle">Create Lifecycle</button><button id="btn-create-clock">Create Clock</button></div>
+  <div class="grid"><div class="metric"><div class="label">Phase</div><div id="phase" class="value">-</div></div><div class="metric"><div class="label">Lifecycle Version</div><div id="lifecycle-version" class="value">-</div></div><div class="metric"><div class="label">Clock Status</div><div id="clock-status" class="value">-</div></div><div class="metric"><div class="label">Clock Version</div><div id="clock-version" class="value">-</div></div><div class="metric"><div class="label">Clock Mode</div><div id="clock-mode" class="value">-</div></div><div class="metric"><div class="label">Duration</div><div id="clock-duration" class="value">-</div></div><div class="metric"><div class="label">Running Since</div><div id="running-since" class="value">-</div></div><div class="metric"><div class="label">Last Transition ID</div><div id="transition-id" class="value">-</div></div></div>
+  <div style="margin:16px 0"><span id="clock-display">--:--</span><span id="added-time"></span></div><div class="row"><button data-action="start_first_half">Start First Half</button><button data-action="end_first_half">End First Half</button><button data-action="start_second_half">Start Second Half</button><button data-action="end_game">End Game</button></div>
+  <p>Integrated transitions require both current versions. On success the server emits <code>game:phase_updated</code> followed by <code>clock:updated</code> with the same transition ID.</p></div>
+  <div class="section"><h2>Lifecycle Event Log</h2><div id="lifecycle-log" class="log"></div></div><div class="section"><h2>Clock Event Log</h2><div id="clock-log" class="log"></div></div><div class="section"><h2>Existing Domain Event Regression</h2><div id="domain-log" class="log"></div></div>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script><script src="/static/js/socket.js"></script>
+</body>
+</html>
