@@ -3,7 +3,7 @@
 import uuid
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.authorization import (
@@ -30,6 +30,7 @@ from app.services.game_service import (
     update_broadcast_message,
     update_game,
 )
+from app.services.resource_lifecycle_service import LifecycleConflict, archive_game, hard_delete_game, restore_game
 
 router = APIRouter(prefix="/api/games", tags=["games"])
 
@@ -88,6 +89,7 @@ async def create(
 @router.get("", response_model=list[GameResponse])
 async def list_all(
     limit: Optional[int] = Query(default=None, ge=1, le=100),
+    archived: bool = Query(default=False),
     current_user: User = Depends(require_current_user),
     db: AsyncSession = Depends(get_session),
 ):
@@ -95,6 +97,7 @@ async def list_all(
         db,
         limit=None,
         club_id=_require_club(current_user),
+        archived=archived,
     )
 
     visible_ids = await visible_game_ids(db, current_user)
@@ -109,6 +112,33 @@ async def list_all(
         return games[:limit]
     return games
 
+
+
+
+async def _manageable_game(game_id: uuid.UUID, current_user: User, db: AsyncSession):
+    if current_user.club_role not in {ClubRole.DIRECTOR.value, ClubRole.MANAGER.value}:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permission")
+    game = await get_game(db, game_id)
+    if not game or not await can_operate_game(db, current_user, game):
+        deny_not_found("Game")
+    return game
+
+@router.post("/{game_id}/archive", response_model=GameResponse)
+async def archive(game_id: uuid.UUID, current_user: User = Depends(require_current_user), db: AsyncSession = Depends(get_session)):
+    return await archive_game(db, await _manageable_game(game_id, current_user, db))
+
+@router.post("/{game_id}/restore", response_model=GameResponse)
+async def restore(game_id: uuid.UUID, current_user: User = Depends(require_current_user), db: AsyncSession = Depends(get_session)):
+    return await restore_game(db, await _manageable_game(game_id, current_user, db))
+
+@router.delete("/{game_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove(game_id: uuid.UUID, current_user: User = Depends(require_current_user), db: AsyncSession = Depends(get_session)):
+    game = await _manageable_game(game_id, current_user, db)
+    try:
+        await hard_delete_game(db, game)
+    except LifecycleConflict as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @router.get("/{game_id}", response_model=GameResponse)
 async def retrieve(
@@ -144,6 +174,12 @@ async def update_game_broadcast_message(
     ):
         deny_not_found("Game")
 
+    if game.archived_at is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Archived Games are read-only",
+        )
+
     updated = await update_broadcast_message(
         db,
         game_id,
@@ -168,6 +204,12 @@ async def update(
         game,
     ):
         deny_not_found("Game")
+
+    if game.archived_at is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Archived Games are read-only",
+        )
 
     try:
         updated = await update_game(

@@ -23,11 +23,11 @@ if [[ "$VALIDATION_MODE" == "local" ]]; then
     grep -Fq "$marker" static/js/games/index.js       && echo "PASS dashboard integration: $marker"       || { echo "FAIL dashboard integration missing: $marker"; fail=1; }
   done
 
-  if find alembic/versions -maxdepth 1 -type f \( -iname '*m14*' -o -iname '*0014*' \) | grep -q .; then
-    echo "FAIL unexpected M14 migration"
+  if find alembic/versions -maxdepth 1 -type f -iname '*m14*' | grep -q .; then
+    echo "FAIL unexpected M14-named migration"
     fail=1
   else
-    echo "PASS no M14 migration"
+    echo "PASS no M14-named migration"
   fi
 fi
 

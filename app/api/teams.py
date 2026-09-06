@@ -7,6 +7,8 @@ from fastapi import (
     Depends,
     File,
     HTTPException,
+    Query,
+    Response,
     UploadFile,
     status,
 )
@@ -30,6 +32,7 @@ from app.schemas.team import (
     TeamUpdate,
 )
 from app.services.player_service import get_team_players
+from app.services.resource_lifecycle_service import LifecycleConflict, archive_team, hard_delete_team, restore_team
 from app.services.team_logo_storage import (
     TeamLogoTooLargeError,
     TeamLogoUnsupportedTypeError,
@@ -96,12 +99,14 @@ async def create(
 
 @router.get("", response_model=list[TeamResponse])
 async def list_all(
+    archived: bool = Query(default=False),
     current_user: User = Depends(require_current_user),
     db: AsyncSession = Depends(get_session),
 ):
     teams = await list_teams(
         db,
         _require_club(current_user),
+        archived=archived,
     )
 
     visible_ids = await visible_team_ids(
@@ -119,6 +124,36 @@ async def list_all(
     ]
 
 
+
+
+async def _manageable_team(team_id: uuid.UUID, current_user: User, db: AsyncSession):
+    if current_user.club_role not in {ClubRole.DIRECTOR.value, ClubRole.MANAGER.value}:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permission")
+    team = await get_team(db, team_id)
+    if not team or not await can_manage_team(db, current_user, team):
+        deny_not_found("Team")
+    return team
+
+@router.post("/{team_id}/archive", response_model=TeamResponse)
+async def archive(team_id: uuid.UUID, current_user: User = Depends(require_current_user), db: AsyncSession = Depends(get_session)):
+    return await archive_team(db, await _manageable_team(team_id, current_user, db))
+
+@router.post("/{team_id}/restore", response_model=TeamResponse)
+async def restore(team_id: uuid.UUID, current_user: User = Depends(require_current_user), db: AsyncSession = Depends(get_session)):
+    return await restore_team(db, await _manageable_team(team_id, current_user, db))
+
+@router.delete("/{team_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove(team_id: uuid.UUID, current_user: User = Depends(require_current_user), db: AsyncSession = Depends(get_session)):
+    team = await _manageable_team(team_id, current_user, db)
+    logo = filename_from_logo_url(team.logo_url)
+    try:
+        await hard_delete_team(db, team)
+    except LifecycleConflict as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+    if logo:
+        delete_filename(logo)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
 @router.post("/{team_id}/logo", response_model=TeamResponse)
 async def upload_logo(
     team_id: uuid.UUID,
@@ -133,6 +168,12 @@ async def upload_logo(
         team,
     ):
         deny_not_found("Team")
+
+    if team.archived_at is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Archived Teams are read-only",
+        )
 
     previous_filename = filename_from_logo_url(team.logo_url)
     new_filename = None
@@ -234,6 +275,12 @@ async def update(
         team,
     ):
         deny_not_found("Team")
+
+    if team.archived_at is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Archived Teams are read-only",
+        )
 
     updated = await update_team(
         db,

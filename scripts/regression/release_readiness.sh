@@ -64,10 +64,10 @@ if [[ "$VALIDATION_MODE" == "local" ]]; then
     echo "FAIL Alembic current did not complete successfully (rc=$rc)"
     echo "$alembic_output"
     fail=1
-  elif grep -Fq '20260902_0013' <<<"$alembic_output"; then
-    echo "PASS Alembic head 20260902_0013"
+  elif grep -Fq '(head)' <<<"$alembic_output"; then
+    echo "PASS Alembic database is at repository head"
   else
-    echo "FAIL Alembic expected 20260902_0013"
+    echo "FAIL Alembic database is not at repository head"
     echo "$alembic_output"
     fail=1
   fi

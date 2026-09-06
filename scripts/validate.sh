@@ -29,6 +29,16 @@ add 'Socket Reliability/Isolation' scripts/regression/socket_reliability_isolati
 add 'Security/Tenant Hardening' scripts/regression/security_tenant_hardening.sh
 add 'Operator UX/Data Integrity' scripts/regression/operator_ux_data_integrity.sh
 add 'Production Operations/Final Release Gate' scripts/regression/production_operations_final_release.sh
+add 'Club User Administration' scripts/regression/club_user_administration.sh
+add 'Team & Game Lifecycle' scripts/regression/team_game_lifecycle.sh
+add 'Post-Game Summary & Broadcast Scene' scripts/regression/post_game_summary_broadcast.sh
+add 'User Invitation & Account Activation' scripts/regression/user_invitation_activation.sh
+add 'Account Recovery & User Lifecycle' scripts/regression/account_recovery_user_lifecycle.sh
+add 'Match-Day Workflow & Operator Polish' scripts/regression/match_day_workflow_operator_polish.sh
+add 'Compact Broadcast Overlay & Brand Integration' scripts/regression/compact_broadcast_overlay_brand.sh
+add 'Cohesive Product Theme & UI Consistency' scripts/regression/cohesive_product_theme.sh
+add 'Production Supportability' scripts/regression/production_supportability.sh
+add 'Customer Readiness & Production Release Gate' scripts/regression/customer_readiness_release_gate.sh
 if [[ "$VALIDATION_SCOPE" == release ]]; then add Recovery scripts/regression/recovery.sh; fi
 fails=0
 echo '========================================'

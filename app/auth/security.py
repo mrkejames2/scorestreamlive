@@ -44,6 +44,16 @@ def validate_production_security_settings() -> list[str]:
     if not settings.DB_PASSWORD or settings.DB_PASSWORD == "change-me":
         findings.append("DB_PASSWORD must not use the development default in production")
 
+    if settings.EMAIL_DELIVERY_MODE != "smtp":
+        findings.append("EMAIL_DELIVERY_MODE must be smtp in production")
+    else:
+        if not settings.SMTP_HOST:
+            findings.append("SMTP_HOST must be configured in production")
+        if not settings.EMAIL_FROM_ADDRESS:
+            findings.append("EMAIL_FROM_ADDRESS must be configured in production")
+        if not settings.PUBLIC_BASE_URL.startswith("https://"):
+            findings.append("PUBLIC_BASE_URL must use https in production")
+
     raw_origins = settings.SOCKET_CORS_ORIGINS.strip()
     if raw_origins == "*":
         findings.append("SOCKET_CORS_ORIGINS must not be '*' in production")

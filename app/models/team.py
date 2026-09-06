@@ -30,5 +30,6 @@ class Team(Base):
     primary_color: Mapped[Optional[str]] = mapped_column(String(7), nullable=True)
     secondary_color: Mapped[Optional[str]] = mapped_column(String(7), nullable=True)
 
+    archived_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True, index=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

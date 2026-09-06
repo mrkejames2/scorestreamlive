@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Account — ScoreStreamLive</title>
   <link rel="stylesheet" href="/static/css/account.css">
+  <link rel="stylesheet" href="/static/css/product-theme-m17h.css?v=m17h-r1">
+  <link rel="icon" href="/static/brand/scorestreamlive-mark.svg?v=m17h-1" type="image/svg+xml">
 </head>
-<body data-role="{{ current_user.club_role or '' }}">
+<body data-role="{{ current_user.club_role or '' }}" data-user-id="{{ current_user.id }}">
   <header class="ssl-global-nav" aria-label="ScoreStreamLive account navigation">
     <div class="ssl-global-nav-inner">
       <a class="ssl-brand" href="/games">
@@ -50,33 +52,93 @@
       <article class="summary-card"><span class="summary-label">Role</span><strong class="summary-value summary-value-text">{{ current_user.club_role }}</strong></article>
     </section>
 
+    <section id="password-security" class="account-panel">
+      <div class="panel-heading">
+        <div>
+          <div class="eyebrow">SECURITY</div>
+          <h2>Change Password</h2>
+          <p>Changing your password keeps this browser signed in and revokes other authenticated sessions.</p>
+        </div>
+      </div>
+      {% if request.query_params.get("password_changed") %}
+      <div class="form-message" role="status">Password changed successfully.</div>
+      {% endif %}
+      {% if request.query_params.get("password_error") == "current" %}
+      <div class="editor-warning" role="alert">Current password is incorrect.</div>
+      {% elif request.query_params.get("password_error") == "mismatch" %}
+      <div class="editor-warning" role="alert">New passwords do not match.</div>
+      {% elif request.query_params.get("password_error") == "policy" %}
+      <div class="editor-warning" role="alert">New password must be at least 10 characters.</div>
+      {% endif %}
+      <form method="post" action="/account/change-password" class="form-stack" style="max-width:520px">
+        <label class="field"><span>Current Password</span><input name="current_password" type="password" autocomplete="current-password" required></label>
+        <label class="field"><span>New Password</span><input name="new_password" type="password" minlength="10" autocomplete="new-password" required></label>
+        <label class="field"><span>Confirm New Password</span><input name="new_password_confirm" type="password" minlength="10" autocomplete="new-password" required></label>
+        <button class="button button-primary" type="submit">Change Password</button>
+      </form>
+    </section>
+
     {% if is_director %}
     <section class="account-panel">
       <div class="panel-heading">
         <div>
           <div class="eyebrow">CLUB ADMINISTRATION</div>
           <h2>People & Access</h2>
-          <p>Create Club users and assign Managers and Operators to the resources they control.</p>
+          <p>Manage Club users, roles, account status, and the Teams or Games they control.</p>
         </div>
       </div>
       <div class="management-grid">
         <article class="management-card">
           <div class="card-heading"><div><span class="card-kicker">USERS</span><h3>Club Members</h3></div></div>
-          <p class="card-copy">Create Manager or Operator accounts for this Club.</p>
+          <p class="card-copy">Invite people to your Club as Managers or Operators. They choose their own password during activation.</p>
           <form id="member-form" class="form-stack">
             <label class="field"><span>Display Name</span><input id="member-name" type="text" placeholder="Example: Erica Smith"></label>
             <label class="field"><span>Email</span><input id="member-email" type="email" placeholder="name@example.com" required></label>
             <label class="field"><span>Role</span><select id="member-role"><option value="MANAGER">Manager</option><option value="OPERATOR">Operator</option></select></label>
-            <label class="field"><span>Temporary Password</span><input id="member-password" type="password" placeholder="Minimum 8 characters" required></label>
-            <button class="button button-primary" type="submit">Create Member</button>
+            <button class="button button-primary" type="submit">Send Invitation</button>
           </form>
           <div id="member-message" class="form-message" role="status"></div>
-          <div id="members" class="assignment-list"></div>
+          <div id="invitation-preview" class="form-message"></div>
+          <h4>Pending Invitations</h4><div id="pending-invitations" class="assignment-list"></div>
+          <h4>Club Members</h4><div id="members" class="assignment-list"></div>
+
+          <section id="member-editor" class="member-editor" hidden aria-live="polite">
+            <div class="editor-heading">
+              <div>
+                <span class="card-kicker">MANAGE MEMBER</span>
+                <h4 id="editor-name">Member</h4>
+                <div id="editor-email" class="muted"></div>
+              </div>
+              <button id="editor-close" class="button button-secondary button-compact" type="button">Close</button>
+            </div>
+            <form id="member-edit-form" class="form-stack">
+              <label class="field"><span>Role</span>
+                <select id="editor-role">
+                  <option value="DIRECTOR">Director</option>
+                  <option value="MANAGER">Manager</option>
+                  <option value="OPERATOR">Operator</option>
+                </select>
+              </label>
+              <label class="field"><span>Status</span>
+                <select id="editor-active">
+                  <option value="true">Active</option>
+                  <option value="false">Inactive</option>
+                </select>
+              </label>
+              <div class="assignment-summary">
+                <strong>Current Assignments</strong>
+                <div id="editor-assignments" class="muted"></div>
+              </div>
+              <div id="editor-warning" class="editor-warning"></div>
+              <button class="button button-primary" type="submit">Save Changes</button>
+            </form>
+            <div id="editor-message" class="form-message" role="status"></div>
+          </section>
         </article>
 
         <article class="management-card">
           <div class="card-heading"><div><span class="card-kicker">TEAM ACCESS</span><h3>Team Managers</h3></div></div>
-          <p class="card-copy">Assign one or more Managers to Club Teams.</p>
+          <p class="card-copy">Assign one or more active Managers to Club Teams.</p>
           <form id="team-form" class="form-stack">
             <label class="field"><span>Team</span><select id="team-select"></select></label>
             <label class="field"><span>Manager</span><select id="manager-select"></select></label>
@@ -87,7 +149,7 @@
 
         <article class="management-card">
           <div class="card-heading"><div><span class="card-kicker">MATCH-DAY ACCESS</span><h3>Game Operators</h3></div></div>
-          <p class="card-copy">Assign a parent, volunteer, or operator to a specific Game.</p>
+          <p class="card-copy">Assign an active Operator to a specific Game.</p>
           <form id="game-form" class="form-stack">
             <label class="field"><span>Game</span><select id="game-select"></select></label>
             <label class="field"><span>Operator</span><select id="operator-select"></select></label>

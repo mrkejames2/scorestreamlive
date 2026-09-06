@@ -22,7 +22,6 @@ def _get_team_logo_max_bytes() -> int:
         value = int(os.getenv("TEAM_LOGO_MAX_BYTES", "2097152"))
     except (ValueError, TypeError):
         return 2 * 1024 * 1024
-
     return value if value > 0 else 2 * 1024 * 1024
 
 
@@ -33,6 +32,14 @@ def _get_auth_session_days() -> int:
     except (ValueError, TypeError):
         return 30
     return value if value > 0 else 30
+
+
+def _get_positive_int(name: str, default: int) -> int:
+    try:
+        value = int(os.getenv(name, str(default)))
+    except (ValueError, TypeError):
+        return default
+    return value if value > 0 else default
 
 
 def _get_bool(name: str, default: bool) -> bool:
@@ -50,6 +57,10 @@ class Settings:
     APP_NAME: str = os.getenv("APP_NAME", "ScoreStreamLive")
     APP_ENV: str = os.getenv("APP_ENV", "development")
     APP_VERSION: str = os.getenv("APP_VERSION", "0.5.0")
+    APP_RELEASE: str = os.getenv(
+        "APP_RELEASE",
+        os.getenv("RENDER_GIT_COMMIT", "unknown"),
+    ).strip() or "unknown"
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
     DB_HOST: str = os.getenv("DB_HOST", "postgres")
     DB_PORT: int = _get_db_port()
@@ -58,14 +69,12 @@ class Settings:
     DB_PASSWORD: str = os.getenv("DB_PASSWORD", "change-me")
     SOCKET_CORS_ORIGINS: str = os.getenv("SOCKET_CORS_ORIGINS", "")
 
-    # M12-D2 Team-logo storage.
     TEAM_LOGO_STORAGE_DIR: str = os.getenv(
         "TEAM_LOGO_STORAGE_DIR",
         "static/uploads/team-logos",
     )
     TEAM_LOGO_MAX_BYTES: int = _get_team_logo_max_bytes()
 
-    # M15-A authentication/session foundation.
     AUTH_SESSION_COOKIE_NAME: str = os.getenv(
         "AUTH_SESSION_COOKIE_NAME",
         "scorestreamlive_session",
@@ -75,6 +84,19 @@ class Settings:
         "AUTH_SESSION_COOKIE_SECURE",
         os.getenv("APP_ENV", "development") == "production",
     )
+
+    PUBLIC_BASE_URL: str = os.getenv("PUBLIC_BASE_URL", "http://localhost:8000")
+    INVITATION_TTL_HOURS: int = _get_positive_int("INVITATION_TTL_HOURS", 72)
+    PASSWORD_RESET_TTL_MINUTES: int = _get_positive_int("PASSWORD_RESET_TTL_MINUTES", 60)
+    PASSWORD_RESET_RESEND_SECONDS: int = _get_positive_int("PASSWORD_RESET_RESEND_SECONDS", 60)
+    EMAIL_DELIVERY_MODE: str = os.getenv("EMAIL_DELIVERY_MODE", "log").strip().lower()
+    SMTP_HOST: str = os.getenv("SMTP_HOST", "")
+    SMTP_PORT: int = _get_positive_int("SMTP_PORT", 587)
+    SMTP_USERNAME: str = os.getenv("SMTP_USERNAME", "")
+    SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
+    SMTP_USE_TLS: bool = _get_bool("SMTP_USE_TLS", True)
+    EMAIL_FROM_ADDRESS: str = os.getenv("EMAIL_FROM_ADDRESS", "")
+    EMAIL_FROM_NAME: str = os.getenv("EMAIL_FROM_NAME", "ScoreStreamLive")
 
 
 settings = Settings()

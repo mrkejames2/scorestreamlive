@@ -1,85 +1,134 @@
-# ScoreStreamLive M10-F Regression Cleanup
+# ScoreStreamLive
 
-This package fixes the remaining M10-F regression-chain failures without
-weakening valid historical contracts.
+ScoreStreamLive is a production-oriented soccer scoring, match-control, and
+livestream-overlay application built with FastAPI, Socket.IO, PostgreSQL, and
+Docker.
 
-## Included files
+## Product capabilities
+
+ScoreStreamLive currently provides:
+
+- authenticated Club accounts and role-based access
+- Club Director user administration
+- Team creation, editing, branding, and roster management
+- Game creation, library, search, filtering, and lifecycle management
+- match-day setup and operator Control Center
+- persistent authoritative match clock and lifecycle state
+- scoring history and scoring corrections
+- public broadcast overlay with Team branding
+- post-game summary and broadcast scene
+- account invitation, activation, recovery, and lifecycle controls
+- production diagnostics, release identity, request correlation, and incident
+  supportability
+
+## Architecture
+
+The core state contract is intentionally simple:
 
 ```text
-scripts/validate_m10e.sh
-scripts/validate_m9.sh
-scripts/validate_m8b.sh
-scripts/validate_m7c.sh
-app/schemas/scoring_event.py
+Browser / API Client
+        |
+   +----+----+
+   |         |
+ REST     Socket.IO
+   |         |
+   +----+----+
+        |
+      FastAPI
+        |
+     Services
+        |
+ SQLAlchemy Async
+        |
+   PostgreSQL
 ```
 
-## Why `scoring_event.py` is included
+PostgreSQL is authoritative for persistent product state. REST is the durable
+mutation boundary. Socket.IO distributes committed state after successful
+mutations.
 
-The M7 architecture explicitly supports only:
+The application does not depend on Redis, Kafka, NATS, RabbitMQ, Celery, or
+Kubernetes.
 
-```text
-event_type = "goal"
-```
+See `docs/ARCHITECTURE.md` for the current architecture contract.
 
-The current M7-C validator correctly rejects `event_type="penalty"`.
-The recent scoring schema cleanup accidentally widened `event_type` to an
-arbitrary string, which allowed a penalty event to increment the Game score.
+## Local development
 
-This package restores the approved M7 contract using:
-
-```python
-event_type: Literal["goal"]
-```
-
-The M7-C validator is intentionally preserved unchanged.
-
-## Validator fixes
-
-### M10-E
-
-The historical M10-E scoring guard now recognizes the stronger M10-F
-`scoringCommandInFlight` + `mutationStateIsReady()` safety model.
-
-### M9
-
-The historical M9 validation now checks that revision `20260815_0006`
-exists in Alembic history rather than requiring the database's current head
-to remain frozen at that revision.
-
-### M8-B
-
-Uses the same forward-compatible migration-history rule.
-
-## Install
-
-Copy all files into their matching repository paths.
-
-Then rebuild because `app/schemas/scoring_event.py` is application code:
+Typical startup:
 
 ```bash
-chmod +x scripts/validate_m7c.sh
-chmod +x scripts/validate_m8b.sh
-chmod +x scripts/validate_m9.sh
-chmod +x scripts/validate_m10e.sh
-
 sudo docker compose down
 sudo docker compose up --build -d
 sudo docker compose ps
 ```
 
-## Quick contract check
-
-A non-goal scoring event should now return 422:
+Useful health checks:
 
 ```bash
-# The full M7-C harness verifies this automatically.
+curl -sS http://localhost:8000/health/live
+curl -sS http://localhost:8000/health/ready
+curl -sS http://localhost:8000/info
 ```
 
-## Full validation
+Do not use `docker compose down -v` during ordinary development or validation;
+the persistent volumes contain PostgreSQL data and uploaded Team logo files.
+
+## Primary product surfaces
+
+```text
+/teams
+/teams/{team_id}
+/games
+/games/{game_id}
+/games/{game_id}/setup
+/control/games/{game_id}
+/overlay/games/{game_id}
+```
+
+The Overlay is a public broadcast surface. Control and private management APIs
+remain authenticated and authorized.
+
+## Validation
+
+The canonical cumulative validation harness is:
 
 ```bash
-sudo BASE_URL="http://192.168.12.133:8000" \
-  ./scripts/validate_m10f.sh
+sudo BASE_URL="http://localhost:8000" \
+VALIDATION_MODE=local \
+VALIDATION_SCOPE=fast \
+VALIDATION_OUTPUT=full \
+./scripts/validate_m17j.sh
 ```
 
-Do not begin M10-F human acceptance until this entire chain is green.
+For the final M17 release candidate, the cumulative harness contains 35 durable
+validation domains. `FULL` is required before release. Production validation is
+non-destructive.
+
+## Deployment
+
+The release flow is:
+
+```text
+milestone branch
+  -> local FAST
+  -> local FULL
+  -> Human Acceptance
+  -> commit/push
+  -> merge final cumulative milestone branch to main
+  -> Render deployment
+  -> production FAST/FULL
+  -> production Human Acceptance
+```
+
+Render deploys the repository `main` branch.
+
+See `docs/DEPLOYMENT.md` and
+`docs/operations/PRODUCTION_RELEASE_CHECKLIST.md` before production promotion.
+
+## Current release state
+
+M17-A through M17-I are complete. M17-J is the Customer Readiness & Production
+Release Gate. The repository must not declare M17 production complete until the
+M17-J branch has passed local validation and Human Acceptance, has been promoted
+to `main`, and the deployed Render release has passed production validation and
+production Human Acceptance.

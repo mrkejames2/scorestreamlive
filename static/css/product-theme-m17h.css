@@ -1,0 +1,761 @@
+/* ScoreStreamLive M17-H REPAIR1
+   Clean, legible light SaaS palette approved from preview.
+   Explicitly overrides legacy milestone dark surfaces while preserving
+   team/game colors and M17-G broadcast overlay isolation.
+*/
+
+:root {
+  color-scheme: light;
+  --ssl-navy-950: #071a28;
+  --ssl-navy-900: #0b2435;
+  --ssl-navy-850: #102f43;
+  --ssl-navy-800: #15384d;
+  --ssl-orange: #fe6505;
+  --ssl-orange-hover: #e85b00;
+  --ssl-page: #f4f6f8;
+  --ssl-card: #ffffff;
+  --ssl-soft: #eef2f5;
+  --ssl-text: #172b3a;
+  --ssl-muted: #5f6f7a;
+  --ssl-border: #d5dee5;
+  --ssl-border-strong: #bdc9d2;
+  --ssl-success: #18794e;
+  --ssl-success-soft: #eaf7f0;
+  --ssl-danger: #b42318;
+  --ssl-danger-soft: #fff0ee;
+  --ssl-warning: #9a5a00;
+  --ssl-warning-soft: #fff5dc;
+  --ssl-focus: #ff8a42;
+  --ssl-radius-sm: 9px;
+  --ssl-radius: 14px;
+  --ssl-radius-lg: 18px;
+  --ssl-shadow-sm: 0 3px 12px rgba(11,36,53,.06);
+  --ssl-shadow: 0 12px 28px rgba(11,36,53,.09);
+}
+
+/* ---------- Global contrast contract ---------- */
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--ssl-page) !important;
+  color: var(--ssl-text) !important;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(254,101,5,.035), transparent 28rem),
+    linear-gradient(180deg, #fafbfc 0%, var(--ssl-page) 100%) !important;
+}
+
+h1, h2, h3, h4, h5, h6,
+.game-name,
+.summary-value,
+.score-value,
+.score-team-name {
+  color: var(--ssl-text) !important;
+}
+
+p,
+.subhead,
+.muted,
+.card-copy,
+.panel-heading p,
+.new-game-heading p,
+.new-game-hint,
+.game-id,
+.detail-label {
+  color: var(--ssl-muted) !important;
+}
+
+.eyebrow,
+.card-kicker,
+.summary-label,
+.field-label {
+  color: var(--ssl-orange-hover) !important;
+  font-weight: 850 !important;
+  letter-spacing: .10em !important;
+}
+
+a {
+  color: var(--ssl-navy-800);
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  color: var(--ssl-orange-hover);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid rgba(254,101,5,.32) !important;
+  outline-offset: 2px !important;
+}
+
+/* ---------- Auth / canonical logo ---------- */
+
+main > .card {
+  position: relative;
+  border: 1px solid var(--ssl-border) !important;
+  border-top: 4px solid var(--ssl-orange) !important;
+  border-radius: var(--ssl-radius-lg) !important;
+  background: var(--ssl-card) !important;
+  color: var(--ssl-text) !important;
+  box-shadow: var(--ssl-shadow) !important;
+}
+
+main > .card::before {
+  content: "";
+  display: block;
+  width: min(270px, 76%);
+  aspect-ratio: 3.25 / 1;
+  margin: 0 auto 18px;
+  background: url("/static/brand/scorestreamlive-logo.png?v=m17h-r1") center / contain no-repeat;
+}
+
+main > .card .brand {
+  display: none !important;
+}
+
+/* ---------- Desktop product navigation ---------- */
+
+/* account-nav.js is injected before main on Games/Teams/detail/setup pages.
+   Turn that existing navigation into the clean navy sidebar from the approved preview. */
+@media (min-width: 901px) {
+  body:has(.ssl-account-nav) {
+    padding-left: 246px;
+  }
+
+  .ssl-account-nav {
+    position: fixed !important;
+    z-index: 100 !important;
+    inset: 0 auto 0 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    width: 246px !important;
+    min-height: 100vh !important;
+    margin: 0 !important;
+    padding: 28px 16px 22px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: linear-gradient(180deg, #0b2435 0%, #102f43 100%) !important;
+    color: #fff !important;
+    box-shadow: 10px 0 28px rgba(7,26,40,.10) !important;
+  }
+
+  .ssl-account-nav .ssl-nav-brand {
+    display: flex !important;
+    width: 100% !important;
+    margin: 0 0 4px !important;
+    padding: 6px 8px 18px !important;
+    color: #fff !important;
+    font-size: 15px !important;
+    font-weight: 900 !important;
+    letter-spacing: -.01em !important;
+  }
+
+  .ssl-account-nav .ssl-nav-brand::before {
+    content: "";
+    display: block;
+    width: 34px;
+    height: 28px;
+    flex: 0 0 auto;
+    background: url("/static/brand/scorestreamlive-mark.svg?v=m17h-r1") center / contain no-repeat !important;
+  }
+
+  .ssl-account-nav .ssl-nav-club {
+    width: 100% !important;
+    margin: -8px 0 14px !important;
+    padding: 0 8px !important;
+    color: rgba(255,255,255,.62) !important;
+    font-size: 10px !important;
+    letter-spacing: .04em !important;
+    text-transform: none !important;
+  }
+
+  .ssl-account-nav .ssl-nav-link,
+  .ssl-account-nav .ssl-nav-logout {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    min-height: 44px !important;
+    padding: 10px 12px !important;
+    border: 1px solid transparent !important;
+    border-radius: 10px !important;
+    background: transparent !important;
+    color: rgba(255,255,255,.90) !important;
+    text-decoration: none !important;
+    font-weight: 750 !important;
+    text-align: left !important;
+  }
+
+  .ssl-account-nav .ssl-nav-link:hover,
+  .ssl-account-nav .ssl-nav-logout:hover {
+    border-color: rgba(255,255,255,.08) !important;
+    background: rgba(255,255,255,.08) !important;
+    color: #fff !important;
+  }
+
+  .ssl-account-nav .ssl-nav-account {
+    border-color: rgba(254,101,5,.48) !important;
+    background: rgba(254,101,5,.15) !important;
+    color: #fff !important;
+  }
+
+  .ssl-account-nav .ssl-nav-identity {
+    margin-top: auto !important;
+    padding: 16px 8px 8px !important;
+    border-top: 1px solid rgba(255,255,255,.14) !important;
+    text-align: left !important;
+  }
+
+  .ssl-account-nav .ssl-nav-identity strong {
+    max-width: 100% !important;
+    color: #fff !important;
+    font-size: 12px !important;
+  }
+
+  .ssl-account-nav .ssl-nav-role {
+    color: rgba(255,255,255,.55) !important;
+  }
+
+  body:has(.ssl-account-nav) .games-shell,
+  body:has(.ssl-account-nav) .teams-shell,
+  body:has(.ssl-account-nav) .team-shell,
+  body:has(.ssl-account-nav) .game-shell,
+  body:has(.ssl-account-nav) .game-detail-shell,
+  body:has(.ssl-account-nav) .setup-shell {
+    width: min(1220px, calc(100% - 44px)) !important;
+  }
+}
+
+/* Account page has its own server-rendered global nav. Keep it clean, navy and horizontal. */
+.ssl-global-nav {
+  border: 0 !important;
+  border-bottom: 3px solid var(--ssl-orange) !important;
+  background: linear-gradient(135deg, var(--ssl-navy-950), var(--ssl-navy-900)) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 22px rgba(7,26,40,.12) !important;
+}
+
+.ssl-global-nav a,
+.ssl-global-nav strong {
+  color: #fff !important;
+}
+
+.ssl-global-nav small,
+.ssl-user-copy span {
+  color: rgba(255,255,255,.62) !important;
+}
+
+/* ---------- Application shells ---------- */
+
+.games-shell,
+.teams-shell,
+.team-shell,
+.game-shell,
+.game-detail-shell,
+.setup-shell,
+.account-shell,
+.control-shell,
+.summary-shell,
+.broadcast-shell {
+  width: min(1220px, calc(100% - 32px));
+  margin-left: auto !important;
+  margin-right: auto !important;
+  color: var(--ssl-text) !important;
+}
+
+/* Legacy M12/M14 dark surfaces: force explicit light foreground/background pairings. */
+.games-shell,
+.games-panel,
+.new-game-panel,
+.summary-grid,
+.game-card,
+.team-picker,
+.inline-team-create,
+.filter-panel,
+.game-library,
+.game-dashboard,
+.game-view,
+.game-section,
+.game-group,
+.active-games,
+.archived-games,
+.completed-games {
+  color: var(--ssl-text) !important;
+}
+
+/* ---------- Game dashboard approved visual direction ---------- */
+
+.games-header {
+  align-items: flex-start !important;
+  margin: 0 0 26px !important;
+  padding-top: 20px;
+}
+
+.games-header h1 {
+  margin-bottom: 8px !important;
+  color: var(--ssl-navy-950) !important;
+  font-size: clamp(34px, 4.6vw, 52px) !important;
+  line-height: 1 !important;
+}
+
+.games-header .subhead {
+  max-width: 720px;
+  color: #6b7a86 !important;
+}
+
+.summary-grid {
+  gap: 14px !important;
+}
+
+.summary-card {
+  border: 1px solid var(--ssl-border) !important;
+  border-radius: var(--ssl-radius) !important;
+  background: var(--ssl-card) !important;
+  color: var(--ssl-text) !important;
+  box-shadow: var(--ssl-shadow-sm) !important;
+}
+
+.summary-label {
+  color: #6b7a86 !important;
+}
+
+.games-panel {
+  overflow: hidden !important;
+  border: 1px solid var(--ssl-border) !important;
+  border-radius: var(--ssl-radius-lg) !important;
+  background: var(--ssl-card) !important;
+  color: var(--ssl-text) !important;
+  box-shadow: var(--ssl-shadow) !important;
+}
+
+.panel-heading {
+  padding: 22px 24px 18px !important;
+  border-bottom: 1px solid var(--ssl-border) !important;
+  background: #fbfcfd !important;
+  color: var(--ssl-text) !important;
+}
+
+.panel-heading h2 {
+  color: var(--ssl-text) !important;
+  font-size: 22px !important;
+}
+
+.panel-heading p {
+  color: var(--ssl-muted) !important;
+}
+
+.games-list {
+  background: var(--ssl-card) !important;
+}
+
+.game-card {
+  position: relative;
+  gap: 18px !important;
+  padding: 24px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--ssl-border) !important;
+  background: var(--ssl-card) !important;
+  color: var(--ssl-text) !important;
+  box-shadow: none !important;
+}
+
+.game-card:last-child {
+  border-bottom: 0 !important;
+}
+
+.game-card:hover {
+  background: #fcfdfe !important;
+}
+
+.game-name {
+  color: var(--ssl-navy-950) !important;
+  font-size: 22px !important;
+  font-weight: 900 !important;
+}
+
+.game-meta .chip,
+.status-chip,
+.chip {
+  border: 1px solid var(--ssl-border) !important;
+  background: var(--ssl-soft) !important;
+  color: #53636f !important;
+}
+
+.status-chip[data-state="ready"],
+.status-chip[data-state="live"] {
+  border-color: #a8d9bf !important;
+  background: var(--ssl-success-soft) !important;
+  color: var(--ssl-success) !important;
+}
+
+.game-scoreline {
+  min-width: min(520px, 48vw) !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: transparent !important;
+  color: var(--ssl-text) !important;
+}
+
+.score-team {
+  min-height: 70px !important;
+  border-top: 3px solid var(--ssl-border) !important;
+  background: #fff !important;
+}
+
+.score-team-name {
+  color: var(--ssl-text) !important;
+  font-weight: 850 !important;
+}
+
+.score-value {
+  min-height: auto !important;
+  background: transparent !important;
+  color: var(--ssl-navy-950) !important;
+  font-size: 32px !important;
+}
+
+.score-divider {
+  color: var(--ssl-border-strong) !important;
+}
+
+.detail-label {
+  color: #7c8992 !important;
+}
+
+.game-id {
+  color: #677782 !important;
+}
+
+.game-actions {
+  flex-wrap: wrap;
+}
+
+/* Keep team branding authoritative. Legacy JS/CSS may set a team border/color;
+   these rules deliberately do not overwrite inline/team-specific brand values. */
+.team-brand-icon,
+.team-brand-logo,
+.team-selected-brand,
+.branded-team,
+[style*="--team-"] {
+  --ssl-team-brand-preserved: 1;
+}
+
+/* ---------- Create/edit panels ---------- */
+
+.new-game-panel,
+.team-picker,
+.inline-team-create {
+  border: 1px solid var(--ssl-border) !important;
+  background: var(--ssl-card) !important;
+  color: var(--ssl-text) !important;
+  box-shadow: var(--ssl-shadow-sm) !important;
+}
+
+.new-game-heading {
+  border-bottom: 1px solid var(--ssl-border) !important;
+  background: #fbfcfd !important;
+}
+
+.new-game-heading h2,
+.team-picker h3 {
+  color: var(--ssl-text) !important;
+}
+
+.selected-team-label,
+.team-result-name {
+  color: var(--ssl-text) !important;
+}
+
+.team-result-short,
+.team-search-empty,
+.new-game-hint {
+  color: var(--ssl-muted) !important;
+}
+
+.team-search-result {
+  border: 1px solid var(--ssl-border) !important;
+  background: #fff !important;
+  color: var(--ssl-text) !important;
+}
+
+.team-search-result:hover,
+.team-search-result:focus,
+.team-search-result[aria-selected="true"] {
+  border-color: rgba(254,101,5,.40) !important;
+  background: #fff8f3 !important;
+}
+
+/* ---------- Shared cards / panels / tables ---------- */
+
+.account-panel,
+.management-card,
+.team-card,
+.detail-card,
+.setup-card,
+.control-panel,
+.score-panel,
+.workflow-card,
+.game-summary-card,
+.summary-panel,
+.card,
+.section-card,
+.empty-state {
+  border-color: var(--ssl-border) !important;
+  background: var(--ssl-card) !important;
+  color: var(--ssl-text) !important;
+  box-shadow: var(--ssl-shadow-sm) !important;
+}
+
+table {
+  border-color: var(--ssl-border) !important;
+  background: #fff !important;
+  color: var(--ssl-text) !important;
+}
+
+thead,
+th {
+  background: var(--ssl-soft) !important;
+  color: var(--ssl-navy-850) !important;
+}
+
+td,
+th {
+  border-color: var(--ssl-border) !important;
+}
+
+/* ---------- Controls ---------- */
+
+.button,
+button,
+input[type="submit"],
+input[type="button"] {
+  border-radius: var(--ssl-radius-sm) !important;
+  font-weight: 800 !important;
+  transition: transform .13s ease, border-color .13s ease, background .13s ease, color .13s ease, box-shadow .13s ease;
+}
+
+.button-primary,
+button.button-primary,
+main > .card button[type="submit"] {
+  border: 1px solid var(--ssl-orange-hover) !important;
+  background: linear-gradient(180deg, #ff741d, var(--ssl-orange)) !important;
+  color: #fff !important;
+  box-shadow: 0 5px 14px rgba(254,101,5,.19) !important;
+}
+
+.button-primary:hover,
+button.button-primary:hover,
+main > .card button[type="submit"]:hover {
+  border-color: #cf5000 !important;
+  background: linear-gradient(180deg, #ff7c2b, var(--ssl-orange-hover)) !important;
+  color: #fff !important;
+  transform: translateY(-1px);
+}
+
+.button-secondary,
+button.button-secondary {
+  border: 1px solid var(--ssl-border-strong) !important;
+  background: #fff !important;
+  color: var(--ssl-navy-850) !important;
+  box-shadow: none !important;
+}
+
+.button-secondary:hover,
+button.button-secondary:hover {
+  border-color: rgba(254,101,5,.45) !important;
+  background: #fff7f1 !important;
+  color: var(--ssl-navy-950) !important;
+}
+
+.button-danger,
+button.button-danger,
+.danger {
+  border-color: #e6aaa5 !important;
+  background: #fff !important;
+  color: var(--ssl-danger) !important;
+}
+
+.button-danger:hover,
+button.button-danger:hover,
+.danger:hover {
+  background: var(--ssl-danger-soft) !important;
+}
+
+input,
+select,
+textarea,
+.text-input {
+  border: 1px solid var(--ssl-border-strong) !important;
+  border-radius: var(--ssl-radius-sm) !important;
+  background: #fff !important;
+  color: var(--ssl-text) !important;
+}
+
+input::placeholder,
+textarea::placeholder,
+.text-input::placeholder {
+  color: #94a0a9 !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+.text-input:focus {
+  border-color: var(--ssl-orange) !important;
+  box-shadow: 0 0 0 3px rgba(254,101,5,.12) !important;
+}
+
+/* ---------- Notices ---------- */
+
+.notice,
+.form-message,
+.info-message {
+  border-color: #b9d7e5 !important;
+  background: #eef7fb !important;
+  color: #245d7a !important;
+}
+
+.notice-success {
+  border-color: #a8d9bf !important;
+  background: var(--ssl-success-soft) !important;
+  color: var(--ssl-success) !important;
+}
+
+.notice-error,
+.error,
+.editor-warning,
+.error-message {
+  border-color: #efb0aa !important;
+  background: var(--ssl-danger-soft) !important;
+  color: var(--ssl-danger) !important;
+}
+
+.empty-state {
+  border-style: dashed !important;
+  color: var(--ssl-muted) !important;
+}
+
+.empty-state h3 {
+  color: var(--ssl-text) !important;
+}
+
+.games-footer {
+  color: #8a969f !important;
+}
+
+/* Hide milestone-era implementation labels from customer-facing UI. */
+.games-footer,
+[data-milestone-label],
+.milestone-label,
+.milestone-footer {
+  font-size: 0 !important;
+  color: transparent !important;
+}
+
+.games-footer > * {
+  display: none !important;
+}
+
+/* ---------- Match-day / Account ---------- */
+
+.control-shell .clock-display,
+.control-shell .score-value,
+.match-clock,
+.score-number {
+  color: var(--ssl-navy-950) !important;
+}
+
+.control-shell .workflow-card,
+.control-shell .control-panel,
+.account-panel,
+.management-card {
+  border-top-color: rgba(254,101,5,.28) !important;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 900px) {
+  body:has(.ssl-account-nav) {
+    padding-left: 0;
+  }
+
+  .ssl-account-nav {
+    position: relative !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    width: calc(100% - 20px) !important;
+    margin: 10px auto 0 !important;
+    padding: 10px !important;
+    border: 0 !important;
+    border-bottom: 2px solid var(--ssl-orange) !important;
+    border-radius: 12px !important;
+    background: linear-gradient(135deg, var(--ssl-navy-950), var(--ssl-navy-900)) !important;
+    color: #fff !important;
+  }
+
+  .ssl-account-nav .ssl-nav-link,
+  .ssl-account-nav .ssl-nav-logout {
+    border-color: rgba(255,255,255,.12) !important;
+    background: rgba(255,255,255,.06) !important;
+    color: #fff !important;
+  }
+
+  .games-shell,
+  .teams-shell,
+  .team-shell,
+  .game-shell,
+  .game-detail-shell,
+  .setup-shell,
+  .account-shell,
+  .control-shell,
+  .summary-shell,
+  .broadcast-shell {
+    width: calc(100% - 20px) !important;
+  }
+
+  .game-scoreline {
+    min-width: 0 !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .games-header {
+    padding-top: 8px;
+  }
+
+  .games-header h1 {
+    font-size: 34px !important;
+  }
+
+  .game-card {
+    padding: 18px !important;
+  }
+
+  .game-scoreline {
+    width: 100% !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

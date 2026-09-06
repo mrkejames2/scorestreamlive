@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 72" role="img" aria-label="ScoreStreamLive">
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="5" y="12" width="48" height="48" rx="9" stroke="#ffffff" stroke-width="6"/>
+    <path d="M24 25 L24 47 L42 36 Z" fill="#ff6b12" stroke="none"/>
+    <path d="M63 25 C70 31 70 41 63 47" stroke="#ff6b12" stroke-width="6"/>
+    <path d="M72 18 C85 28 85 44 72 54" stroke="#ff6b12" stroke-width="6"/>
+  </g>
+</svg>

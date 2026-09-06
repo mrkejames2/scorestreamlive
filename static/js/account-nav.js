@@ -63,6 +63,35 @@
       }
     });
 
+    function markActive(link, active) {
+      link.classList.toggle("active", active);
+      if (active) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    }
+
+    const path = window.location.pathname || "/";
+
+    // Keep the top-level navigation coherent across child workflows.
+    // Game detail/setup/control/summary/broadcast are all part of Games.
+    const gamesActive =
+      path === "/games" ||
+      path.startsWith("/games/") ||
+      path.startsWith("/control/") ||
+      path.startsWith("/summary/") ||
+      path.startsWith("/broadcast/");
+
+    const teamsActive =
+      path === "/teams" ||
+      path.startsWith("/teams/");
+
+    const accountActive =
+      path === "/account" ||
+      path.startsWith("/account/");
+
+    markActive(games, gamesActive);
+    markActive(teams, teamsActive);
+    markActive(account, accountActive);
+
     bar.append(brand, clubName, games, teams, account, identity, logout);
 
     const main = document.querySelector("main");

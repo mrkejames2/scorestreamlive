@@ -31,6 +31,9 @@ async def _require_event_operator(
     if not game or not await can_operate_game(db, current_user, game):
         deny_not_found("Scoring event")
 
+    if game.archived_at is not None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Archived Games are read-only")
+
 
 @router.post(
     "/scoring-events",
@@ -49,6 +52,9 @@ async def create(
     game = await db.get(Game, data.game_id)
     if not game or not await can_operate_game(db, current_user, game):
         deny_not_found("Game")
+
+    if game.archived_at is not None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Archived Games are read-only")
 
     try:
         return await create_scoring_event(db, data)
