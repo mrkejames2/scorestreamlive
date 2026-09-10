@@ -11,6 +11,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api.auth import router as auth_router
+from app.api.billing_webhooks import router as billing_webhooks_router
 from app.api.clubs import router as clubs_router
 from app.api.club_admin import router as club_admin_router
 from app.api.control import router as control_router
@@ -112,6 +113,7 @@ app = FastAPI(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(auth_router)
+app.include_router(billing_webhooks_router)
 app.include_router(clubs_router)
 app.include_router(club_admin_router)
 app.include_router(game_lifecycle_router)

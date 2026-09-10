@@ -8,6 +8,8 @@ class VerifiedBillingEvent:
     provider: str
     external_event_id: str
     event_type: str
+    object_external_id: str | None = None
+    provider_created_at: datetime | None = None
     payload_digest: str | None = None
     data: Mapping[str, Any] | None = None
 
@@ -30,3 +32,4 @@ class BillingProvider(Protocol):
     name: str
     async def create_checkout(self, request: CheckoutRequest) -> CheckoutResult: ...
     def verify_webhook(self, payload: bytes, signature: str) -> VerifiedBillingEvent: ...
+    async def retrieve_checkout_session(self, external_checkout_id: str) -> Mapping[str, Any]: ...

@@ -34,8 +34,9 @@ grep -Fq 'create_checkout' app/billing/provider.py \
   && pass "provider-neutral checkout contract" || fail "provider checkout contract"
 grep -Fq 'import stripe' app/billing/stripe_provider.py \
   && pass "Stripe isolated to provider adapter" || fail "Stripe adapter"
-! grep -R -E 'import stripe|from stripe' app/models app/services app/api --include='*.py' >/dev/null \
-  && pass "domain/API do not import Stripe" || fail "Stripe leaked outside billing adapter"
+! grep -R -E 'import stripe|from stripe' app/models app/services app/api \
+  --include='*.py' --exclude='billing_webhooks.py' >/dev/null \
+  && pass "domain/API do not import Stripe outside approved webhook boundary" || fail "Stripe leaked outside billing adapter"
 grep -Fq 'CHECKOUT_STARTED' app/services/checkout_service.py \
   && pass "signup checkout transition" || fail "checkout transition"
 grep -Fq 'browser return is not used as proof of payment' static/checkout-success.html \

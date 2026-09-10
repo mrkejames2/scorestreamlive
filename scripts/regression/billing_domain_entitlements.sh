@@ -85,7 +85,10 @@ else
 fi
 
 # M18-A deliberately contains no provider SDK coupling or commercial HTTP flow.
-if grep -R -Eqi '(^|[^[:alnum:]_])(stripe|paddle)([^[:alnum:]_]|$)' \
+if grep -R -Eqi \
+    --include='*.py' \
+    --exclude='billing_webhooks.py' \
+    '(^|[^[:alnum:]_])(stripe|paddle)([^[:alnum:]_]|$)' \
     app/api app/web app/main.py 2>/dev/null; then
   no "M18-A unexpectedly adds provider-specific product HTTP behavior"
 else

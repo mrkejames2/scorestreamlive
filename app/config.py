@@ -9,7 +9,6 @@ load_dotenv()
 
 
 def _get_db_port() -> int:
-    """Safely parse DB_PORT from environment."""
     try:
         return int(os.getenv("DB_PORT", "5432"))
     except (ValueError, TypeError):
@@ -17,7 +16,6 @@ def _get_db_port() -> int:
 
 
 def _get_team_logo_max_bytes() -> int:
-    """Safely parse the maximum accepted Team logo upload size."""
     try:
         value = int(os.getenv("TEAM_LOGO_MAX_BYTES", "2097152"))
     except (ValueError, TypeError):
@@ -26,7 +24,6 @@ def _get_team_logo_max_bytes() -> int:
 
 
 def _get_auth_session_days() -> int:
-    """Safely parse the authentication session lifetime."""
     try:
         value = int(os.getenv("AUTH_SESSION_DAYS", "30"))
     except (ValueError, TypeError):
@@ -43,7 +40,6 @@ def _get_positive_int(name: str, default: int) -> int:
 
 
 def _get_bool(name: str, default: bool) -> bool:
-    """Read a conservative boolean environment setting."""
     raw = os.getenv(name)
     if raw is None:
         return default
@@ -52,15 +48,10 @@ def _get_bool(name: str, default: bool) -> bool:
 
 @dataclass(frozen=True)
 class Settings:
-    """Application settings loaded from environment variables."""
-
     APP_NAME: str = os.getenv("APP_NAME", "ScoreStreamLive")
     APP_ENV: str = os.getenv("APP_ENV", "development")
     APP_VERSION: str = os.getenv("APP_VERSION", "0.5.0")
-    APP_RELEASE: str = os.getenv(
-        "APP_RELEASE",
-        os.getenv("RENDER_GIT_COMMIT", "unknown"),
-    ).strip() or "unknown"
+    APP_RELEASE: str = os.getenv("APP_RELEASE", os.getenv("RENDER_GIT_COMMIT", "unknown")).strip() or "unknown"
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
     DB_HOST: str = os.getenv("DB_HOST", "postgres")
     DB_PORT: int = _get_db_port()
@@ -68,23 +59,11 @@ class Settings:
     DB_USER: str = os.getenv("DB_USER", "scorestreamlive")
     DB_PASSWORD: str = os.getenv("DB_PASSWORD", "change-me")
     SOCKET_CORS_ORIGINS: str = os.getenv("SOCKET_CORS_ORIGINS", "")
-
-    TEAM_LOGO_STORAGE_DIR: str = os.getenv(
-        "TEAM_LOGO_STORAGE_DIR",
-        "static/uploads/team-logos",
-    )
+    TEAM_LOGO_STORAGE_DIR: str = os.getenv("TEAM_LOGO_STORAGE_DIR", "static/uploads/team-logos")
     TEAM_LOGO_MAX_BYTES: int = _get_team_logo_max_bytes()
-
-    AUTH_SESSION_COOKIE_NAME: str = os.getenv(
-        "AUTH_SESSION_COOKIE_NAME",
-        "scorestreamlive_session",
-    )
+    AUTH_SESSION_COOKIE_NAME: str = os.getenv("AUTH_SESSION_COOKIE_NAME", "scorestreamlive_session")
     AUTH_SESSION_DAYS: int = _get_auth_session_days()
-    AUTH_SESSION_COOKIE_SECURE: bool = _get_bool(
-        "AUTH_SESSION_COOKIE_SECURE",
-        os.getenv("APP_ENV", "development") == "production",
-    )
-
+    AUTH_SESSION_COOKIE_SECURE: bool = _get_bool("AUTH_SESSION_COOKIE_SECURE", os.getenv("APP_ENV", "development") == "production")
     PUBLIC_BASE_URL: str = os.getenv("PUBLIC_BASE_URL", "http://localhost:8000")
     INVITATION_TTL_HOURS: int = _get_positive_int("INVITATION_TTL_HOURS", 72)
     PASSWORD_RESET_TTL_MINUTES: int = _get_positive_int("PASSWORD_RESET_TTL_MINUTES", 60)
@@ -99,6 +78,7 @@ class Settings:
     EMAIL_FROM_NAME: str = os.getenv("EMAIL_FROM_NAME", "ScoreStreamLive")
     BILLING_PROVIDER: str = os.getenv("BILLING_PROVIDER", "stripe")
     STRIPE_SECRET_KEY: str = os.getenv("STRIPE_SECRET_KEY", "")
+    STRIPE_WEBHOOK_SECRET: str = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 
 
 settings = Settings()
