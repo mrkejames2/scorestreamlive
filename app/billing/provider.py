@@ -28,8 +28,22 @@ class CheckoutResult:
     checkout_url: str
     expires_at: datetime | None = None
 
+
+@dataclass(frozen=True)
+class BillingPortalRequest:
+    external_customer_id: str
+    return_url: str
+
+
+@dataclass(frozen=True)
+class BillingPortalResult:
+    portal_url: str
+
 class BillingProvider(Protocol):
     name: str
     async def create_checkout(self, request: CheckoutRequest) -> CheckoutResult: ...
+    async def create_billing_portal(
+        self, request: BillingPortalRequest
+    ) -> BillingPortalResult: ...
     def verify_webhook(self, payload: bytes, signature: str) -> VerifiedBillingEvent: ...
     async def retrieve_checkout_session(self, external_checkout_id: str) -> Mapping[str, Any]: ...

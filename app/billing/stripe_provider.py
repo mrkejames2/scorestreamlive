@@ -6,7 +6,7 @@ from typing import Any, Mapping
 
 import stripe
 
-from app.billing.provider import CheckoutRequest, CheckoutResult, VerifiedBillingEvent
+from app.billing.provider import BillingPortalRequest, BillingPortalResult, CheckoutRequest, CheckoutResult, VerifiedBillingEvent
 
 
 def _recursive_dict(value: Any) -> dict[str, Any]:
@@ -45,6 +45,16 @@ class StripeBillingProvider:
         if getattr(session, "expires_at", None):
             expires_at = datetime.fromtimestamp(session.expires_at, tz=timezone.utc)
         return CheckoutResult(session.id, session.url, expires_at)
+
+    async def create_billing_portal(self, request: BillingPortalRequest) -> BillingPortalResult:
+        def _create():
+            return stripe.billing_portal.Session.create(
+                api_key=self._secret_key,
+                customer=request.external_customer_id,
+                return_url=request.return_url,
+            )
+        session = await asyncio.to_thread(_create)
+        return BillingPortalResult(portal_url=str(session.url))
 
     def verify_webhook(self, payload: bytes, signature: str) -> VerifiedBillingEvent:
         if not self._webhook_secret:

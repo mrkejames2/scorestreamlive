@@ -1,0 +1,2 @@
+# M18-E2 — Billing Management
+Authenticated Club DIRECTORs can enter the hosted Stripe Customer Portal. The browser supplies no Club ID, Stripe Customer ID, Subscription ID, or return URL. ScoreStreamLive derives User → Club → customer reference and constructs the return URL from PUBLIC_BASE_URL. Portal creation does not mutate Subscription state; verified Stripe webhooks remain billing authority. Subscription lifecycle synchronization remains M18-H.

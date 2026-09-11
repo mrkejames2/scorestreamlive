@@ -43,6 +43,7 @@
         <span class="status-chip" data-state="ready">{{ current_user.club_role }}</span>
         <a class="button button-secondary" href="/games">Game Dashboard</a>
         <a class="button button-secondary" href="/teams">Teams</a>
+        {% if is_director %}<a class="button button-primary" href="/account/billing">Billing</a>{% endif %}
       </div>
     </header>
 
