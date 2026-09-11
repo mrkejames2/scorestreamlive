@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Set up your account — ScoreStreamLive</title>
+  <link rel="stylesheet" href="/static/css/auth.css">
+  <link rel="stylesheet" href="/static/css/product-theme-m17h.css?v=m17h-r1">
+  <link rel="icon" href="/static/brand/scorestreamlive-mark.svg?v=m17h-1" type="image/svg+xml">
+</head>
+<body>
+<main class="auth-shell">
+  <section class="auth-card">
+    <div class="auth-brand">ScoreStreamLive</div>
+    <h1>Set up your account</h1>
+    <p>Your <strong>{{ club.name }}</strong> Director account is ready for activation.</p>
+    <p>{{ user.email }}</p>
+    {% if error %}<div class="auth-error">{{ error }}</div>{% endif %}
+    <form method="post" action="/activate-account" class="auth-form">
+      <input type="hidden" name="token" value="{{ token }}">
+      <label>Password
+        <input type="password" name="password" minlength="10" required autocomplete="new-password">
+      </label>
+      <label>Confirm Password
+        <input type="password" name="confirm_password" minlength="10" required autocomplete="new-password">
+      </label>
+      <button>Activate Account</button>
+    </form>
+  </section>
+</main>
+</body>
+</html>

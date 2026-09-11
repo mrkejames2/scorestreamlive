@@ -9,6 +9,7 @@ from app.models.user import User
 from app.models.user_session import UserSession
 from app.models.user_invitation import UserInvitation
 from app.models.user_password_reset import UserPasswordReset
+from app.models.user_account_activation import UserAccountActivation
 from app.models.team import Team
 from app.models.player import Player
 from app.models.game import Game
@@ -31,6 +32,7 @@ __all__ = [
     "UserSession",
     "UserInvitation",
     "UserPasswordReset",
+    "UserAccountActivation",
     "Team",
     "Player",
     "Game",

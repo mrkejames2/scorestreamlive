@@ -68,6 +68,8 @@ class Settings:
     INVITATION_TTL_HOURS: int = _get_positive_int("INVITATION_TTL_HOURS", 72)
     PASSWORD_RESET_TTL_MINUTES: int = _get_positive_int("PASSWORD_RESET_TTL_MINUTES", 60)
     PASSWORD_RESET_RESEND_SECONDS: int = _get_positive_int("PASSWORD_RESET_RESEND_SECONDS", 60)
+    ACCOUNT_ACTIVATION_TTL_HOURS: int = _get_positive_int("ACCOUNT_ACTIVATION_TTL_HOURS", 24)
+    ACCOUNT_ACTIVATION_RESEND_SECONDS: int = _get_positive_int("ACCOUNT_ACTIVATION_RESEND_SECONDS", 60)
     EMAIL_DELIVERY_MODE: str = os.getenv("EMAIL_DELIVERY_MODE", "log").strip().lower()
     SMTP_HOST: str = os.getenv("SMTP_HOST", "")
     SMTP_PORT: int = _get_positive_int("SMTP_PORT", 587)

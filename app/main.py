@@ -36,6 +36,7 @@ from app.sockets import sio
 from app.web.auth import router as auth_web_router
 from app.web.account import router as account_web_router
 from app.web.activation import router as activation_web_router
+from app.web.account_activation import router as account_activation_web_router
 from app.web.password_recovery import router as password_recovery_web_router
 from app.web.games import router as games_web_router
 from app.web.game_setup import router as game_setup_web_router
@@ -132,6 +133,7 @@ app.include_router(public_checkout_router)
 app.include_router(auth_web_router)
 app.include_router(account_web_router)
 app.include_router(activation_web_router)
+app.include_router(account_activation_web_router)
 app.include_router(password_recovery_web_router)
 app.include_router(games_web_router)
 app.include_router(game_setup_web_router)

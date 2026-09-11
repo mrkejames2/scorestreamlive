@@ -10,7 +10,7 @@ def _send(msg):
             if settings.SMTP_USE_TLS: client.starttls()
             if settings.SMTP_USERNAME: client.login(settings.SMTP_USERNAME,settings.SMTP_PASSWORD)
             client.send_message(msg)
-    except Exception as exc: raise EmailDeliveryError("Invitation email delivery failed") from exc
+    except Exception as exc: raise EmailDeliveryError("Email delivery failed") from exc
 
 async def send_invitation_email(*,email,display_name,club_name,inviter_name,activation_url,expires_at):
     body=f"{display_name or 'Hello'},\n\n{inviter_name} has invited you to join {club_name} in ScoreStreamLive.\n\nActivate your account:\n{activation_url}\n\nThis invitation expires at {expires_at.isoformat()}.\n"
@@ -26,4 +26,21 @@ async def send_password_reset_email(*,email,display_name,reset_url,expires_at):
         logger.info("Password reset email (development log delivery) — to=%s reset_url=%s",email,reset_url,extra={"event":"password_reset.email.logged"}); return
     if settings.EMAIL_DELIVERY_MODE!="smtp": raise EmailDeliveryError("Email delivery is not configured")
     msg=EmailMessage(); msg["Subject"]="Reset your ScoreStreamLive password"; msg["From"]=f"{settings.EMAIL_FROM_NAME} <{settings.EMAIL_FROM_ADDRESS}>"; msg["To"]=email; msg.set_content(body)
+    await asyncio.to_thread(_send,msg)
+
+async def send_account_activation_email(*,email,display_name,club_name,activation_url,expires_at):
+    body=(
+        f"{display_name or 'Hello'},\n\n"
+        f"Your ScoreStreamLive Director account for {club_name} is ready to activate.\n\n"
+        f"Create your password and activate your account:\n{activation_url}\n\n"
+        f"This activation link expires at {expires_at.isoformat()}. "
+        "If you did not create this account, you can ignore this email.\n"
+    )
+    if settings.EMAIL_DELIVERY_MODE=="log":
+        logger.info(
+            "Account activation email (development log delivery) — to=%s activation_url=%s",
+            email,activation_url,extra={"event":"account_activation.email.logged"}
+        ); return
+    if settings.EMAIL_DELIVERY_MODE!="smtp": raise EmailDeliveryError("Email delivery is not configured")
+    msg=EmailMessage(); msg["Subject"]="Activate your ScoreStreamLive account"; msg["From"]=f"{settings.EMAIL_FROM_NAME} <{settings.EMAIL_FROM_ADDRESS}>"; msg["To"]=email; msg.set_content(body)
     await asyncio.to_thread(_send,msg)

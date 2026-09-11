@@ -19,6 +19,7 @@ from app.models.club import Club
 from app.models.signup_intent import SignupIntent
 from app.models.subscription import Subscription
 from app.models.user import User
+from app.services.account_activation_service import ActivationDelivery, issue_account_activation
 
 class ProvisioningRejected(Exception):
     pass
@@ -73,7 +74,10 @@ async def _external_ref(db: AsyncSession, *, provider: str, resource_type: str, 
     ).with_for_update())
 
 
-async def process_completed_checkout(db: AsyncSession, *, event: BillingEvent, verified: VerifiedBillingEvent, checkout: Mapping[str, Any]) -> None:
+async def process_completed_checkout(
+    db: AsyncSession, *, event: BillingEvent, verified: VerifiedBillingEvent,
+    checkout: Mapping[str, Any]
+) -> ActivationDelivery | None:
     now = utc_now()
     session_id = _nonempty_str(checkout.get("id"))
     if not session_id or session_id != event.object_external_id:
@@ -119,7 +123,7 @@ async def process_completed_checkout(db: AsyncSession, *, event: BillingEvent, v
         event.processing_status = "PROCESSED"
         event.processed_at = now
         event.last_error = None
-        return
+        return None
 
     if intent.status != "CHECKOUT_STARTED" or attempt.status != "OPEN":
         raise ProvisioningRejected("checkout_lifecycle_mismatch")
@@ -165,6 +169,7 @@ async def process_completed_checkout(db: AsyncSession, *, event: BillingEvent, v
         club_role="DIRECTOR",
     )
     db.add(user)
+    await db.flush()
 
     app_subscription = Subscription(
         club_id=club.id,
@@ -183,6 +188,8 @@ async def process_completed_checkout(db: AsyncSession, *, event: BillingEvent, v
         BillingExternalReference(provider=event.provider, resource_type="subscription", external_id=subscription_id, subscription_id=app_subscription.id),
     ])
 
+    activation, raw_activation = await issue_account_activation(db, user=user)
+
     intent.status = "COMPLETED"
     intent.completed_at = now
     intent.updated_at = now
@@ -192,3 +199,9 @@ async def process_completed_checkout(db: AsyncSession, *, event: BillingEvent, v
     event.processing_status = "PROCESSED"
     event.processed_at = now
     event.last_error = None
+
+    return ActivationDelivery(
+        activation_id=activation.id,
+        user_id=user.id,
+        raw_token=raw_activation,
+    )

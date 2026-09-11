@@ -8,23 +8,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.billing.provider import BillingProvider, VerifiedBillingEvent
 from app.models.billing_event import BillingEvent
+from app.services.account_activation_service import deliver_activation
 from app.services.checkout_provisioning_service import ProvisioningRejected, process_completed_checkout
 
 SUPPORTED_PROVISIONING_EVENT = "checkout.session.completed"
 
 class BillingEventProcessingError(Exception):
     """Retryable or otherwise unresolved billing-event processing failure."""
-
     pass
 
 
 class BillingEventRejected(BillingEventProcessingError):
-    """Verified billing event was deterministically rejected.
-
-    The event is durably FAILED and provider delivery should be acknowledged
-    rather than retried automatically.
-    """
-
+    """Verified billing event was deterministically rejected."""
     pass
 
 
@@ -78,8 +73,13 @@ async def _mark_failed(db: AsyncSession, event_id, code: str) -> None:
     await db.commit()
 
 
-async def process_verified_event(db: AsyncSession, *, billing_event_id, verified: VerifiedBillingEvent, provider: BillingProvider) -> str:
-    event = await db.scalar(select(BillingEvent).where(BillingEvent.id == billing_event_id).with_for_update())
+async def process_verified_event(
+    db: AsyncSession, *, billing_event_id, verified: VerifiedBillingEvent,
+    provider: BillingProvider
+) -> str:
+    event = await db.scalar(
+        select(BillingEvent).where(BillingEvent.id == billing_event_id).with_for_update()
+    )
     if event is None:
         raise BillingEventProcessingError("billing_event_not_found")
     if event.processing_status in ("PROCESSED", "IGNORED"):
@@ -96,8 +96,13 @@ async def process_verified_event(db: AsyncSession, *, billing_event_id, verified
         raise BillingEventRejected("checkout_session_id_missing")
     try:
         checkout = await provider.retrieve_checkout_session(event.object_external_id)
-        await process_completed_checkout(db, event=event, verified=verified, checkout=checkout)
+        activation_delivery = await process_completed_checkout(
+            db, event=event, verified=verified, checkout=checkout
+        )
+        # Billing/provisioning is committed before any SMTP/network email delivery.
         await db.commit()
+        if activation_delivery is not None:
+            await deliver_activation(db, activation_delivery)
         return "PROCESSED"
     except ProvisioningRejected as exc:
         await _mark_failed(db, event.id, str(exc))
@@ -107,7 +112,9 @@ async def process_verified_event(db: AsyncSession, *, billing_event_id, verified
         raise BillingEventProcessingError("provisioning_exception") from exc
 
 
-async def reprocess_persisted_event(db: AsyncSession, *, billing_event_id, provider: BillingProvider) -> str:
+async def reprocess_persisted_event(
+    db: AsyncSession, *, billing_event_id, provider: BillingProvider
+) -> str:
     event = await db.get(BillingEvent, billing_event_id)
     if event is None:
         raise BillingEventProcessingError("billing_event_not_found")
@@ -132,4 +139,6 @@ async def reprocess_persisted_event(db: AsyncSession, *, billing_event_id, provi
         payload_digest=event.payload_digest,
         data=checkout,
     )
-    return await process_verified_event(db, billing_event_id=event.id, verified=recovered, provider=provider)
+    return await process_verified_event(
+        db, billing_event_id=event.id, verified=recovered, provider=provider
+    )
