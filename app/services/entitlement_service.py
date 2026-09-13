@@ -23,6 +23,14 @@ KNOWN_ENTITLEMENTS = frozenset(
 )
 
 
+LEGACY_ENTITLEMENT_DEFAULTS = {
+    CREATE_GAMES: True,
+    MANAGE_USERS: True,
+    BROADCAST_OVERLAY: True,
+    CUSTOM_OVERLAY_BRANDING: False,
+}
+
+
 def subscription_status_grants_paid_entitlements(status: str) -> bool:
     """Return the conservative M18-A lifecycle policy.
 
@@ -86,3 +94,37 @@ async def require_club_entitlement(
         raise PermissionError(
             f"Club is not entitled to capability {entitlement_code}"
         )
+
+
+async def effective_club_has_entitlement(
+    session: AsyncSession,
+    club_id: uuid.UUID,
+    entitlement_code: str,
+) -> bool:
+    if entitlement_code not in KNOWN_ENTITLEMENTS:
+        return False
+    return await club_has_entitlement(
+        session,
+        club_id,
+        entitlement_code,
+        legacy_default=LEGACY_ENTITLEMENT_DEFAULTS.get(entitlement_code, False),
+    )
+
+
+async def require_effective_club_entitlement(
+    session: AsyncSession,
+    club_id: uuid.UUID,
+    entitlement_code: str,
+) -> None:
+    if not await effective_club_has_entitlement(session, club_id, entitlement_code):
+        raise PermissionError(f"Club is not entitled to capability {entitlement_code}")
+
+
+async def effective_club_entitlements(
+    session: AsyncSession,
+    club_id: uuid.UUID,
+) -> dict[str, bool]:
+    return {
+        code: await effective_club_has_entitlement(session, club_id, code)
+        for code in sorted(KNOWN_ENTITLEMENTS)
+    }

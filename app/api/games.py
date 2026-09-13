@@ -14,6 +14,7 @@ from app.auth.authorization import (
     visible_game_ids,
 )
 from app.auth.dependencies import require_current_user
+from app.auth.entitlements import require_entitlement
 from app.auth.roles import ClubRole
 from app.database import get_session
 from app.models.user import User
@@ -23,6 +24,7 @@ from app.schemas.game import (
     GameResponse,
     GameUpdate,
 )
+from app.services.entitlement_service import BROADCAST_OVERLAY, CREATE_GAMES
 from app.services.game_service import (
     create_game,
     get_game,
@@ -55,6 +57,7 @@ async def create(
     db: AsyncSession = Depends(get_session),
 ):
     club_id = _require_club(current_user)
+    await require_entitlement(db, club_id, CREATE_GAMES)
 
     if current_user.club_role not in {
         ClubRole.DIRECTOR.value,
@@ -179,6 +182,8 @@ async def update_game_broadcast_message(
             status_code=status.HTTP_409_CONFLICT,
             detail="Archived Games are read-only",
         )
+
+    await require_entitlement(db, _require_club(current_user), BROADCAST_OVERLAY)
 
     updated = await update_broadcast_message(
         db,

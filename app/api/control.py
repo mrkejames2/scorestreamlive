@@ -11,9 +11,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.authorization import can_operate_game, deny_not_found
 from app.auth.dependencies import require_current_user
+from app.auth.entitlements import require_entitlement
 from app.database import get_session
 from app.models.user import User
 from app.services.game_clock_service import get_clock, serialize_clock_state
+from app.services.entitlement_service import BROADCAST_OVERLAY, effective_club_has_entitlement
 from app.services.game_lifecycle_service import get_lifecycle, serialize_lifecycle_state
 from app.services.game_service import get_game
 from app.services.player_service import get_team_players
@@ -64,6 +66,8 @@ async def game_control_page(
     if game.archived_at is not None:
         deny_not_found("Game")
 
+    await require_entitlement(db, game.club_id, BROADCAST_OVERLAY)
+
     return templates.TemplateResponse(
         request=request,
         name="control/game.html",
@@ -97,7 +101,9 @@ async def public_overlay_state(
 ):
     """Return the minimum unauthenticated read-only snapshot for an overlay."""
     game = await get_game(db, game_id)
-    if not game:
+    if not game or not await effective_club_has_entitlement(
+        db, game.club_id, BROADCAST_OVERLAY
+    ):
         deny_not_found("Game")
 
     home_roster = (

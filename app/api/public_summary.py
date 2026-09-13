@@ -11,6 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.authorization import deny_not_found
 from app.database import get_session
+from app.services.entitlement_service import BROADCAST_OVERLAY, effective_club_has_entitlement
+from app.services.game_service import get_game
 from app.services.public_game_summary_service import (
     PublicGameSummaryNotFound,
     get_public_game_summary,
@@ -73,6 +75,11 @@ async def public_broadcast_page(
     db: AsyncSession = Depends(get_session),
 ):
     await _require_public_summary(db, game_id)
+    game = await get_game(db, game_id)
+    if not game or not await effective_club_has_entitlement(
+        db, game.club_id, BROADCAST_OVERLAY
+    ):
+        deny_not_found("Game")
     return templates.TemplateResponse(
         request=request,
         name="broadcast/game.html",

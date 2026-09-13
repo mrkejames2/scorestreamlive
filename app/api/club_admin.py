@@ -7,8 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.authorization import require_director
 from app.auth.dependencies import require_current_user
+from app.auth.entitlements import require_entitlement
 from app.auth.roles import ClubRole
 from app.database import get_session
+from app.services.entitlement_service import MANAGE_USERS
 from app.models.user import User
 from app.services.access_admin_service import (
     AccessAdminConflict,
@@ -89,6 +91,7 @@ async def patch_member(
     db: AsyncSession = Depends(get_session),
 ):
     club_id = director(current_user)
+    await require_entitlement(db, club_id, MANAGE_USERS)
 
     if data.role is None and data.is_active is None:
         raise HTTPException(
@@ -140,9 +143,11 @@ async def add_manager(
     db: AsyncSession = Depends(get_session),
 ):
     try:
+        club_id = director(current_user)
+        await require_entitlement(db, club_id, MANAGE_USERS)
         assignment = await assign_team_manager(
             db,
-            director(current_user),
+            club_id,
             team_id,
             data.user_id,
         )
@@ -163,9 +168,11 @@ async def del_manager(
     db: AsyncSession = Depends(get_session),
 ):
     try:
+        club_id = director(current_user)
+        await require_entitlement(db, club_id, MANAGE_USERS)
         await remove_team_manager(
             db,
-            director(current_user),
+            club_id,
             team_id,
             user_id,
         )
@@ -181,9 +188,11 @@ async def add_operator(
     db: AsyncSession = Depends(get_session),
 ):
     try:
+        club_id = director(current_user)
+        await require_entitlement(db, club_id, MANAGE_USERS)
         assignment = await assign_game_operator(
             db,
-            director(current_user),
+            club_id,
             game_id,
             data.user_id,
         )
@@ -204,9 +213,11 @@ async def del_operator(
     db: AsyncSession = Depends(get_session),
 ):
     try:
+        club_id = director(current_user)
+        await require_entitlement(db, club_id, MANAGE_USERS)
         await remove_game_operator(
             db,
-            director(current_user),
+            club_id,
             game_id,
             user_id,
         )

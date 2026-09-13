@@ -16,6 +16,7 @@ from app.api.billing_management import router as billing_management_router
 from app.api.clubs import router as clubs_router
 from app.api.club_admin import router as club_admin_router
 from app.api.control import router as control_router
+from app.api.entitlements import router as entitlements_router
 from app.api.game_clock import router as game_clock_router
 from app.api.game_lifecycle import router as game_lifecycle_router
 from app.api.games import router as games_router
@@ -130,6 +131,7 @@ app.include_router(public_summary_router)
 app.include_router(teams_router)
 app.include_router(team_logos_router)
 app.include_router(control_router)
+app.include_router(entitlements_router)
 app.include_router(support_router)
 app.include_router(public_signup_router)
 app.include_router(public_checkout_router)
