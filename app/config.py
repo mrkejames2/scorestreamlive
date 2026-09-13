@@ -22,6 +22,13 @@ def _get_team_logo_max_bytes() -> int:
         return 2 * 1024 * 1024
     return value if value > 0 else 2 * 1024 * 1024
 
+def _get_club_branding_max_bytes() -> int:
+    try:
+        value = int(os.getenv("CLUB_BRANDING_MAX_BYTES", "2097152"))
+    except (ValueError, TypeError):
+        return 2 * 1024 * 1024
+    return value if value > 0 else 2 * 1024 * 1024
+
 
 def _get_auth_session_days() -> int:
     try:
@@ -61,6 +68,8 @@ class Settings:
     SOCKET_CORS_ORIGINS: str = os.getenv("SOCKET_CORS_ORIGINS", "")
     TEAM_LOGO_STORAGE_DIR: str = os.getenv("TEAM_LOGO_STORAGE_DIR", "static/uploads/team-logos")
     TEAM_LOGO_MAX_BYTES: int = _get_team_logo_max_bytes()
+    CLUB_BRANDING_STORAGE_DIR: str = os.getenv("CLUB_BRANDING_STORAGE_DIR", "static/uploads/club-branding")
+    CLUB_BRANDING_MAX_BYTES: int = _get_club_branding_max_bytes()
     AUTH_SESSION_COOKIE_NAME: str = os.getenv("AUTH_SESSION_COOKIE_NAME", "scorestreamlive_session")
     AUTH_SESSION_DAYS: int = _get_auth_session_days()
     AUTH_SESSION_COOKIE_SECURE: bool = _get_bool("AUTH_SESSION_COOKIE_SECURE", os.getenv("APP_ENV", "development") == "production")

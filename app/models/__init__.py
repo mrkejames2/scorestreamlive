@@ -5,6 +5,7 @@ consistently in the web application, standalone CLI commands, and validation.
 """
 
 from app.models.club import Club
+from app.models.club_branding import ClubBranding
 from app.models.user import User
 from app.models.user_session import UserSession
 from app.models.user_invitation import UserInvitation
@@ -28,6 +29,7 @@ from app.models.checkout_attempt import CheckoutAttempt
 
 __all__ = [
     "Club",
+    "ClubBranding",
     "User",
     "UserSession",
     "UserInvitation",

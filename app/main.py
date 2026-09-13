@@ -15,6 +15,7 @@ from app.api.billing_webhooks import router as billing_webhooks_router
 from app.api.billing_management import router as billing_management_router
 from app.api.clubs import router as clubs_router
 from app.api.club_admin import router as club_admin_router
+from app.api.club_branding import router as club_branding_router
 from app.api.control import router as control_router
 from app.api.entitlements import router as entitlements_router
 from app.api.game_clock import router as game_clock_router
@@ -34,6 +35,7 @@ from app.config import settings
 from app.database import check_database_connection, engine, get_safe_database_url
 from app.logging_config import configure_logging, reset_request_id, set_request_id
 from app.services.team_logo_storage import ensure_storage_dir
+from app.services.club_branding_storage import ensure_storage_dir as ensure_club_branding_storage_dir
 from app.sockets import sio
 from app.web.auth import router as auth_web_router
 from app.web.account import router as account_web_router
@@ -87,6 +89,14 @@ async def lifespan(app: FastAPI):
         extra={"event": "team_logo.storage.ready"},
     )
 
+    branding_dir = ensure_club_branding_storage_dir()
+    logger.info(
+        "Club branding storage ready — path=%s max_bytes=%s",
+        branding_dir,
+        settings.CLUB_BRANDING_MAX_BYTES,
+        extra={"event": "club_branding.storage.ready"},
+    )
+
     db_ready = await check_database_connection()
     if db_ready:
         logger.info(
@@ -121,6 +131,7 @@ app.include_router(billing_webhooks_router)
 app.include_router(billing_management_router)
 app.include_router(clubs_router)
 app.include_router(club_admin_router)
+app.include_router(club_branding_router)
 app.include_router(game_lifecycle_router)
 app.include_router(game_clock_router)
 app.include_router(scoring_events_router)

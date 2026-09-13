@@ -28,8 +28,10 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - TEAM_LOGO_STORAGE_DIR=/home/appuser/app/static/uploads/team-logos
+      - CLUB_BRANDING_STORAGE_DIR=/home/appuser/app/static/uploads/club-branding
     volumes:
       - team_logo_data:/home/appuser/app/static/uploads/team-logos
+      - branding_data:/home/appuser/app/static/uploads/club-branding
     depends_on:
       postgres:
         condition: service_healthy
@@ -37,3 +39,4 @@ services:
 volumes:
   postgres_data:
   team_logo_data:
+  branding_data:
