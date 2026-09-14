@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Branding — ScoreStreamLive</title>
+  <link rel="stylesheet" href="/static/css/account.css">
+  <link rel="stylesheet" href="/static/css/product-theme-m17h.css?v=m17h-r1">
+  <link rel="stylesheet" href="/static/css/branding.css?v=m18g2-1">
+  <link rel="icon" href="/static/brand/scorestreamlive-mark.svg?v=m17h-1" type="image/svg+xml">
+</head>
+<body data-branding-enabled="{{ 'true' if branding_enabled else 'false' }}">
+<header class="ssl-global-nav"><div class="ssl-global-nav-inner">
+<a class="ssl-brand" href="/games"><span class="ssl-brand-mark">SSL</span><span><strong>ScoreStreamLive</strong><small>{{ club.name if club else 'Account' }}</small></span></a>
+<nav class="ssl-nav-links"><a href="/games">Games</a><a href="/teams">Teams</a><a class="active" href="/account">Account</a></nav>
+<div class="ssl-user-actions"><div class="ssl-user-copy"><strong>{{ current_user.display_name or current_user.email }}</strong><span>{{ current_user.club_role }}</span></div><form method="post" action="/logout"><button class="button button-secondary button-compact" type="submit">Logout</button></form></div>
+</div></header>
+
+<main class="account-shell">
+<header class="account-header">
+<div><div class="eyebrow">PREMIUM BRANDING</div><h1>Club Branding</h1><p class="subhead">Configure the visual identity used by supported ScoreStreamLive broadcast surfaces.</p></div>
+<div class="header-actions"><a class="button button-secondary" href="/account">Back to Account</a><a class="button button-secondary" href="/account/billing">Billing</a></div>
+</header>
+
+{% if not branding_enabled %}
+<section class="account-panel">
+<div class="panel-heading"><div><div class="eyebrow">PLAN FEATURE</div><h2>Custom Overlay Branding</h2><p>Your current plan does not include custom Club branding.</p></div></div>
+<div class="branding-lock-body"><div class="branding-lock-mark">SSL</div><div><h3>Make the broadcast look like your organization.</h3><p>Add your Club logo, display name, short name, and brand colors. When enabled, these settings will feed the premium overlay and broadcast presentation in M18-G3.</p><a class="button button-primary" href="/account/billing">Manage Billing</a></div></div>
+</section>
+{% else %}
+<section class="branding-layout">
+<section class="account-panel">
+<div class="panel-heading"><div><div class="eyebrow">BRAND SETTINGS</div><h2>Visual Identity</h2><p>These settings belong to your Club and remain separate from Team logos and colors.</p></div></div>
+<div class="branding-editor-body">
+<form id="branding-form" class="form-stack">
+<label class="field"><span>Display Name</span><input id="branding-display-name" maxlength="255" value="{{ branding.display_name if branding and branding.display_name else '' }}" placeholder="{{ club.name if club else 'Your Club' }}"></label>
+<label class="field"><span>Short Name</span><input id="branding-short-name" maxlength="100" value="{{ branding.short_name if branding and branding.short_name else '' }}" placeholder="Example: STSA"></label>
+<div class="branding-color-grid">
+<label class="field"><span>Primary Color</span><div class="color-input-row"><input id="branding-primary-color-picker" class="color-picker" type="color" value="{{ branding.primary_color if branding and branding.primary_color else '#2A77FF' }}"><input id="branding-primary-color" value="{{ branding.primary_color if branding and branding.primary_color else '#2A77FF' }}"></div></label>
+<label class="field"><span>Secondary Color</span><div class="color-input-row"><input id="branding-secondary-color-picker" class="color-picker" type="color" value="{{ branding.secondary_color if branding and branding.secondary_color else '#FFFFFF' }}"><input id="branding-secondary-color" value="{{ branding.secondary_color if branding and branding.secondary_color else '#FFFFFF' }}"></div></label>
+</div>
+<button class="button button-primary" type="submit">Save Branding</button>
+</form>
+<div id="branding-message" class="form-message" role="status"></div>
+<section class="branding-logo-section"><div class="card-heading"><div><span class="card-kicker">CLUB LOGO</span><h3>Logo Asset</h3></div></div><p class="card-copy">PNG, JPEG, or WebP.</p><input id="branding-logo-input" type="file" accept="image/png,image/jpeg,image/webp"><div class="branding-logo-actions"><button id="branding-logo-upload" class="button button-primary" type="button">Upload Logo</button><button id="branding-logo-remove" class="button button-secondary" type="button">Remove Logo</button></div></section>
+</div></section>
+
+<aside class="account-panel branding-preview-panel">
+<div class="panel-heading"><div><div class="eyebrow">LIVE PREVIEW</div><h2>Brand Preview</h2><p>Preview updates immediately as you edit.</p></div></div>
+<div class="branding-preview-wrap"><div id="branding-preview" class="branding-preview">
+<div class="branding-preview-rail"><img id="branding-preview-logo" class="branding-preview-logo{% if not branding or not branding.logo_url %} hidden{% endif %}" src="{{ branding.logo_url if branding and branding.logo_url else '' }}" alt=""><div id="branding-preview-fallback" class="branding-preview-fallback{% if branding and branding.logo_url %} hidden{% endif %}">{{ (branding.short_name if branding and branding.short_name else (club.name if club else 'SSL'))[:3]|upper }}</div></div>
+<div class="branding-preview-copy"><span class="branding-preview-kicker">CLUB BRAND</span><strong id="branding-preview-name">{{ branding.display_name if branding and branding.display_name else (club.name if club else 'Your Club') }}</strong><span id="branding-preview-short">{{ branding.short_name if branding and branding.short_name else 'CLUB' }}</span></div>
+</div></div></aside>
+</section>
+{% endif %}
+</main>
+{% if branding_enabled %}<script src="/static/js/branding.js?v=m18g2-1"></script>{% endif %}
+</body></html>
