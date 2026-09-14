@@ -17,6 +17,7 @@ const state = {
   clock: null,
   homeRoster: [],
   awayRoster: [],
+  branding: null,
   clockAnchorElapsed: 0,
   clockAnchorPerformanceMs: null,
   socketConnected: false,
@@ -83,6 +84,56 @@ function applyLogo(shell, logo, fallbackNode, team, fallback) {
   logo.onerror = () => {
     logo.classList.add("hidden");
     fallbackNode.classList.remove("hidden");
+  };
+}
+
+function applyClubBranding(branding) {
+  const rail = byId("club-brand-rail");
+  const logo = byId("club-brand-logo");
+  const fallback = byId("club-brand-fallback");
+  const networkBug = document.querySelector(".ssl-network-bug");
+
+  if (!rail || !logo || !fallback) return;
+
+  const clubPrimary = normalizedTeamColor(
+    branding?.primary_color,
+    DEFAULT_PRIMARY
+  );
+
+  const clubSecondary = normalizedTeamColor(
+    branding?.secondary_color,
+    DEFAULT_SECONDARY
+  );
+
+  if (networkBug) {
+    networkBug.style.setProperty("--club-primary", clubPrimary);
+    networkBug.style.setProperty("--club-secondary", clubSecondary);
+  }
+
+  fallback.textContent = "SSL";
+
+  const logoUrl = String(branding?.logo_url || "").trim();
+
+  if (!branding?.enabled || !logoUrl) {
+    rail.classList.remove("has-club-logo");
+    logo.removeAttribute("src");
+    logo.alt = "";
+    logo.classList.add("hidden");
+    fallback.classList.remove("hidden");
+    return;
+  }
+
+  rail.classList.add("has-club-logo");
+
+  logo.src = logoUrl;
+  logo.alt = `${branding?.display_name || "Club"} logo`;
+  logo.classList.remove("hidden");
+  fallback.classList.add("hidden");
+
+  logo.onerror = () => {
+    rail.classList.remove("has-club-logo");
+    logo.classList.add("hidden");
+    fallback.classList.remove("hidden");
   };
 }
 
@@ -246,6 +297,7 @@ function render() {
 
   applyOverlayTeamBrand("home", state.homeTeam);
   applyOverlayTeamBrand("away", state.awayTeam);
+  applyClubBranding(state.branding);
   renderBroadcastMessage();
   setPresentationConnectionState();
 }
@@ -456,6 +508,7 @@ async function loadAuthoritativeState() {
   state.clock = snapshot.clock;
   state.homeRoster = snapshot.home_roster || [];
   state.awayRoster = snapshot.away_roster || [];
+  state.branding = snapshot.branding || null;
   state.hasAuthoritativeState = true;
 
   captureClockAnchor(state.clock);

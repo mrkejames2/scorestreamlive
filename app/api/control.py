@@ -16,6 +16,7 @@ from app.database import get_session
 from app.models.user import User
 from app.services.game_clock_service import get_clock, serialize_clock_state
 from app.services.entitlement_service import BROADCAST_OVERLAY, effective_club_has_entitlement
+from app.services.effective_branding_service import get_effective_club_branding
 from app.services.game_lifecycle_service import get_lifecycle, serialize_lifecycle_state
 from app.services.game_service import get_game
 from app.services.player_service import get_team_players
@@ -137,5 +138,6 @@ async def public_overlay_state(
         "clock": serialize_clock_state(clock) if clock else None,
         "home_roster": [_public_player(p) for p in home_roster],
         "away_roster": [_public_player(p) for p in away_roster],
+        "branding": await get_effective_club_branding(db, game.club_id),
     }
     return jsonable_encoder(snapshot)

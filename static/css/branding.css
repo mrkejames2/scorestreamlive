@@ -13,3 +13,18 @@
 .branding-lock-body{display:grid;grid-template-columns:92px 1fr;gap:20px;align-items:center;padding:28px 22px}.branding-lock-mark{display:grid;width:82px;height:82px;place-items:center;border:1px solid rgba(119,168,255,.35);border-radius:20px;background:rgba(42,119,255,.13);color:#9bc0ff;font-weight:950;letter-spacing:.08em}
 .branding-lock-body h3{margin-bottom:7px;font-size:22px}.branding-lock-body p{max-width:720px;color:rgba(238,244,255,.62);line-height:1.55}.hidden{display:none!important}
 @media(max-width:900px){.branding-layout{grid-template-columns:1fr}.branding-preview-panel{position:static}.branding-color-grid{grid-template-columns:1fr}.branding-lock-body{grid-template-columns:1fr}.branding-lock-mark{width:68px;height:68px}}
+
+/* M18-G3 branding preview readability */
+.branding-preview-kicker {
+  color: rgba(255,255,255,.72);
+}
+
+#branding-preview-name {
+  color: #FFFFFF;
+  text-shadow: 0 1px 2px rgba(0,0,0,.35);
+}
+
+#branding-preview-short {
+  color: var(--preview-secondary);
+  text-shadow: 0 1px 2px rgba(0,0,0,.30);
+}

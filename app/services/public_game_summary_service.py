@@ -11,6 +11,7 @@ from app.models.game_lifecycle import GameLifecycle
 from app.models.player import Player
 from app.models.scoring_event import ScoringEvent
 from app.models.team import Team
+from app.services.effective_branding_service import get_effective_club_branding
 
 
 class PublicGameSummaryNotFound(Exception):
@@ -123,5 +124,6 @@ async def get_public_game_summary(
         },
         "home_team": _team_payload(home_team),
         "away_team": _team_payload(away_team),
+        "branding": await get_effective_club_branding(db, game.club_id),
         "scoring_events": scoring_events,
     }

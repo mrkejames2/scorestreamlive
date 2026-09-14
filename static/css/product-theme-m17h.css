@@ -759,3 +759,292 @@ textarea:focus,
     scroll-behavior: auto !important;
   }
 }
+
+/* M18-G3 account/light-theme contrast hardening */
+
+/* Form labels used throughout Account, Branding, user management, etc. */
+.field > span,
+.field span {
+  color: #435462 !important;
+  font-weight: 850 !important;
+  letter-spacing: .08em !important;
+}
+
+/* Secondary headings inside account management cards */
+.account-panel h4,
+.management-card h4 {
+  color: var(--ssl-navy-900) !important;
+}
+
+/* Assignment/member text should remain readable on white cards */
+.account-panel .item,
+.management-card .item {
+  color: #435462 !important;
+}
+
+.account-panel .item strong,
+.management-card .item strong {
+  color: var(--ssl-text) !important;
+}
+
+/* Muted/supporting information — subdued, but still readable */
+.account-panel .muted,
+.management-card .muted {
+  color: #687985 !important;
+}
+
+/* Keep form inputs clear against white surfaces */
+.account-panel input,
+.account-panel select,
+.management-card input,
+.management-card select {
+  color: var(--ssl-text) !important;
+  background: #ffffff !important;
+}
+
+/* Stronger placeholder contrast without making placeholders look entered */
+.account-panel input::placeholder,
+.management-card input::placeholder {
+  color: #7c8992 !important;
+  opacity: 1 !important;
+}
+
+
+/* ============================================================
+   M18-G3 — Authenticated Club identity
+   ============================================================ */
+
+/*
+ * ScoreStreamLive remains the application/product design,
+ * while premium Club branding identifies the current tenant.
+ */
+
+@media (min-width: 901px) {
+
+  /*
+   * Allow the brand region to contain Club identity cleanly.
+   */
+  .ssl-account-nav .ssl-nav-brand {
+    display: flex !important;
+    align-items: center !important;
+
+    gap: 10px !important;
+
+    min-height: 44px !important;
+
+    margin-bottom: 0 !important;
+
+    padding:
+      4px 8px 8px !important;
+  }
+
+
+  /*
+   * Standard ScoreStreamLive fallback mark.
+   */
+  .ssl-account-nav
+  .ssl-nav-brand::before {
+    width: 38px !important;
+    height: 38px !important;
+
+    flex: 0 0 38px !important;
+  }
+
+
+  /*
+   * When a real Club logo exists, hide the old
+   * ScoreStreamLive pseudo-logo.
+   */
+  .ssl-account-nav
+  .ssl-nav-brand.has-club-logo::before {
+    display: none !important;
+  }
+
+
+  /*
+   * Customer / Club logo.
+   */
+  .ssl-account-nav
+  .ssl-nav-club-logo {
+    display: block;
+
+    width: 46px;
+    height: 46px;
+
+    flex: 0 0 46px;
+
+    padding: 3px;
+
+    border:
+      1px solid rgba(
+        255,
+        255,
+        255,
+        .18
+      );
+
+    border-radius: 10px;
+
+    background:
+      rgba(
+        255,
+        255,
+        255,
+        .96
+      );
+
+    object-fit: contain;
+  }
+
+
+  /*
+   * Main tenant name.
+   */
+  .ssl-account-nav
+  .ssl-nav-brand-title {
+    display: block;
+
+    min-width: 0;
+
+    overflow: hidden;
+
+    color: #ffffff !important;
+
+    font-size: 15px;
+
+    font-weight: 900;
+
+    line-height: 1.15;
+
+    letter-spacing: -.01em;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+  }
+
+
+  /*
+   * Club short name / organization identity.
+   */
+  .ssl-account-nav
+  .ssl-nav-club {
+    width: 100% !important;
+
+    margin:
+      -4px 0 2px !important;
+
+    padding:
+      0 8px !important;
+
+    color:
+      rgba(
+        255,
+        255,
+        255,
+        .70
+      ) !important;
+
+    font-size: 11px !important;
+
+    font-weight: 800 !important;
+
+    letter-spacing: .08em !important;
+
+    text-transform: uppercase !important;
+  }
+
+
+  /*
+   * Platform attribution.
+   */
+  .ssl-account-nav
+  .ssl-nav-powered-by {
+    display: block;
+
+    width: 100%;
+
+    margin:
+      -2px 0 12px;
+
+    padding:
+      0 8px 12px;
+
+    border-bottom:
+      1px solid rgba(
+        255,
+        255,
+        255,
+        .12
+      );
+
+    color:
+      rgba(
+        255,
+        255,
+        255,
+        .44
+      );
+
+    font-size: 8px;
+
+    font-weight: 800;
+
+    letter-spacing: .10em;
+
+    text-transform: uppercase;
+  }
+
+}
+
+
+/* Mobile authenticated navigation */
+
+@media (max-width: 900px) {
+
+  .ssl-account-nav
+  .ssl-nav-brand {
+    display: flex !important;
+
+    align-items: center !important;
+
+    gap: 8px !important;
+  }
+
+
+  .ssl-account-nav
+  .ssl-nav-brand.has-club-logo::before {
+    display: none !important;
+  }
+
+
+  .ssl-account-nav
+  .ssl-nav-club-logo {
+    width: 34px;
+
+    height: 34px;
+
+    padding: 2px;
+
+    border-radius: 8px;
+
+    background: #ffffff;
+
+    object-fit: contain;
+  }
+
+
+  .ssl-account-nav
+  .ssl-nav-brand-title {
+    color: #ffffff !important;
+
+    font-weight: 900;
+  }
+
+
+  .ssl-account-nav
+  .ssl-nav-powered-by {
+    display: none;
+  }
+
+}

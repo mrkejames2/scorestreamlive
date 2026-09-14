@@ -1,115 +1,187 @@
-/* M17-H REPAIR5 — Team card/detail metadata contrast
-   Presentation only. Preserves team branding data/colors.
+/* M17-H REPAIR5 — Game Detail / Launch Hub contrast hardening
+   Presentation only. No game-state or authorization behavior changes.
 */
 
-/* ---------- Teams list cards ---------- */
+/* ---------- Game detail shell ---------- */
 
-.teams-shell .team-card {
+.detail-shell {
+  color: var(--ssl-text) !important;
+}
+
+.detail-header h1 {
+  color: var(--ssl-navy-950) !important;
+}
+
+.detail-header .subhead {
+  color: var(--ssl-muted) !important;
+}
+
+/* ---------- Recovery proof ---------- */
+
+.recovery-proof {
+  border-color: #b8dec9 !important;
+  background: #edf8f2 !important;
+}
+
+.recovery-proof-copy {
+  color: #49685a !important;
+}
+
+.recovery-proof strong {
+  color: #18794e !important;
+}
+
+.recovery-loaded-at {
+  color: #687985 !important;
+}
+
+/* ---------- Match hero ---------- */
+
+/* Home/Away team surfaces remain light. */
+.match-hero .team-card {
   background: #ffffff !important;
-  color: #172b3a !important;
-  border-color: #d5dee5 !important;
+  color: var(--ssl-text) !important;
 }
 
-.teams-shell .team-card .team-name {
-  color: #172b3a !important;
+.match-hero .team-name,
+.match-hero .hero-score {
+  color: var(--ssl-navy-950) !important;
 }
 
-.teams-shell .team-card .team-short-name {
-  color: #4e7fc9 !important;
+.match-hero .side-label {
+  color: #5a8fe8 !important;
 }
 
-.teams-shell .team-card .branding-row code,
-.teams-shell .team-card .primary-color,
-.teams-shell .team-card .secondary-color {
-  color: #53636f !important;
-  font-weight: 750 !important;
+.match-hero .roster-summary {
+  color: #687985 !important;
 }
 
-.teams-shell .team-card .team-meta .detail-label {
-  color: #6b7a86 !important;
+/* The center clock panel intentionally remains dark. */
+.match-hero .match-center {
+  background: #202b3b !important;
+  color: #ffffff !important;
+}
+
+.match-hero .match-center .clock-display {
+  color: #ffffff !important;
+}
+
+.match-hero .match-center .phase-chip {
+  border-color: rgba(255,255,255,.12) !important;
+  background: rgba(255,255,255,.08) !important;
+  color: #dce8f3 !important;
+}
+
+.match-hero .match-center .clock-status {
+  color: #b8c4d0 !important;
+}
+
+/* ---------- Game-day Launch Hub ---------- */
+
+/*
+ * Keep this as the intentionally dark, high-focus match-day panel,
+ * but explicitly pair it with light foreground colors.
+ */
+.launch-panel {
+  border-color: #314153 !important;
+  background:
+    linear-gradient(180deg, #202d3c 0%, #172433 100%) !important;
+  color: #f4f7fb !important;
+  box-shadow: var(--ssl-shadow-sm) !important;
+}
+
+.launch-panel h2,
+.launch-panel strong {
+  color: #ffffff !important;
+}
+
+.launch-panel .launch-heading p {
+  color: #b8c5d0 !important;
+}
+
+.launch-panel .eyebrow,
+.launch-panel .launch-kicker {
+  color: #ff8a42 !important;
+}
+
+/* Primary and secondary launch cards */
+.launch-panel .launch-card {
+  border-color: rgba(255,255,255,.16) !important;
+  background: rgba(255,255,255,.055) !important;
+  color: #ffffff !important;
+}
+
+.launch-panel .launch-card-primary {
+  border-color: rgba(67,132,255,.70) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(42,119,255,.28),
+      rgba(42,119,255,.10)
+    ) !important;
+}
+
+.launch-panel .launch-card:hover {
+  border-color: rgba(255,138,66,.70) !important;
+  background: rgba(255,255,255,.085) !important;
+}
+
+.launch-panel .launch-card strong {
+  color: #ffffff !important;
+}
+
+.launch-panel .launch-card span:last-child {
+  color: #c5d0da !important;
+}
+
+/*
+ * Secondary actions are light buttons inside the dark Launch Hub,
+ * so force their labels to remain readable.
+ */
+.launch-panel .button-secondary {
+  border-color: #c7d0d8 !important;
+  background: #ffffff !important;
+  color: #173143 !important;
+}
+
+.launch-panel .button-secondary:hover {
+  border-color: #ff8a42 !important;
+  background: #fff6f0 !important;
+  color: #071a28 !important;
+}
+
+/* ---------- Readiness cards ---------- */
+
+.readiness-card {
+  border: 1px solid var(--ssl-border) !important;
+  background: #ffffff !important;
+  color: var(--ssl-text) !important;
+  box-shadow: var(--ssl-shadow-sm) !important;
+}
+
+.readiness-label {
+  color: #526575 !important;
   font-weight: 900 !important;
 }
 
-.teams-shell .team-card .team-id {
-  color: #53636f !important;
-  font-weight: 650 !important;
+.readiness-card strong {
+  color: var(--ssl-navy-950) !important;
 }
 
-.teams-shell .team-card .future-note {
-  color: #6b7a86 !important;
-  font-weight: 650 !important;
+.readiness-card span:last-child {
+  color: #71808b !important;
 }
 
-.teams-shell .team-card .team-card-actions {
-  border-top-color: #d5dee5 !important;
-}
+/* ---------- Remove milestone-era footer from customer UI ---------- */
 
-.teams-shell .team-card .color-swatch {
-  border-color: #aeb9c2 !important;
-  box-shadow: 0 0 0 1px rgba(23,43,58,.04);
-}
-
-/* Keep white/very-light color values readable without changing their actual team color. */
-.teams-shell .team-card .secondary-swatch {
-  background-image:
-    linear-gradient(45deg, #eef2f5 25%, transparent 25%),
-    linear-gradient(-45deg, #eef2f5 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #eef2f5 75%),
-    linear-gradient(-45deg, transparent 75%, #eef2f5 75%);
-  background-size: 8px 8px;
-  background-position: 0 0, 0 4px, 4px -4px, -4px 0;
-}
-
-/* ---------- Team detail hero ---------- */
-
-.detail-shell .hero {
-  background: #ffffff !important;
-  color: #172b3a !important;
-  border-color: #d5dee5 !important;
-}
-
-.detail-shell .hero .identity h1,
-.detail-shell .hero #team-name {
-  color: #172b3a !important;
-}
-
-.detail-shell .hero .short-name,
-.detail-shell .hero #team-short {
-  color: #4e7fc9 !important;
-}
-
-.detail-shell .hero .colors code,
-.detail-shell .hero #primary-color,
-.detail-shell .hero #secondary-color,
-.detail-shell .hero .team-id,
-.detail-shell .hero #team-id {
-  color: #53636f !important;
-  font-weight: 700 !important;
-}
-
-.detail-shell .hero .swatch {
-  border-color: #aeb9c2 !important;
-}
-
-/* ---------- Supporting team-management copy ---------- */
-
-.teams-shell .panel-heading p,
-.teams-shell .subhead,
-.detail-shell .roster-panel p,
-.detail-shell .visible-count,
-.detail-shell .player-meta,
-.detail-shell .player-id {
-  color: #5f6f7a !important;
-}
-
-/* Customer-facing footer labels should remain suppressed by M17-H. */
-.teams-footer,
-.detail-shell footer {
-  color: transparent !important;
-  font-size: 0 !important;
-}
-
-.teams-footer > *,
-.detail-shell footer > * {
+.detail-footer {
   display: none !important;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 900px) {
+  .launch-panel {
+    padding: 18px !important;
+  }
 }

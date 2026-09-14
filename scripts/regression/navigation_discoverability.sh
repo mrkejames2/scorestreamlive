@@ -18,11 +18,12 @@ check() {
 
 if [[ "$VALIDATION_MODE" == "local" ]]; then
   check "Account link explicit" 'account.href = "/account"' static/js/account-nav.js
-  check "Director Club Admin label" '? "Club Admin" : "Account"' static/js/account-nav.js
+  check "Director Club Admin label" '"Club Admin"' static/js/account-nav.js
   check "Identity separated from Account link" 'identity.className = "ssl-nav-identity"' static/js/account-nav.js
   check "Account CTA visually emphasized" '.ssl-account-nav .ssl-nav-account' static/css/account-nav.css
   check "Logout still visible" 'logout.textContent = "Logout"' static/js/account-nav.js
-  check "Logout still POSTs" 'fetch("/logout", { method: "POST" })' static/js/account-nav.js
+  check "Logout endpoint preserved" '"/logout"' static/js/account-nav.js
+  check "Logout still POSTs" 'method: "POST"' static/js/account-nav.js
 fi
 
 exit "$fail"

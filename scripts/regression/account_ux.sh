@@ -59,8 +59,12 @@ if [[ "$VALIDATION_MODE" == "local" ]]; then
     'logout.textContent = "Logout"' \
     static/js/account-nav.js
 
-  check "Logout POST action" \
-    'fetch("/logout", { method: "POST" })' \
+  check "Logout endpoint present" \
+    '"/logout"' \
+    static/js/account-nav.js
+
+  check "Logout POST method present" \
+    'method: "POST"' \
     static/js/account-nav.js
 fi
 

@@ -10,11 +10,15 @@
   <link rel="stylesheet" href="/static/css/m14-hf1-matchday.css">
   <link rel="stylesheet" href="/static/css/m14-hf2.css">
   <link rel="stylesheet" href="/static/css/overlay-m17g.css?v=m17h-1">
+  <link rel="stylesheet" href="/static/css/branding-broadcast-m18g3.css?v=m18g3-1">
 </head>
 <body data-game-id="{{ game_id }}" data-overlay-layout="compact">
   <main class="overlay-stage" aria-label="ScoreStreamLive broadcast scoreboard">
     <section id="overlay-scoreboard" class="overlay-scoreboard overlay-loading">
-      <div class="brand-rail"><span class="brand-mark">SSL</span></div>
+      <div id="club-brand-rail" class="brand-rail">
+        <img id="club-brand-logo" class="club-brand-logo hidden" alt="">
+        <span id="club-brand-fallback" class="brand-mark">SSL</span>
+      </div>
 
       <div id="home-overlay-team-panel" class="team-panel team-home branded-overlay-team">
         <div id="home-overlay-logo-shell" class="overlay-team-logo-shell" aria-hidden="true">
@@ -51,6 +55,19 @@
         </div>
       </div>
     </section>
+
+    <aside id="ssl-network-bug"
+           class="ssl-network-bug"
+           aria-label="Powered by ScoreStreamLive">
+      <img
+        class="ssl-network-bug-logo"
+        src="/static/brand/scorestreamlive-mark.svg?v=m17h-1"
+        alt="">
+      <div class="ssl-network-bug-copy">
+        <span>Powered by</span>
+        <strong>ScoreStreamLive</strong>
+      </div>
+    </aside>
 
     <section id="broadcast-message-banner"
              class="broadcast-overlay-banner hidden"

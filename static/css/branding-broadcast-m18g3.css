@@ -1,0 +1,127 @@
+.club-brand-logo {
+  max-width: 36px;
+  max-height: 36px;
+  object-fit: contain;
+}
+
+/*
+ * Permanent ScoreStreamLive network-style attribution.
+ * Independent from Club branding and positioned outside
+ * the scoreboard so it cannot affect scoreboard dimensions.
+ */
+.ssl-network-bug {
+  --club-primary: #2A77FF;
+  --club-secondary: #FFFFFF;
+
+  position: absolute;
+  top: 22px;
+  right: 28px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 10px;
+
+  border: 1px solid var(--club-secondary);
+  border-left: 5px solid var(--club-primary);
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--club-primary) 34%, rgba(5,11,20,.88)),
+      rgba(5,11,20,.82)
+    );
+
+  box-shadow:
+    0 5px 18px rgba(0,0,0,.24),
+    0 0 0 1px color-mix(in srgb, var(--club-primary) 18%, transparent);
+
+  opacity: .92;
+}
+
+.ssl-network-bug-logo {
+  width: 31px;
+  height: 31px;
+  object-fit: contain;
+}
+
+.ssl-network-bug-copy {
+  display: grid;
+  gap: 1px;
+  line-height: 1;
+}
+
+.ssl-network-bug-copy span {
+  color: var(--club-secondary);
+  opacity: .72;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+}
+
+.ssl-network-bug-copy strong {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .02em;
+}
+
+
+/* M18-G3 Broadcast Summary branding */
+
+.broadcast-scene {
+  --club-primary: #2A77FF;
+  --club-secondary: #FFFFFF;
+}
+
+.broadcast-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 4px solid var(--club-primary);
+  color: var(--club-secondary);
+}
+
+.broadcast-club-logo {
+  max-width: 42px;
+  max-height: 42px;
+  object-fit: contain;
+}
+
+.broadcast-powered {
+  position: absolute;
+  right: 30px;
+  bottom: 20px;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+/*
+ * M18-G3 Club logo replacement:
+ * M17-G renders the default ScoreStreamLive mark through
+ * .brand-rail::before. Hide that mark only while a valid
+ * custom Club logo is active.
+ */
+.brand-rail.has-club-logo::before {
+  display: none;
+}
+
+.brand-rail.has-club-logo {
+  display: grid;
+  place-items: center;
+}
+
+.brand-rail.has-club-logo .club-brand-logo {
+  display: block;
+  max-width: 38px;
+  max-height: 46px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}

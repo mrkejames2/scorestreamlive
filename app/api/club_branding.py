@@ -10,11 +10,29 @@ from app.schemas.club_branding import ClubBrandingResponse,ClubBrandingUpdate
 from app.services.club_branding_service import get_club_branding,set_club_branding_logo_url,update_club_branding
 from app.services.club_branding_storage import ClubBrandingTooLargeError,ClubBrandingUnsupportedTypeError,delete_filename,filename_from_logo_url,path_for_filename,save_club_branding_logo
 from app.services.entitlement_service import CUSTOM_OVERLAY_BRANDING
+from app.services.effective_branding_service import get_effective_club_branding
 router=APIRouter(tags=["club-branding"])
 def _require_director_club(user:User)->uuid.UUID:
     if user.club_id is None: raise HTTPException(status_code=409,detail="User is not assigned to a Club")
     if user.club_role!="DIRECTOR": raise HTTPException(status_code=403,detail="Director access required.")
     return user.club_id
+@router.get("/api/account/effective-branding")
+async def effective_account_branding(
+    current_user: User = Depends(require_current_user),
+    db: AsyncSession = Depends(get_session),
+):
+    if current_user.club_id is None:
+        raise HTTPException(
+            status_code=409,
+            detail="User is not assigned to a Club",
+        )
+
+    return await get_effective_club_branding(
+        db,
+        current_user.club_id,
+    )
+
+
 @router.get("/api/account/branding",response_model=ClubBrandingResponse)
 async def branding(current_user:User=Depends(require_current_user),db:AsyncSession=Depends(get_session)):
     club_id=_require_director_club(current_user); await require_entitlement(db,club_id,CUSTOM_OVERLAY_BRANDING)

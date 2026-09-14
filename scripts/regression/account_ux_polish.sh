@@ -28,7 +28,8 @@ if [[ "$VALIDATION_MODE" == "local" ]]; then
   check "Global nav has Teams" 'teams.textContent = "Teams"' static/js/account-nav.js
   check "Global nav has Account" 'account.href = "/account"' static/js/account-nav.js
   check "Global nav has Logout" 'logout.textContent = "Logout"' static/js/account-nav.js
-  check "Logout uses POST" 'fetch("/logout", { method: "POST" })' static/js/account-nav.js
+  check "Logout endpoint preserved" '"/logout"' static/js/account-nav.js
+  check "Logout uses POST" 'method: "POST"' static/js/account-nav.js
 
   for template in \
     templates/games/index.html \

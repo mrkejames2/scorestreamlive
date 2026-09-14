@@ -64,6 +64,34 @@ function applyTeam(side, team) {
   };
 }
 
+function applyClubBranding(branding) {
+  if (surface !== "broadcast") return;
+  const shell = byId("summary-shell");
+  const logo = byId("broadcast-club-logo");
+  const name = byId("broadcast-brand-name");
+  if (!shell || !logo || !name) return;
+
+  const primary = normalizedColor(branding?.primary_color, DEFAULT_PRIMARY);
+  const secondary = normalizedColor(branding?.secondary_color, DEFAULT_SECONDARY);
+  shell.style.setProperty("--club-primary", primary);
+  shell.style.setProperty("--club-secondary", secondary);
+  name.textContent = branding?.enabled
+    ? (branding?.display_name || branding?.short_name || "ScoreStreamLive")
+    : "ScoreStreamLive";
+
+  const logoUrl = String(branding?.logo_url || "").trim();
+  if (!branding?.enabled || !logoUrl) {
+    logo.removeAttribute("src");
+    logo.alt = "";
+    logo.classList.add("hidden");
+    return;
+  }
+  logo.src = logoUrl;
+  logo.alt = `${branding?.display_name || branding?.short_name || "Club"} logo`;
+  logo.classList.remove("hidden");
+  logo.onerror = () => logo.classList.add("hidden");
+}
+
 function phaseLabel(game) {
   if (game?.is_final) return "FINAL";
   const labels = {
@@ -142,6 +170,7 @@ function render(data) {
 
   applyTeam("home", data?.home_team);
   applyTeam("away", data?.away_team);
+  applyClubBranding(data?.branding);
   renderScoringEvents(data);
 
   byId("summary-error")?.classList.add("hidden");

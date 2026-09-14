@@ -43,7 +43,7 @@ for template in \
   templates/teams/index.html
 do
   need_text "$template" \
-    '/static/css/product-theme-m17h.css?v=m17h-r1' \
+    '/static/css/product-theme-m17h.css?v=m18g3-branding1' \
     "$template uses cache-busted M17-H Repair1 theme"
 done
 
@@ -63,7 +63,7 @@ fi
 
 if [[ -n "${BASE_URL:-}" ]]; then
   for path in \
-    "/static/css/product-theme-m17h.css?v=m17h-r1" \
+    "/static/css/product-theme-m17h.css?v=m18g3-branding1" \
     "/static/brand/scorestreamlive-logo.png?v=m17h-1" \
     "/static/brand/scorestreamlive-mark.svg?v=m17h-1"
   do
@@ -72,14 +72,14 @@ if [[ -n "${BASE_URL:-}" ]]; then
   done
 
   login="$(curl -fsS "$BASE_URL/login" || true)"
-  if printf '%s' "$login" | grep -Fq '/static/css/product-theme-m17h.css?v=m17h-r1'; then
+  if printf '%s' "$login" | grep -Fq '/static/css/product-theme-m17h.css?v=m18g3-branding1'; then
     pass 'login renders repaired M17-H product theme'
   else
     bad 'login missing repaired M17-H product theme'
   fi
 
   games="$(curl -fsS "$BASE_URL/games" || true)"
-  if printf '%s' "$games" | grep -Fq '/static/css/product-theme-m17h.css?v=m17h-r1'; then
+  if printf '%s' "$games" | grep -Fq '/static/css/product-theme-m17h.css?v=m18g3-branding1'; then
     pass 'games renders repaired M17-H product theme'
   else
     bad 'games missing repaired M17-H product theme'
