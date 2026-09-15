@@ -67,6 +67,7 @@ const state = {
   selectedAwayId: null,
   creatingGame: false,
   creatingTeamSide: null,
+  canCreateGames: null,
   previewUrls: {
     home: null,
     away: null,
@@ -107,6 +108,39 @@ function sideEls(side) {
 function setStatus(label, status) {
   els.status.textContent = label;
   els.status.dataset.state = status;
+}
+
+async function loadCreateGameEntitlement() {
+  try {
+    const entitlements = await api("/api/account/entitlements");
+    state.canCreateGames = entitlements?.CREATE_GAMES === true;
+  } catch (error) {
+    console.error("Could not load CREATE_GAMES entitlement", error);
+    state.canCreateGames = false;
+  }
+
+  if (state.canCreateGames) {
+    els.newGameButton.disabled = false;
+    els.newGameButton.removeAttribute("aria-disabled");
+    els.newGameButton.title = "";
+    return;
+  }
+
+  els.newGameButton.disabled = true;
+  els.newGameButton.setAttribute("aria-disabled", "true");
+  els.newGameButton.title =
+    "Creating new games is unavailable while this Club does not have effective CREATE_GAMES access.";
+
+  const actions = els.newGameButton.closest(".header-actions");
+  if (actions && !byId("new-game-entitlement-message")) {
+    const message = document.createElement("a");
+    message.id = "new-game-entitlement-message";
+    message.className = "button button-secondary";
+    message.href = "/account/billing";
+    message.textContent = "Billing / Restore Access";
+    message.title = "Open Billing to review or restore subscription access.";
+    actions.insertBefore(message, els.refresh);
+  }
 }
 
 async function api(path, options = {}) {
@@ -1417,10 +1451,12 @@ function installSideHandlers(side) {
 }
 
 els.refresh.addEventListener("click", () => {
+  void loadCreateGameEntitlement();
   void loadGames();
 });
 
 els.newGameButton.addEventListener("click", () => {
+  if (state.canCreateGames !== true) return;
   void openNewGamePanel();
 });
 
@@ -1435,4 +1471,5 @@ els.newGameForm.addEventListener("submit", (event) => {
 installSideHandlers("home");
 installSideHandlers("away");
 
+void loadCreateGameEntitlement();
 void loadGames();

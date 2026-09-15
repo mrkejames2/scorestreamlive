@@ -7,6 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import require_current_user
 from app.database import get_session
 from app.models.user import User
+from app.models.subscription import Subscription
+from sqlalchemy import select
 from app.services.club_branding_service import get_club_branding
 from app.services.club_service import get_club
 from app.services.entitlement_service import CUSTOM_OVERLAY_BRANDING, effective_club_has_entitlement
@@ -21,8 +23,11 @@ async def branding_page(request: Request, current_user: User = Depends(require_c
     club = await get_club(db, current_user.club_id)
     branding_enabled = await effective_club_has_entitlement(db, current_user.club_id, CUSTOM_OVERLAY_BRANDING)
     branding = await get_club_branding(db, current_user.club_id) if branding_enabled else None
+    subscription_status = await db.scalar(
+        select(Subscription.status).where(Subscription.club_id == current_user.club_id)
+    )
     return templates.TemplateResponse(
         request=request,
         name="account/branding.html",
-        context={"current_user": current_user, "club": club, "branding_enabled": branding_enabled, "branding": branding},
+        context={"current_user": current_user, "club": club, "branding_enabled": branding_enabled, "branding": branding, "subscription_status": subscription_status},
     )

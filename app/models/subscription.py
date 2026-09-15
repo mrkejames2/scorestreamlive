@@ -1,4 +1,4 @@
-"""Club subscription model for M18-A."""
+"""Club subscription model for M18-A, lifecycle-hardened in M18-H."""
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
@@ -29,34 +29,21 @@ class Subscription(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     club_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("clubs.id", ondelete="RESTRICT"),
-        nullable=False,
-        unique=True,
-        )
+        ForeignKey("clubs.id", ondelete="RESTRICT"), nullable=False, unique=True
+    )
     plan_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("plans.id", ondelete="RESTRICT"), nullable=False, index=True
     )
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="PENDING")
-
-    # Provider-neutral. Provider-specific identifiers live in
-    # BillingExternalReference rather than becoming application identity.
     provider: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    current_period_start: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    current_period_end: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    cancel_at_period_end: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    canceled_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    current_period_start: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
-    current_period_end: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
-    cancel_at_period_end: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, default=False
-    )
-    canceled_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, default=utc_now
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now
-    )
+    # M18-H ordering/audit watermark. BillingEvent remains the durable event history.
+    last_provider_event_created_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_provider_event_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now)
