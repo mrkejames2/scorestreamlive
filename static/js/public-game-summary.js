@@ -160,6 +160,66 @@ function renderScoringEvents(data) {
   }
 }
 
+/*
+ * Fit the complete Match Summary into the current viewport.
+ *
+ * The Summary keeps its normal proportions and typography. If its natural
+ * rendered dimensions exceed the available browser-source canvas, the whole
+ * scene is uniformly reduced until it fits. It is never enlarged beyond its
+ * normal design size.
+ */
+function fitSummaryToViewport() {
+  if (surface !== "summary") return;
+
+  const shell = byId("summary-shell");
+  if (!shell) return;
+
+  // Always measure the natural, unscaled scene first.
+  shell.style.setProperty("--summary-scale", "1");
+
+  const viewportWidth = Math.max(window.innerWidth, 1);
+  const viewportHeight = Math.max(window.innerHeight, 1);
+
+  // Small edge allowance prevents sub-pixel rounding from touching/clipping
+  // the browser-source boundary.
+  const horizontalPadding = 16;
+  const topPadding = 16;
+  const bottomPadding = 16;
+
+  const availableWidth = Math.max(
+    viewportWidth - (horizontalPadding * 2),
+    1
+  );
+
+  const availableHeight = Math.max(
+    viewportHeight - topPadding - bottomPadding,
+    1
+  );
+
+  const naturalWidth = Math.max(
+    shell.scrollWidth,
+    shell.offsetWidth,
+    1
+  );
+
+  const naturalHeight = Math.max(
+    shell.scrollHeight,
+    shell.offsetHeight,
+    1
+  );
+
+  const widthScale = availableWidth / naturalWidth;
+  const heightScale = availableHeight / naturalHeight;
+
+  // Do not upscale. The normal Summary design remains the maximum size.
+  const scale = Math.min(1, widthScale, heightScale);
+
+  shell.style.setProperty(
+    "--summary-scale",
+    String(Math.max(scale, 0.05))
+  );
+}
+
 function render(data) {
   const game = data?.game || {};
   byId("summary-phase").textContent = phaseLabel(game);
@@ -175,6 +235,13 @@ function render(data) {
 
   byId("summary-error")?.classList.add("hidden");
   byId("summary-shell")?.classList.remove("summary-loading");
+
+  // Fit immediately after every API/socket render.
+  fitSummaryToViewport();
+
+  // Re-fit after the browser completes this paint cycle. This catches
+  // dimensions affected by newly rendered text and other late layout work.
+  window.requestAnimationFrame(fitSummaryToViewport);
 }
 
 let refreshInFlight = false;
@@ -224,6 +291,12 @@ function installSocketRefresh() {
 
   socket.on("connect", () => void refresh());
 }
+
+// Browser sources can be any reasonable dimensions. Recalculate whenever
+// Streamlabs, OBS, or a normal browser changes the available viewport.
+window.addEventListener("resize", () => {
+  window.requestAnimationFrame(fitSummaryToViewport);
+});
 
 async function bootstrap() {
   await refresh();
