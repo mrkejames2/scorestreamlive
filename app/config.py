@@ -71,5 +71,7 @@ class Settings:
     STRIPE_SECRET_KEY: str=os.getenv("STRIPE_SECRET_KEY","")
     STRIPE_WEBHOOK_SECRET: str=os.getenv("STRIPE_WEBHOOK_SECRET","")
     BILLING_PAST_DUE_GRACE_DAYS: int=_get_positive_int("BILLING_PAST_DUE_GRACE_DAYS",7)
+    BILLING_LIVE_ENABLED: bool=_get_bool("BILLING_LIVE_ENABLED",False)
+    PUBLIC_CHECKOUT_ENABLED: bool=_get_bool("PUBLIC_CHECKOUT_ENABLED",True)
 
 settings=Settings()

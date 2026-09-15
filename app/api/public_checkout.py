@@ -34,6 +34,9 @@ class PublicPlan(BaseModel):
 
 @router.get("/plans", response_model=list[PublicPlan])
 async def plans(db: AsyncSession = Depends(get_session)):
+    if not settings.PUBLIC_CHECKOUT_ENABLED:
+        return []
+
     provider_name = settings.BILLING_PROVIDER.strip().lower()
     rows = await list_checkout_plans(db, provider_name)
     return [
@@ -53,8 +56,15 @@ async def plans(db: AsyncSession = Depends(get_session)):
 async def checkout(
     data: CheckoutRequestBody,
     db: AsyncSession = Depends(get_session),
-    provider: BillingProvider = Depends(get_billing_provider),
 ):
+    if not settings.PUBLIC_CHECKOUT_ENABLED:
+        raise HTTPException(
+            status_code=503,
+            detail="Public checkout is temporarily unavailable.",
+        )
+
+    provider: BillingProvider = get_billing_provider()
+
     try:
         result = await create_checkout(
             db,
