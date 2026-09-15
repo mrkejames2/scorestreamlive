@@ -185,3 +185,58 @@
     padding: 18px !important;
   }
 }
+
+/* ============================================================
+   HOTFIX 4 — Team roster readability
+   The legacy team-detail roster uses a dark surface. Preserve
+   its intended light foreground colors after the M17-H product
+   theme is applied.
+   ============================================================ */
+
+.detail-shell .roster-panel {
+  color: #eef4ff !important;
+}
+
+.detail-shell .roster-panel .panel-head h2,
+.detail-shell .roster-panel .roster-count-block strong,
+.detail-shell .roster-panel .player-row strong,
+.detail-shell .roster-panel .player-name,
+.detail-shell .roster-panel .jersey {
+  color: #eef4ff !important;
+}
+
+.detail-shell .roster-panel .panel-head p {
+  color: rgba(238, 244, 255, 0.70) !important;
+}
+
+.detail-shell .roster-panel .roster-count-block span,
+.detail-shell .roster-panel .visible-count {
+  color: rgba(238, 244, 255, 0.60) !important;
+}
+
+.detail-shell .roster-panel .player-meta {
+  color: rgba(238, 244, 255, 0.70) !important;
+}
+
+.detail-shell .roster-panel .player-row code,
+.detail-shell .roster-panel .player-id {
+  color: rgba(238, 244, 255, 0.48) !important;
+}
+
+.detail-shell .roster-panel .jersey {
+  background: rgba(42, 119, 255, 0.22);
+}
+
+.detail-shell .roster-panel .field-label {
+  color: #ff6600 !important;
+}
+
+.detail-shell .roster-panel .search-field input,
+.detail-shell .roster-panel .sort-field select {
+  color: #17283a !important;
+  background: #ffffff !important;
+}
+
+.detail-shell .roster-panel .search-field input::placeholder {
+  color: #8a98a8 !important;
+}
