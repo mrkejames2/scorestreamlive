@@ -22,13 +22,16 @@ git rev-parse --show-toplevel >/dev/null
 echo "PASS: repository detected"
 
 if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
-  if docker compose config --services 2>/dev/null | grep -qx "app"; then
+  compose_services="$(docker compose config --services 2>/dev/null)"
+
+  if grep -Fxq "app" <<<"$compose_services"; then
     echo "PASS: Docker Compose app service detected"
   else
     echo "FAIL: Docker Compose app service not detected" >&2
     exit 1
   fi
-  if docker compose config --services 2>/dev/null | grep -qx "postgres"; then
+
+  if grep -Fxq "postgres" <<<"$compose_services"; then
     echo "PASS: Docker Compose postgres service detected"
   else
     echo "FAIL: Docker Compose postgres service not detected" >&2
