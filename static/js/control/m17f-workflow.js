@@ -190,9 +190,20 @@ function enforceReadOnlyControls() {
   const ids = [
     "start-first-half-button", "end-first-half-button", "start-second-half-button", "end-game-button",
     "clock-pause-resume-button", "clock-duration-save", "home-goal-button", "away-goal-button",
-    "home-scorer-select", "away-scorer-select", "broadcast-message-save", "broadcast-message-weather",
-    "broadcast-message-clear", "broadcast-message-input",
+    "home-scorer-select", "away-scorer-select",
   ];
+
+  // Full Time locks gameplay controls but intentionally leaves broadcast
+  // messaging available for postgame communication with viewers.
+  // Archived games remain completely read-only, matching the API guard.
+  if (state.game?.archived_at) {
+    ids.push(
+      "broadcast-message-save",
+      "broadcast-message-weather",
+      "broadcast-message-clear",
+      "broadcast-message-input",
+    );
+  }
   for (const id of ids) {
     const node = byId(id);
     if (node) node.disabled = true;
