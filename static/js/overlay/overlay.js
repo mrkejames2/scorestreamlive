@@ -523,7 +523,8 @@ async function resyncAuthoritativeClock() {
   state.clockResyncing = true;
 
   try {
-    const clock = await api(`/api/games/${gameId}/clock`);
+    const snapshot = await api(`/api/public/games/${gameId}/overlay-state`);
+    const clock = snapshot.clock;
     state.clock = clock;
     captureClockAnchor(clock);
     render();

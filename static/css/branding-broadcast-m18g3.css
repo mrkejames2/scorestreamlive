@@ -125,3 +125,49 @@
   height: auto;
   object-fit: contain;
 }
+
+/*
+ * HOTFIX3: Public overlay club/director branding.
+ *
+ * The scoreboard brand rail belongs to the club/director when custom
+ * branding is enabled. The permanent ScoreStreamLive attribution remains
+ * independently available through .ssl-network-bug.
+ */
+
+/* Suppress the legacy hard-coded ScoreStreamLive pseudo-logo whenever
+   JavaScript confirms that a club logo is active. */
+.brand-rail.has-club-logo::before {
+  display: none !important;
+}
+
+/* Give the customer branding image an explicit broadcast-safe box. */
+.brand-rail.has-club-logo .club-brand-logo {
+  display: block !important;
+  width: 38px;
+  height: 38px;
+  max-width: 38px;
+  max-height: 38px;
+  object-fit: contain;
+}
+
+/* Standard layout has slightly more room for customer branding. */
+body[data-overlay-layout="standard"]
+  .brand-rail.has-club-logo
+  .club-brand-logo {
+  width: 42px;
+  height: 42px;
+  max-width: 42px;
+  max-height: 42px;
+}
+
+/* Responsive Streamlabs/browser-source fallback. */
+@media (max-width: 800px) {
+  body[data-overlay-layout="compact"]
+    .brand-rail.has-club-logo
+    .club-brand-logo {
+    width: 30px;
+    height: 30px;
+    max-width: 30px;
+    max-height: 30px;
+  }
+}
