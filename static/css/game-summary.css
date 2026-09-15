@@ -48,3 +48,127 @@ body[data-summary-surface="summary"] .summary-shell {
   will-change: transform;
 }
 
+
+
+/* M18 HOTFIX: team-branded match summary
+ *
+ * Uses team colors already supplied by the public summary projection.
+ * These rules intentionally avoid adding vertical content so the
+ * dynamic Streamlabs viewport-fit behavior remains intact.
+ */
+
+body[data-summary-surface="summary"] .summary-shell {
+  --home-primary: #2A77FF;
+  --home-secondary: #FFFFFF;
+  --away-primary: #2A77FF;
+  --away-secondary: #FFFFFF;
+}
+
+/* Give each team card a two-color broadcast accent. */
+body[data-summary-surface="summary"] .team-card {
+  position: relative;
+  overflow: hidden;
+  border-top-color: var(--team-primary);
+}
+
+body[data-summary-surface="summary"] .team-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--team-secondary);
+}
+
+/* Make the team identity stronger without sacrificing readability. */
+body[data-summary-surface="summary"] .team-logo-shell {
+  border: 3px solid var(--team-primary);
+  box-shadow:
+    inset 0 0 0 3px var(--team-secondary),
+    0 6px 18px rgba(17, 24, 39, 0.08);
+}
+
+body[data-summary-surface="summary"] .team-name {
+  color: #14293a;
+}
+
+body[data-summary-surface="summary"] .team-score {
+  color: var(--team-primary);
+}
+
+/* Phase badge subtly represents both teams. */
+body[data-summary-surface="summary"] .summary-phase {
+  background:
+    linear-gradient(
+      90deg,
+      var(--home-primary) 0%,
+      var(--home-primary) 48%,
+      var(--away-primary) 52%,
+      var(--away-primary) 100%
+    );
+  color: #FFFFFF;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 5px 14px rgba(17, 24, 39, 0.14);
+}
+
+/* Scoring panel carries both teams without dominating the scene. */
+body[data-summary-surface="summary"] .scoring-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+body[data-summary-surface="summary"] .scoring-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 50%;
+  height: 5px;
+  background: var(--home-primary);
+}
+
+body[data-summary-surface="summary"] .scoring-panel::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  right: 0;
+  height: 5px;
+  background: var(--away-primary);
+}
+
+/* Goal rows identify which side scored. */
+body[data-summary-surface="summary"] .scoring-row {
+  position: relative;
+  padding-left: 18px;
+}
+
+body[data-summary-surface="summary"] .scoring-row::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 22%;
+  bottom: 22%;
+  width: 5px;
+  border-radius: 999px;
+  background: #CBD5E1;
+}
+
+body[data-summary-surface="summary"] .scoring-row-home::before {
+  background: var(--home-primary);
+}
+
+body[data-summary-surface="summary"] .scoring-row-away::before {
+  background: var(--away-primary);
+}
+
+body[data-summary-surface="summary"] .scoring-row-home .scoring-team {
+  color: var(--home-primary);
+  font-weight: 800;
+}
+
+body[data-summary-surface="summary"] .scoring-row-away .scoring-team {
+  color: var(--away-primary);
+  font-weight: 800;
+}

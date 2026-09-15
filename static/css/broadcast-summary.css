@@ -1,1 +1,446 @@
-*{box-sizing:border-box}.hidden{display:none!important}html,body{margin:0;width:1280px;height:720px;overflow:hidden}body{background:#0b1020;color:#fff;font-family:Inter,Arial,sans-serif}.broadcast-scene{width:1280px;height:720px;padding:28px 56px;position:relative;background:radial-gradient(circle at 50% 10%,#18233d 0,#0b1020 56%,#070b14 100%)}.broadcast-brand{text-align:center;text-transform:uppercase;letter-spacing:.18em;font-size:20px;font-weight:800;color:#cbd5e1}.broadcast-phase{text-align:center;margin-top:12px;font-size:28px;font-weight:900;letter-spacing:.12em}.broadcast-game-name{text-align:center;color:#cbd5e1;font-size:18px;margin-top:4px}.broadcast-scoreboard{display:grid;grid-template-columns:1fr 360px 1fr;gap:28px;align-items:center;margin-top:18px}.broadcast-team{--team-primary:#2A77FF;--team-secondary:#fff;text-align:center;border-top:7px solid var(--team-primary);background:rgba(255,255,255,.07);border-radius:18px;padding:18px}.broadcast-logo-shell{width:130px;height:130px;margin:0 auto 10px;display:grid;place-items:center;border-radius:26px;background:var(--team-secondary);overflow:hidden}.broadcast-logo{max-width:100%;max-height:100%;object-fit:contain}.broadcast-logo-fallback{font-size:28px;font-weight:900;color:var(--team-primary)}.broadcast-team-name{font-size:30px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.broadcast-score-block{display:flex;align-items:center;justify-content:center;gap:22px;font-size:104px;font-weight:900;line-height:1}.broadcast-score-divider{font-size:54px;color:#94a3b8}.broadcast-scoring-panel{width:900px;margin:22px auto 0}.broadcast-scoring-panel h2{text-align:center;text-transform:uppercase;letter-spacing:.12em;font-size:18px;margin:0 0 8px;color:#cbd5e1}.broadcast-scoring-events{display:grid;grid-template-columns:1fr 1fr;column-gap:22px}.broadcast-scoring-row{display:grid;grid-template-columns:46px minmax(0,1fr) 110px;gap:10px;padding:7px 10px;border-top:1px solid rgba(255,255,255,.14);font-size:17px}.broadcast-scoring-row:nth-child(-n+2){border-top:0}.scoring-minute{font-weight:900}.scoring-scorer{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.scoring-team{text-align:right;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.broadcast-empty{text-align:center;color:#94a3b8}.broadcast-error{position:absolute;left:56px;right:56px;bottom:24px;text-align:center;background:#7f1d1d;padding:10px;border-radius:10px}
+/* M18 HOTFIX Part 3: responsive light broadcast scene */
+
+* {
+  box-sizing: border-box;
+}
+
+.hidden {
+  display: none !important;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden !important;
+}
+
+body {
+  background: #f4f6f9;
+  color: #12283a;
+  font-family: Inter, Arial, sans-serif;
+}
+
+.broadcast-scene {
+  --club-primary: #2A77FF;
+  --club-secondary: #FFFFFF;
+
+  position: relative;
+
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+
+  padding:
+    clamp(12px, 2.2vh, 28px)
+    clamp(16px, 4.4vw, 56px)
+    clamp(24px, 4vh, 42px);
+
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      #ffffff 0%,
+      #f8fafc 46%,
+      #eef2f7 100%
+    );
+
+  color: #12283a;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.broadcast-brand {
+  flex: 0 0 auto;
+
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: .18em;
+
+  font-size: clamp(12px, 1.55vw, 20px);
+  font-weight: 900;
+
+  color: #12283a;
+}
+
+.broadcast-phase {
+  flex: 0 0 auto;
+
+  text-align: center;
+
+  margin-top: clamp(6px, 1.3vh, 12px);
+
+  font-size: clamp(16px, 2.2vw, 28px);
+  font-weight: 900;
+  letter-spacing: .12em;
+
+  color: #12283a;
+}
+
+.broadcast-game-name {
+  flex: 0 0 auto;
+
+  text-align: center;
+
+  color: #526274;
+
+  font-size: clamp(12px, 1.45vw, 18px);
+
+  margin-top: clamp(2px, .55vh, 4px);
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.broadcast-scheduled {
+  color: #64748b;
+}
+
+/* -------------------------------------------------------
+   Main scoreboard
+   ------------------------------------------------------- */
+
+.broadcast-scoreboard {
+  flex: 0 1 auto;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(150px, 28vw)
+    minmax(0, 1fr);
+
+  gap: clamp(10px, 2.2vw, 28px);
+
+  align-items: stretch;
+
+  width: 100%;
+
+  margin-top: clamp(10px, 2vh, 18px);
+
+  min-height: 0;
+}
+
+.broadcast-team {
+  --team-primary: #2A77FF;
+  --team-secondary: #FFFFFF;
+
+  min-width: 0;
+  min-height: 0;
+
+  text-align: center;
+
+  border-top:
+    clamp(4px, .55vw, 7px)
+    solid
+    var(--team-primary);
+
+  background: rgba(255,255,255,.94);
+
+  border-radius: clamp(10px, 1.4vw, 18px);
+
+  padding: clamp(8px, 1.4vw, 18px);
+
+  box-shadow:
+    0 10px 28px rgba(15,23,42,.08),
+    0 0 0 1px rgba(148,163,184,.12);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.broadcast-logo-shell {
+  width: clamp(58px, 10vw, 130px);
+  height: clamp(58px, 10vw, 130px);
+
+  margin:
+    0 auto
+    clamp(5px, 1vh, 10px);
+
+  display: grid;
+  place-items: center;
+
+  border-radius: clamp(12px, 2vw, 26px);
+
+  background: var(--team-secondary);
+
+  border:
+    clamp(2px, .25vw, 4px)
+    solid
+    var(--team-primary);
+
+  overflow: hidden;
+}
+
+.broadcast-logo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.broadcast-logo-fallback {
+  font-size: clamp(16px, 2.2vw, 28px);
+  font-weight: 900;
+  color: var(--team-primary);
+}
+
+.broadcast-team-name {
+  min-width: 0;
+
+  font-size: clamp(15px, 2.35vw, 30px);
+  font-weight: 900;
+
+  color: #12283a;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* -------------------------------------------------------
+   Score
+   ------------------------------------------------------- */
+
+.broadcast-score-block {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: clamp(7px, 1.7vw, 22px);
+
+  font-size: clamp(48px, 8vw, 104px);
+  font-weight: 900;
+  line-height: 1;
+
+  color: #12283a;
+}
+
+.broadcast-score-divider {
+  font-size: clamp(26px, 4.2vw, 54px);
+  color: #aab6c3;
+}
+
+/* -------------------------------------------------------
+   Scoring summary
+   ------------------------------------------------------- */
+
+.broadcast-scoring-panel {
+  flex: 0 1 auto;
+
+  width: min(100%, 900px);
+
+  min-height: 0;
+
+  margin:
+    clamp(10px, 2vh, 22px)
+    auto
+    0;
+
+  padding:
+    clamp(8px, 1.3vh, 14px)
+    clamp(10px, 1.5vw, 18px);
+
+  background: rgba(255,255,255,.94);
+
+  border-radius: clamp(10px, 1.4vw, 18px);
+
+  box-shadow:
+    0 10px 28px rgba(15,23,42,.07),
+    0 0 0 1px rgba(148,163,184,.12);
+
+  overflow: hidden;
+}
+
+.broadcast-scoring-panel h2 {
+  text-align: center;
+  text-transform: uppercase;
+
+  letter-spacing: .12em;
+
+  font-size: clamp(12px, 1.4vw, 18px);
+
+  margin:
+    0
+    0
+    clamp(4px, .9vh, 8px);
+
+  color: #12283a;
+}
+
+.broadcast-scoring-events {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  column-gap: clamp(8px, 1.7vw, 22px);
+
+  min-width: 0;
+}
+
+.broadcast-scoring-row {
+  display: grid;
+
+  grid-template-columns:
+    clamp(28px, 3.6vw, 46px)
+    minmax(0, 1fr)
+    minmax(58px, 8.6vw);
+
+  gap: clamp(4px, .8vw, 10px);
+
+  padding:
+    clamp(4px, .7vh, 7px)
+    clamp(5px, .8vw, 10px);
+
+  border-top: 1px solid #e2e8f0;
+
+  font-size: clamp(10px, 1.3vw, 17px);
+
+  color: #12283a;
+
+  min-width: 0;
+}
+
+.broadcast-scoring-row:nth-child(-n+2) {
+  border-top: 0;
+}
+
+.scoring-minute {
+  font-weight: 900;
+}
+
+.scoring-scorer {
+  min-width: 0;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scoring-team {
+  min-width: 0;
+
+  text-align: right;
+
+  color: #64748b;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.broadcast-empty {
+  text-align: center;
+  color: #64748b;
+
+  margin: clamp(4px, 1vh, 10px) 0;
+}
+
+/* -------------------------------------------------------
+   Errors
+   ------------------------------------------------------- */
+
+.broadcast-error {
+  position: absolute;
+
+  left: clamp(16px, 4.4vw, 56px);
+  right: clamp(16px, 4.4vw, 56px);
+  bottom: clamp(8px, 2vh, 24px);
+
+  text-align: center;
+
+  background: #fee2e2;
+  color: #991b1b;
+
+  padding: clamp(6px, 1vh, 10px);
+
+  border-radius: 10px;
+}
+
+/* -------------------------------------------------------
+   Short browser sources / landscape phones / Streamlabs
+   ------------------------------------------------------- */
+
+@media (max-height: 560px) {
+  .broadcast-scene {
+    padding-top: 8px;
+    padding-bottom: 20px;
+  }
+
+  .broadcast-brand {
+    font-size: clamp(10px, 1.3vw, 16px);
+  }
+
+  .broadcast-phase {
+    margin-top: 4px;
+  }
+
+  .broadcast-game-name {
+    margin-top: 1px;
+  }
+
+  .broadcast-scoreboard {
+    margin-top: 6px;
+  }
+
+  .broadcast-logo-shell {
+    width: clamp(46px, 8vh, 82px);
+    height: clamp(46px, 8vh, 82px);
+  }
+
+  .broadcast-team {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  .broadcast-scoring-panel {
+    margin-top: 7px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+
+  .broadcast-scoring-row {
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
+}
+
+/* -------------------------------------------------------
+   Narrow browser sources
+   ------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  .broadcast-scoreboard {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(90px, 24vw)
+      minmax(0, 1fr);
+  }
+
+  .broadcast-team-name {
+    font-size: clamp(11px, 3vw, 18px);
+  }
+
+  .broadcast-scoring-events {
+    column-gap: 5px;
+  }
+
+  .broadcast-scoring-row {
+    grid-template-columns:
+      28px
+      minmax(0, 1fr)
+      minmax(44px, 20%);
+  }
+}

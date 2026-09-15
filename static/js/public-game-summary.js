@@ -41,6 +41,10 @@ function applyTeam(side, team) {
 
   card?.style.setProperty("--team-primary", primary);
   card?.style.setProperty("--team-secondary", secondary);
+
+  const shell = byId("summary-shell");
+  shell?.style.setProperty(`--${side}-primary`, primary);
+  shell?.style.setProperty(`--${side}-secondary`, secondary);
   if (name) name.textContent = team?.short_name || team?.name || label;
   if (fallback) fallback.textContent = teamInitials(team, label);
 
@@ -127,6 +131,11 @@ function eventTeamName(event, data) {
 function buildEventRow(event, data) {
   const row = document.createElement("div");
   row.className = surface === "broadcast" ? "broadcast-scoring-row" : "scoring-row";
+
+  const teamSide = String(event?.team_side || "unknown");
+  if (teamSide === "home" || teamSide === "away") {
+    row.classList.add(`scoring-row-${teamSide}`);
+  }
 
   const minute = document.createElement("span");
   minute.className = "scoring-minute";

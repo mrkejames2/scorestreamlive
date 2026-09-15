@@ -160,19 +160,29 @@ function renderActivity() {
   setText("m17f-activity-phase", String(state.lifecycle?.phase || "pregame").replaceAll("_", " ").toUpperCase());
 }
 
+function renderStreamLinks() {
+  const gameId = document.body.dataset.gameId;
+  if (!gameId) return;
+
+  const summary = byId("m17f-summary-link");
+  const broadcast = byId("m17f-broadcast-link");
+
+  if (summary) summary.href = `/summary/games/${gameId}`;
+  if (broadcast) broadcast.href = `/broadcast/games/${gameId}`;
+}
+
 function renderPostgame() {
   const section = byId("m17f-postgame-actions");
   if (!section) return;
+
   const final = state.lifecycle?.phase === "full_time";
   section.classList.toggle("hidden", !final);
   if (!final) return;
 
-  const gameId = document.body.dataset.gameId;
-  const summary = byId("m17f-summary-link");
-  const broadcast = byId("m17f-broadcast-link");
-  if (summary) summary.href = `/summary/games/${gameId}`;
-  if (broadcast) broadcast.href = `/broadcast/games/${gameId}`;
-  setText("m17f-final-score", `${state.homeTeam?.name || "Home"} ${state.game?.home_score ?? 0} - ${state.game?.away_score ?? 0} ${state.awayTeam?.name || "Away"}`);
+  setText(
+    "m17f-final-score",
+    `${state.homeTeam?.name || "Home"} ${state.game?.home_score ?? 0} - ${state.game?.away_score ?? 0} ${state.awayTeam?.name || "Away"}`
+  );
 }
 
 function enforceReadOnlyControls() {
@@ -194,6 +204,7 @@ function render() {
   renderReadiness();
   renderPrimaryAction();
   renderActivity();
+  renderStreamLinks();
   renderPostgame();
   enforceReadOnlyControls();
 }
@@ -209,8 +220,50 @@ function installPrimaryActionProxy() {
   });
 }
 
+function installCopyUrlButtons() {
+  document.querySelectorAll("[data-copy-target]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const targetId = button.dataset.copyTarget;
+      const link = targetId ? byId(targetId) : null;
+      if (!link) return;
+
+      const relativeUrl = link.getAttribute("href");
+      if (!relativeUrl || relativeUrl === "#") return;
+
+      const absoluteUrl = new URL(relativeUrl, window.location.origin).href;
+      const originalText = button.textContent;
+
+      try {
+        await navigator.clipboard.writeText(absoluteUrl);
+        button.textContent = "✓ Copied";
+      } catch (error) {
+        console.error("Copy URL failed", error);
+
+        const textarea = document.createElement("textarea");
+        textarea.value = absoluteUrl;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+
+        document.body.appendChild(textarea);
+        textarea.select();
+
+        const copied = document.execCommand("copy");
+        textarea.remove();
+
+        button.textContent = copied ? "✓ Copied" : "Copy Failed";
+      }
+
+      window.setTimeout(() => {
+        button.textContent = originalText;
+      }, 1600);
+    });
+  });
+}
+
 function start() {
   installPrimaryActionProxy();
+  installCopyUrlButtons();
   render();
   window.setInterval(render, 400);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) render(); });
