@@ -43,6 +43,7 @@ from app.web.auth import router as auth_web_router
 from app.web.account import router as account_web_router
 from app.web.billing import router as billing_web_router
 from app.web.branding import router as branding_web_router
+from app.web.sponsors import router as sponsors_web_router
 from app.web.activation import router as activation_web_router
 from app.web.account_activation import router as account_activation_web_router
 from app.web.password_recovery import router as password_recovery_web_router
@@ -157,6 +158,7 @@ app.include_router(auth_web_router)
 app.include_router(account_web_router)
 app.include_router(billing_web_router)
 app.include_router(branding_web_router)
+app.include_router(sponsors_web_router)
 app.include_router(activation_web_router)
 app.include_router(account_activation_web_router)
 app.include_router(password_recovery_web_router)
