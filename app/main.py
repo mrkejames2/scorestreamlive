@@ -26,6 +26,7 @@ from app.api.players import router as players_router
 from app.api.public_summary import router as public_summary_router
 from app.api.scoring_events import router as scoring_events_router
 from app.api.support import router as support_router
+from app.api.sponsors import router as sponsors_router
 from app.api.public_signup import router as public_signup_router
 from app.api.public_checkout import router as public_checkout_router
 from app.api.team_logos import router as team_logos_router
@@ -36,6 +37,7 @@ from app.database import check_database_connection, engine, get_safe_database_ur
 from app.logging_config import configure_logging, reset_request_id, set_request_id
 from app.services.team_logo_storage import ensure_storage_dir
 from app.services.club_branding_storage import ensure_storage_dir as ensure_club_branding_storage_dir
+from app.services.sponsor_artwork_storage import ensure_storage_dir as ensure_sponsor_artwork_storage_dir
 from app.sockets import sio
 from app.web.auth import router as auth_web_router
 from app.web.account import router as account_web_router
@@ -98,6 +100,9 @@ async def lifespan(app: FastAPI):
         extra={"event": "club_branding.storage.ready"},
     )
 
+    sponsor_dir = ensure_sponsor_artwork_storage_dir()
+    logger.info("Sponsor artwork storage ready — path=%s max_bytes=%s", sponsor_dir, settings.SPONSOR_ARTWORK_MAX_BYTES, extra={"event":"sponsor_artwork.storage.ready"})
+
     db_ready = await check_database_connection()
     if db_ready:
         logger.info(
@@ -145,6 +150,7 @@ app.include_router(team_logos_router)
 app.include_router(control_router)
 app.include_router(entitlements_router)
 app.include_router(support_router)
+app.include_router(sponsors_router)
 app.include_router(public_signup_router)
 app.include_router(public_checkout_router)
 app.include_router(auth_web_router)

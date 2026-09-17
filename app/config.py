@@ -18,6 +18,11 @@ def _get_club_branding_max_bytes():
     except (ValueError,TypeError): return 2*1024*1024
     return value if value>0 else 2*1024*1024
 
+def _get_sponsor_artwork_max_bytes():
+    try: value=int(os.getenv("SPONSOR_ARTWORK_MAX_BYTES","2097152"))
+    except (ValueError,TypeError): return 2*1024*1024
+    return value if value>0 else 2*1024*1024
+
 def _get_auth_session_days():
     try: value=int(os.getenv("AUTH_SESSION_DAYS","30"))
     except (ValueError,TypeError): return 30
@@ -50,6 +55,8 @@ class Settings:
     TEAM_LOGO_MAX_BYTES: int=_get_team_logo_max_bytes()
     CLUB_BRANDING_STORAGE_DIR: str=os.getenv("CLUB_BRANDING_STORAGE_DIR","static/uploads/club-branding")
     CLUB_BRANDING_MAX_BYTES: int=_get_club_branding_max_bytes()
+    SPONSOR_ARTWORK_STORAGE_DIR: str=os.getenv("SPONSOR_ARTWORK_STORAGE_DIR","static/uploads/sponsor-artwork")
+    SPONSOR_ARTWORK_MAX_BYTES: int=_get_sponsor_artwork_max_bytes()
     AUTH_SESSION_COOKIE_NAME: str=os.getenv("AUTH_SESSION_COOKIE_NAME","scorestreamlive_session")
     AUTH_SESSION_DAYS: int=_get_auth_session_days()
     AUTH_SESSION_COOKIE_SECURE: bool=_get_bool("AUTH_SESSION_COOKIE_SECURE",os.getenv("APP_ENV","development")=="production")

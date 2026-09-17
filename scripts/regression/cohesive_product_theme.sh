@@ -49,7 +49,7 @@ done
 
 need_text templates/overlay/game.html '/static/css/overlay-m17g.css?v=m17h-1' 'M17-G overlay CSS cache-busting preserved'
 need_text templates/overlay/game.html '/static/js/overlay/m17g-layout.js?v=m17h-1' 'M17-G layout JS cache-busting preserved'
-need_text templates/overlay/game.html '/static/js/overlay/overlay.js?v=m17h-1' 'overlay runtime JS cache-busting preserved'
+need_text templates/overlay/game.html '/static/js/overlay/overlay.js?v=859dedf' 'overlay runtime JS cache-busting preserved'
 
 need_text scripts/validate.sh \
   "add 'Cohesive Product Theme & UI Consistency' scripts/regression/cohesive_product_theme.sh" \
@@ -87,7 +87,7 @@ if [[ -n "${BASE_URL:-}" ]]; then
 
   random_game="00000000-0000-0000-0000-000000000017"
   overlay="$(curl -fsS "$BASE_URL/overlay/games/$random_game" || true)"
-  if printf '%s' "$overlay" | grep -Fq '/static/js/overlay/overlay.js?v=m17h-1'; then
+  if printf '%s' "$overlay" | grep -Fq '/static/js/overlay/overlay.js?v=859dedf'; then
     pass 'public overlay keeps versioned M17-G JS asset'
   else
     bad 'public overlay missing versioned M17-G JS asset'
