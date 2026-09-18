@@ -21,6 +21,7 @@ const state = {
   awayRoster: [],
   branding: null,
   sponsors: [],
+  sponsorPresentation: null,
   sponsorIndex: 0,
   sponsorRotationTimer: null,
   sponsorSwapTimeout: null,
@@ -158,7 +159,9 @@ function displaySponsorAt(index,animate=false){
  const applyImage=()=>{logo.src=sponsor.artwork_url;logo.alt=`${sponsor.name||"Sponsor"} logo`;logo.onerror=()=>{const id=String(sponsor.id||"");state.sponsors=(state.sponsors||[]).filter(x=>String(x.id||"")!==id);syncSponsorRotation();};zone.classList.remove("is-fallback");fallback.classList.add("hidden");stage.classList.remove("hidden");requestAnimationFrame(()=>logo.classList.remove("sponsor-fading"));};
  if(!animate||!logo.getAttribute("src")){applyImage();return;} logo.classList.add("sponsor-fading");if(state.sponsorSwapTimeout!==null)window.clearTimeout(state.sponsorSwapTimeout);state.sponsorSwapTimeout=window.setTimeout(()=>{state.sponsorSwapTimeout=null;applyImage();},SPONSOR_FADE_MS);
 }
-function syncSponsorRotation(){stopSponsorRotation();const sponsors=usableSponsors();if(!sponsors.length){showSponsorFallback();return;}if(state.sponsorIndex>=sponsors.length)state.sponsorIndex=0;displaySponsorAt(state.sponsorIndex,false);if(sponsors.length>1)state.sponsorRotationTimer=window.setInterval(()=>{const current=usableSponsors();if(current.length<=1){syncSponsorRotation();return;}displaySponsorAt(state.sponsorIndex+1,true);},DEFAULT_SPONSOR_ROTATION_MS);}
+function sponsorBaseIndex(sponsors){const id=String(state.sponsorPresentation?.current_sponsor_id||"");const found=sponsors.findIndex(s=>String(s.id)===id);return found>=0?found:0;}
+function syncSponsorRotation(){stopSponsorRotation();const zone=byId("sponsor-zone"),sponsors=usableSponsors(),p=state.sponsorPresentation;if(zone)zone.classList.toggle("hidden",p?.visible===false);if(p?.visible===false)return;if(!sponsors.length){showSponsorFallback();return;}const base=sponsorBaseIndex(sponsors),interval=Math.max(5,Number(p?.rotation_interval_seconds||10))*1000;let index=base;if(p?.rotation_enabled!==false&&p?.updated_at){const anchor=Date.parse(p.updated_at);if(Number.isFinite(anchor))index=(base+Math.max(0,Math.floor((Date.now()-anchor)/interval)))%sponsors.length;}displaySponsorAt(index,false);if(p?.rotation_enabled!==false&&sponsors.length>1)state.sponsorRotationTimer=window.setTimeout(()=>syncSponsorRotation(),interval);}
+
 
 function applyOverlayTeamBrand(side, team) {
   const prefix = side === "home" ? "home" : "away";
@@ -533,6 +536,7 @@ async function loadAuthoritativeState() {
   state.awayRoster = snapshot.away_roster || [];
   state.branding = snapshot.branding || null;
   state.sponsors = snapshot.sponsors || [];
+  state.sponsorPresentation = snapshot.sponsor_presentation || null;
   state.sponsorIndex = 0;
   syncSponsorRotation();
   state.hasAuthoritativeState = true;
@@ -620,6 +624,7 @@ function installSocketHandlers(socket) {
 
   socket.on("game:updated", recoverIfThisGame);
   socket.on("game:score_updated", recoverIfThisGame);
+  socket.on("sponsor:presentation_updated", (payload) => { if (!belongsToThisGame(payload)) return; state.sponsors=payload.sponsors||[]; state.sponsorPresentation=payload; syncSponsorRotation(); });
 
   socket.on("scoring_event:created", (payload) => {
     if (!belongsToThisGame(payload)) return;

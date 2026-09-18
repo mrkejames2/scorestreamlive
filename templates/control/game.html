@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/static/css/m14-hf1-matchday.css">
   <link rel="stylesheet" href="/static/css/m14-hf2.css">
   <link rel="stylesheet" href="/static/css/control-m17f.css">
+  <link rel="stylesheet" href="/static/css/control-sponsors-m19e.css?v=m19e-1">
   <link rel="stylesheet" href="/static/css/account-nav.css">
   <link rel="stylesheet" href="/static/css/product-theme-m17h.css?v=m18g3-branding1">
   <link rel="icon" href="/static/brand/scorestreamlive-mark.svg?v=m17h-1" type="image/svg+xml">
@@ -185,6 +186,14 @@
       </section>
 
       <section class="operator-grid">
+        <article id="m19e-sponsor-controls" class="card operator-card sponsor-live-card">
+          <div class="card-header"><h2>Live Sponsor Controls</h2><span id="m19e-zone-state" class="command-status">LOADING</span></div>
+          <p class="muted">Control the Sponsor Zone currently shown on the public broadcast overlay.</p>
+          <div class="sponsor-live-grid"><div class="sponsor-live-current"><span class="muted">Currently Displaying</span><strong id="m19e-current-name">Loading…</strong><img id="m19e-current-artwork" alt="" hidden><span id="m19e-rotation-state" class="sponsor-live-state"></span></div><div class="sponsor-live-settings"><div class="sponsor-live-actions"><button id="m19e-previous" class="secondary-button" type="button">Previous</button><button id="m19e-next" class="secondary-button" type="button">Next</button></div><div class="sponsor-live-actions"><button id="m19e-toggle-rotation" class="secondary-button" type="button">Stop Auto Rotation</button><button id="m19e-toggle-visible" class="secondary-button" type="button">Hide Sponsor Zone</button></div><label>Rotation Interval<select id="m19e-interval"><option value="5">5 seconds</option><option value="10">10 seconds</option><option value="15">15 seconds</option><option value="20">20 seconds</option><option value="30">30 seconds</option><option value="45">45 seconds</option><option value="60">60 seconds</option></select></label><span id="m19e-message" class="muted" role="status"></span></div></div>
+        </article>
+      </section>
+
+      <section class="operator-grid">
         <article class="card operator-card broadcast-message-card">
           <div class="card-header">
             <h2>Broadcast Message</h2>
@@ -323,6 +332,7 @@
   <script type="module" src="/static/js/control/control.js"></script>
   <script type="module" src="/static/js/control/control-branding.js"></script>
   <script type="module" src="/static/js/control/m17f-workflow.js"></script>
+  <script type="module" src="/static/js/control/sponsors-m19e.js?v=m19e-1"></script>
   <script src="/static/js/account-nav.js?v=m18g3-branding1"></script>
 </body>
 </html>

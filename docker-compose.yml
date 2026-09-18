@@ -29,9 +29,11 @@ services:
       - PYTHONUNBUFFERED=1
       - TEAM_LOGO_STORAGE_DIR=/home/appuser/app/static/uploads/team-logos
       - CLUB_BRANDING_STORAGE_DIR=/home/appuser/app/static/uploads/club-branding
+      - SPONSOR_ARTWORK_STORAGE_DIR=/home/appuser/app/static/uploads/sponsor-artwork
     volumes:
       - team_logo_data:/home/appuser/app/static/uploads/team-logos
       - branding_data:/home/appuser/app/static/uploads/club-branding
+      - sponsor_artwork_data:/home/appuser/app/static/uploads/sponsor-artwork
     depends_on:
       postgres:
         condition: service_healthy
@@ -40,3 +42,4 @@ volumes:
   postgres_data:
   team_logo_data:
   branding_data:
+  sponsor_artwork_data:

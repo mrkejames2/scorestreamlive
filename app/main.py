@@ -21,6 +21,7 @@ from app.api.entitlements import router as entitlements_router
 from app.api.game_clock import router as game_clock_router
 from app.api.game_lifecycle import router as game_lifecycle_router
 from app.api.game_sponsors import router as game_sponsors_router
+from app.api.game_sponsor_presentation import router as game_sponsor_presentation_router
 from app.api.games import router as games_router
 from app.api.invitations import router as invitations_router
 from app.api.players import router as players_router
@@ -142,6 +143,7 @@ app.include_router(club_admin_router)
 app.include_router(club_branding_router)
 app.include_router(game_lifecycle_router)
 app.include_router(game_sponsors_router)
+app.include_router(game_sponsor_presentation_router)
 app.include_router(game_clock_router)
 app.include_router(scoring_events_router)
 app.include_router(games_router)

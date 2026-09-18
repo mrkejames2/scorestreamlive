@@ -18,6 +18,7 @@ from app.services.game_clock_service import get_clock, serialize_clock_state
 from app.services.entitlement_service import BROADCAST_OVERLAY, effective_club_has_entitlement
 from app.services.effective_branding_service import get_effective_club_branding
 from app.services.effective_game_sponsor_service import get_effective_game_sponsors
+from app.services.game_sponsor_presentation_service import serialize_presentation
 from app.services.game_lifecycle_service import get_lifecycle, serialize_lifecycle_state
 from app.services.game_service import get_game
 from app.services.player_service import get_team_players
@@ -141,5 +142,6 @@ async def public_overlay_state(
         "away_roster": [_public_player(p) for p in away_roster],
         "branding": await get_effective_club_branding(db, game.club_id),
         "sponsors": await get_effective_game_sponsors(db, game.id, game.club_id),
+        "sponsor_presentation": await serialize_presentation(db, game.id),
     }
     return jsonable_encoder(snapshot)
