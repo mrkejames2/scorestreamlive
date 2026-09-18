@@ -6,6 +6,7 @@
   <title>ScoreStreamLive — Game Detail</title>
   <link rel="stylesheet" href="/static/css/game-detail.css">
   <link rel="stylesheet" href="/static/css/game-detail-g.css">
+  <link rel="stylesheet" href="/static/css/game-sponsors-m19c.css?v=m19c-3">
   <link rel="stylesheet" href="/static/css/account-nav.css">
   <link rel="stylesheet" href="/static/css/product-theme-m17h.css?v=m18g3-branding1">
   <link rel="icon" href="/static/brand/scorestreamlive-mark.svg?v=m17h-1" type="image/svg+xml">
@@ -101,6 +102,12 @@
         <button id="copy-overlay-url" class="button button-secondary" type="button">Copy Overlay URL</button>
         <button id="refresh-detail" class="button button-secondary" type="button">Refresh State</button>
       </div>
+    </section>
+
+    <section id="game-sponsors-panel" class="game-sponsors-panel hidden">
+      <div class="game-sponsors-heading"><div><span class="eyebrow">GAME SPONSORS</span><h2>Sponsor Assignments</h2><p id="game-sponsors-summary">Loading Sponsor Library…</p></div><a class="button button-secondary" href="/account/sponsors">Sponsor Library</a></div>
+      <div id="sponsor-assignment-list" class="sponsor-assignment-list" aria-live="polite"></div>
+      <div class="sponsor-assignment-actions"><button id="save-sponsor-assignments" class="button button-secondary" type="button">Save Sponsor Assignments</button><span id="sponsor-assignment-message" class="sponsor-assignment-message" role="status"></span></div>
     </section>
 
     <section id="readiness-grid" class="readiness-grid hidden">

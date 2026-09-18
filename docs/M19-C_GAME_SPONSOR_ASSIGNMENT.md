@@ -1,0 +1,2 @@
+# M19-C — Game Sponsor Assignment
+Connects the reusable Club Sponsor Library to individual Games with a `game_sponsors` association, Director-only GET/PUT assignment API, and Game Detail assignment UI. Inactive, scheduled, ended, or artwork-missing Sponsors may be assigned; M19-D determines live eligibility. No overlay rotation, live sponsor controls, Stripe, checkout, or sponsor payment processing are included.

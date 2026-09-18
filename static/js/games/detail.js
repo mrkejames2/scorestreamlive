@@ -10,6 +10,8 @@ const state = {
   awayRoster: [],
   lifecycle: null,
   clock: null,
+  sponsorLibrary: [],
+  assignedSponsors: [],
 };
 
 function setStatus(label, status) {
@@ -18,15 +20,14 @@ function setStatus(label, status) {
   node.dataset.state = status;
 }
 
-async function api(path, allow404 = false) {
-  const response = await fetch(path, {
-    method: "GET",
-    headers: { "Accept": "application/json" },
-    cache: "no-store",
-  });
-
+async function api(path, allow404 = false, options = {}) {
+  const headers = { "Accept": "application/json", ...(options.headers || {}) };
+  let body = options.body;
+  if (options.payload !== undefined) { headers["Content-Type"] = "application/json"; body = JSON.stringify(options.payload); }
+  const response = await fetch(path, { method: options.method || "GET", headers, body, cache: "no-store" });
   if (allow404 && response.status === 404) return null;
-  if (!response.ok) throw new Error(`${path} returned HTTP ${response.status}`);
+  if (!response.ok) { let detail=""; try { const data=await response.json(); detail=typeof data?.detail === "string" ? data.detail : ""; } catch (_) {} throw new Error(detail || `${path} returned HTTP ${response.status}`); }
+  if (response.status === 204) return null;
   return response.json();
 }
 
@@ -141,6 +142,10 @@ function renderRecoveryProof() {
   loadedAt.textContent = `Loaded ${new Date().toLocaleTimeString()}`;
 }
 
+function sponsorStatus(s) { if (!s.is_active) return "Inactive"; const n=Date.now(),a=s.starts_at?Date.parse(s.starts_at):null,b=s.ends_at?Date.parse(s.ends_at):null; if(a&&a>n)return "Starts later"; if(b&&b<n)return "Ended"; if(!s.artwork_url)return "No artwork"; return "Active"; }
+function renderSponsorAssignments(){ const panel=byId("game-sponsors-panel"),list=byId("sponsor-assignment-list"),summary=byId("game-sponsors-summary"); const assigned=new Set(state.assignedSponsors.map(x=>x.sponsor_id)); list.replaceChildren(); if(!state.sponsorLibrary.length){const e=document.createElement("p");e.className="sponsor-meta";e.textContent="No Sponsors are in the Club Sponsor Library yet.";list.appendChild(e);} for(const s of state.sponsorLibrary){const l=document.createElement("label");l.className="sponsor-choice";const c=document.createElement("input");c.type="checkbox";c.value=s.id;c.checked=assigned.has(s.id);let art;if(s.artwork_url){art=document.createElement("img");art.src=s.artwork_url;art.alt=`${s.name} artwork`;}else{art=document.createElement("span");art.className="sponsor-choice-art";art.textContent="NO ART";}const cp=document.createElement("span");cp.className="sponsor-choice-copy";const nm=document.createElement("strong");nm.textContent=s.name;const mt=document.createElement("span"),st=sponsorStatus(s);mt.className=`sponsor-meta${st==="Active"?"":" warning"}`;mt.textContent=`${st} · Library order ${s.display_order??0}`;cp.append(nm,mt);l.append(c,art,cp);list.appendChild(l);} summary.textContent=`${assigned.size} Sponsor${assigned.size===1?"":"s"} assigned to this Game.`;panel.classList.remove("hidden");}
+async function saveSponsorAssignments(){const b=byId("save-sponsor-assignments"),m=byId("sponsor-assignment-message"),ids=[...document.querySelectorAll("#sponsor-assignment-list input[type=checkbox]:checked")].map(x=>x.value);b.disabled=true;m.textContent="Saving…";try{state.assignedSponsors=await api(`/api/games/${gameId}/sponsors`,false,{method:"PUT",payload:{sponsor_ids:ids}});renderSponsorAssignments();m.textContent="Sponsor assignments saved.";}catch(e){m.textContent=`Could not save: ${e.message}`;}finally{b.disabled=false;}}
+
 function render() {
   const { game, homeTeam, awayTeam, homeRoster, awayRoster, lifecycle, clock } = state;
 
@@ -204,17 +209,11 @@ async function loadState() {
         api(`/api/games/${game.id}/clock`, true),
       ]);
 
-    Object.assign(state, {
-      game,
-      homeTeam,
-      awayTeam,
-      homeRoster,
-      awayRoster,
-      lifecycle,
-      clock,
-    });
-
+    Object.assign(state, { game, homeTeam, awayTeam, homeRoster, awayRoster, lifecycle, clock });
+    let sponsorAccess = false;
+    try { const [library,assigned]=await Promise.all([api("/api/account/sponsors"),api(`/api/games/${game.id}/sponsors`)]); state.sponsorLibrary=library; state.assignedSponsors=assigned; sponsorAccess=true; } catch (_) { state.sponsorLibrary=[]; state.assignedSponsors=[]; }
     render();
+    if (sponsorAccess) renderSponsorAssignments();
     setStatus("READY", "ready");
   } catch (error) {
     console.error("M12-F Game Detail load failed", error);
@@ -254,6 +253,7 @@ async function copyOverlayUrl() {
 }
 
 byId("copy-overlay-url").addEventListener("click", () => void copyOverlayUrl());
+byId("save-sponsor-assignments").addEventListener("click", () => void saveSponsorAssignments());
 byId("refresh-detail").addEventListener("click", () => void loadState());
 
 void loadState();
