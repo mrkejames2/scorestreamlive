@@ -1,5 +1,5 @@
-.m17b-lifecycle-toggle{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;margin:0 0 1rem}
-.m17b-lifecycle-label{font-weight:700;margin-right:.25rem}
+.m17b-lifecycle-toggle{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin:0 0 1rem;padding:18px 24px}
+.m17b-lifecycle-label{font-weight:700;margin-right:.25rem;color:#fff}
 .m17b-lifecycle-toggle .is-selected{outline:2px solid currentColor;outline-offset:2px}
 .m17b-card-actions{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-top:.5rem}
 .button-danger{border-color:#b42318!important;color:#b42318!important;background:#fff!important}

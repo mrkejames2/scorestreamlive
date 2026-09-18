@@ -8,6 +8,8 @@ const SCORE_CORRECTION_VISIBLE_MS = 6000;
 const MATCH_STATE_BANNER_VISIBLE_MS = 5000;
 const DEFAULT_PRIMARY = "#2A77FF";
 const DEFAULT_SECONDARY = "#FFFFFF";
+const DEFAULT_SPONSOR_ROTATION_MS = 10000;
+const SPONSOR_FADE_MS = 300;
 
 const state = {
   game: null,
@@ -18,6 +20,10 @@ const state = {
   homeRoster: [],
   awayRoster: [],
   branding: null,
+  sponsors: [],
+  sponsorIndex: 0,
+  sponsorRotationTimer: null,
+  sponsorSwapTimeout: null,
   clockAnchorElapsed: 0,
   clockAnchorPerformanceMs: null,
   socketConnected: false,
@@ -91,7 +97,7 @@ function applyClubBranding(branding) {
   const rail = byId("club-brand-rail");
   const logo = byId("club-brand-logo");
   const fallback = byId("club-brand-fallback");
-  const networkBug = document.querySelector(".ssl-network-bug");
+  const networkBug = byId("sponsor-zone");
 
   if (!rail || !logo || !fallback) return;
 
@@ -136,6 +142,23 @@ function applyClubBranding(branding) {
     fallback.classList.remove("hidden");
   };
 }
+
+function stopSponsorRotation() {
+  if (state.sponsorRotationTimer !== null) { window.clearInterval(state.sponsorRotationTimer); state.sponsorRotationTimer = null; }
+  if (state.sponsorSwapTimeout !== null) { window.clearTimeout(state.sponsorSwapTimeout); state.sponsorSwapTimeout = null; }
+}
+function showSponsorFallback() {
+  stopSponsorRotation(); const zone=byId("sponsor-zone"),stage=byId("sponsor-stage"),fallback=byId("sponsor-fallback"),logo=byId("sponsor-logo"); if(!zone||!stage||!fallback||!logo)return;
+  zone.classList.add("is-fallback");stage.classList.add("hidden");fallback.classList.remove("hidden");logo.classList.remove("sponsor-fading");logo.removeAttribute("src");logo.alt="";
+}
+function usableSponsors(){return(state.sponsors||[]).filter(s=>String(s?.artwork_url||"").trim());}
+function displaySponsorAt(index,animate=false){
+ const sponsors=usableSponsors();if(!sponsors.length){showSponsorFallback();return;} const zone=byId("sponsor-zone"),stage=byId("sponsor-stage"),fallback=byId("sponsor-fallback"),logo=byId("sponsor-logo");if(!zone||!stage||!fallback||!logo)return;
+ state.sponsorIndex=((index%sponsors.length)+sponsors.length)%sponsors.length;const sponsor=sponsors[state.sponsorIndex];
+ const applyImage=()=>{logo.src=sponsor.artwork_url;logo.alt=`${sponsor.name||"Sponsor"} logo`;logo.onerror=()=>{const id=String(sponsor.id||"");state.sponsors=(state.sponsors||[]).filter(x=>String(x.id||"")!==id);syncSponsorRotation();};zone.classList.remove("is-fallback");fallback.classList.add("hidden");stage.classList.remove("hidden");requestAnimationFrame(()=>logo.classList.remove("sponsor-fading"));};
+ if(!animate||!logo.getAttribute("src")){applyImage();return;} logo.classList.add("sponsor-fading");if(state.sponsorSwapTimeout!==null)window.clearTimeout(state.sponsorSwapTimeout);state.sponsorSwapTimeout=window.setTimeout(()=>{state.sponsorSwapTimeout=null;applyImage();},SPONSOR_FADE_MS);
+}
+function syncSponsorRotation(){stopSponsorRotation();const sponsors=usableSponsors();if(!sponsors.length){showSponsorFallback();return;}if(state.sponsorIndex>=sponsors.length)state.sponsorIndex=0;displaySponsorAt(state.sponsorIndex,false);if(sponsors.length>1)state.sponsorRotationTimer=window.setInterval(()=>{const current=usableSponsors();if(current.length<=1){syncSponsorRotation();return;}displaySponsorAt(state.sponsorIndex+1,true);},DEFAULT_SPONSOR_ROTATION_MS);}
 
 function applyOverlayTeamBrand(side, team) {
   const prefix = side === "home" ? "home" : "away";
@@ -509,6 +532,9 @@ async function loadAuthoritativeState() {
   state.homeRoster = snapshot.home_roster || [];
   state.awayRoster = snapshot.away_roster || [];
   state.branding = snapshot.branding || null;
+  state.sponsors = snapshot.sponsors || [];
+  state.sponsorIndex = 0;
+  syncSponsorRotation();
   state.hasAuthoritativeState = true;
 
   captureClockAnchor(state.clock);

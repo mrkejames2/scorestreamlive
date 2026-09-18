@@ -1,0 +1,2 @@
+# M19-D — Live Overlay Sponsor Placement
+No database migration. The anonymous overlay-state snapshot gains presentation-safe effective sponsors. Eligibility requires game assignment, same Club, active status, artwork, and a current date window. Zero eligible sponsors preserves ScoreStreamLive fallback branding. One sponsor remains displayed; multiple sponsors rotate client-side every 10 seconds with a subtle fade. Broken artwork is skipped. Live sponsor controls remain M19-E.

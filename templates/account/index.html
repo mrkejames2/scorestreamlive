@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Account — ScoreStreamLive</title>
-  <link rel="stylesheet" href="/static/css/account.css">
+  <link rel="stylesheet" href="/static/css/account.css?v=m19d-ui1">
   <link rel="stylesheet" href="/static/css/product-theme-m17h.css?v=m18g3-branding1">
   <link rel="icon" href="/static/brand/scorestreamlive-mark.svg?v=m17h-1" type="image/svg+xml">
 </head>
@@ -75,7 +75,7 @@
       {% elif request.query_params.get("password_error") == "policy" %}
       <div class="editor-warning" role="alert">New password must be at least 10 characters.</div>
       {% endif %}
-      <form method="post" action="/account/change-password" class="form-stack" style="max-width:520px">
+      <form method="post" action="/account/change-password" class="form-stack account-password-form">
         <label class="field"><span>Current Password</span><input name="current_password" type="password" autocomplete="current-password" required></label>
         <label class="field"><span>New Password</span><input name="new_password" type="password" minlength="10" autocomplete="new-password" required></label>
         <label class="field"><span>Confirm New Password</span><input name="new_password_confirm" type="password" minlength="10" autocomplete="new-password" required></label>

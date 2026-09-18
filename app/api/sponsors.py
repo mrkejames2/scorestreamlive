@@ -6,7 +6,7 @@ from app.auth.dependencies import require_current_user
 from app.database import get_session
 from app.models.user import User
 from app.schemas.sponsor import SponsorCreate, SponsorResponse, SponsorUpdate
-from app.services.sponsor_service import create_sponsor, delete_sponsor, get_sponsor, list_sponsors, set_sponsor_artwork_url
+from app.services.sponsor_service import create_sponsor, delete_sponsor, get_sponsor, list_sponsors, set_sponsor_artwork_url, update_sponsor
 from app.services.sponsor_artwork_storage import SponsorArtworkTooLargeError, SponsorArtworkUnsupportedTypeError, delete_filename, filename_from_artwork_url, path_for_filename, save_sponsor_artwork
 
 router=APIRouter(tags=["sponsors"])
