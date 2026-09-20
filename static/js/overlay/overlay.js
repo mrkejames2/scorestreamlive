@@ -1,3 +1,4 @@
+import { preloadImage, sponsorTiming } from "./sponsor-presentation-m19f.js";
 const byId = (id) => document.getElementById(id);
 
 const gameId = document.body.dataset.gameId;
@@ -25,6 +26,8 @@ const state = {
   sponsorIndex: 0,
   sponsorRotationTimer: null,
   sponsorSwapTimeout: null,
+  sponsorRenderGeneration: 0,
+  sponsorFailedArtwork: new Map(),
   clockAnchorElapsed: 0,
   clockAnchorPerformanceMs: null,
   socketConnected: false,
@@ -144,24 +147,14 @@ function applyClubBranding(branding) {
   };
 }
 
-function stopSponsorRotation() {
-  if (state.sponsorRotationTimer !== null) { window.clearInterval(state.sponsorRotationTimer); state.sponsorRotationTimer = null; }
-  if (state.sponsorSwapTimeout !== null) { window.clearTimeout(state.sponsorSwapTimeout); state.sponsorSwapTimeout = null; }
-}
-function showSponsorFallback() {
-  stopSponsorRotation(); const zone=byId("sponsor-zone"),stage=byId("sponsor-stage"),fallback=byId("sponsor-fallback"),logo=byId("sponsor-logo"); if(!zone||!stage||!fallback||!logo)return;
-  zone.classList.add("is-fallback");stage.classList.add("hidden");fallback.classList.remove("hidden");logo.classList.remove("sponsor-fading");logo.removeAttribute("src");logo.alt="";
-}
-function usableSponsors(){return(state.sponsors||[]).filter(s=>String(s?.artwork_url||"").trim());}
-function displaySponsorAt(index,animate=false){
- const sponsors=usableSponsors();if(!sponsors.length){showSponsorFallback();return;} const zone=byId("sponsor-zone"),stage=byId("sponsor-stage"),fallback=byId("sponsor-fallback"),logo=byId("sponsor-logo");if(!zone||!stage||!fallback||!logo)return;
- state.sponsorIndex=((index%sponsors.length)+sponsors.length)%sponsors.length;const sponsor=sponsors[state.sponsorIndex];
- const applyImage=()=>{logo.src=sponsor.artwork_url;logo.alt=`${sponsor.name||"Sponsor"} logo`;logo.onerror=()=>{const id=String(sponsor.id||"");state.sponsors=(state.sponsors||[]).filter(x=>String(x.id||"")!==id);syncSponsorRotation();};zone.classList.remove("is-fallback");fallback.classList.add("hidden");stage.classList.remove("hidden");requestAnimationFrame(()=>logo.classList.remove("sponsor-fading"));};
- if(!animate||!logo.getAttribute("src")){applyImage();return;} logo.classList.add("sponsor-fading");if(state.sponsorSwapTimeout!==null)window.clearTimeout(state.sponsorSwapTimeout);state.sponsorSwapTimeout=window.setTimeout(()=>{state.sponsorSwapTimeout=null;applyImage();},SPONSOR_FADE_MS);
-}
+function stopSponsorRotation(){if(state.sponsorRotationTimer!==null){window.clearTimeout(state.sponsorRotationTimer);state.sponsorRotationTimer=null;}if(state.sponsorSwapTimeout!==null){window.clearTimeout(state.sponsorSwapTimeout);state.sponsorSwapTimeout=null;}}
+function showSponsorFallback(){stopSponsorRotation();state.sponsorRenderGeneration+=1;const zone=byId("sponsor-zone"),stage=byId("sponsor-stage"),fallback=byId("sponsor-fallback"),logo=byId("sponsor-logo");if(!zone||!stage||!fallback||!logo)return;zone.classList.add("is-fallback");stage.classList.add("hidden");fallback.classList.remove("hidden");logo.classList.remove("sponsor-fading");logo.removeAttribute("src");logo.alt="";}
+function reconcileFailedArtwork(){const current=new Map((state.sponsors||[]).map(s=>[String(s?.id||""),String(s?.artwork_url||"").trim()]));for(const [id,url] of state.sponsorFailedArtwork.entries()){if(!current.has(id)||current.get(id)!==url)state.sponsorFailedArtwork.delete(id);}}
+function usableSponsors(){reconcileFailedArtwork();return(state.sponsors||[]).filter(s=>{const url=String(s?.artwork_url||"").trim();return url&&state.sponsorFailedArtwork.get(String(s?.id||""))!==url;});}
 function sponsorBaseIndex(sponsors){const id=String(state.sponsorPresentation?.current_sponsor_id||"");const found=sponsors.findIndex(s=>String(s.id)===id);return found>=0?found:0;}
-function syncSponsorRotation(){stopSponsorRotation();const zone=byId("sponsor-zone"),sponsors=usableSponsors(),p=state.sponsorPresentation;if(zone)zone.classList.toggle("hidden",p?.visible===false);if(p?.visible===false)return;if(!sponsors.length){showSponsorFallback();return;}const base=sponsorBaseIndex(sponsors),interval=Math.max(5,Number(p?.rotation_interval_seconds||10))*1000;let index=base;if(p?.rotation_enabled!==false&&p?.updated_at){const anchor=Date.parse(p.updated_at);if(Number.isFinite(anchor))index=(base+Math.max(0,Math.floor((Date.now()-anchor)/interval)))%sponsors.length;}displaySponsorAt(index,false);if(p?.rotation_enabled!==false&&sponsors.length>1)state.sponsorRotationTimer=window.setTimeout(()=>syncSponsorRotation(),interval);}
-
+function markSponsorArtworkFailed(s){const id=String(s?.id||""),url=String(s?.artwork_url||"").trim();if(id&&url)state.sponsorFailedArtwork.set(id,url);}
+async function displaySponsorAt(index,animate=false,generation=state.sponsorRenderGeneration){const sponsors=usableSponsors();if(!sponsors.length){showSponsorFallback();return;}const zone=byId("sponsor-zone"),stage=byId("sponsor-stage"),fallback=byId("sponsor-fallback"),logo=byId("sponsor-logo");if(!zone||!stage||!fallback||!logo)return;const normalized=((index%sponsors.length)+sponsors.length)%sponsors.length,sponsor=sponsors[normalized],url=String(sponsor.artwork_url||"").trim();try{await preloadImage(url);}catch(error){if(generation!==state.sponsorRenderGeneration)return;console.warn("M19-F sponsor artwork unavailable; skipping",error);markSponsorArtworkFailed(sponsor);syncSponsorRotation();return;}if(generation!==state.sponsorRenderGeneration)return;const apply=()=>{if(generation!==state.sponsorRenderGeneration)return;state.sponsorIndex=normalized;logo.src=url;logo.alt=`${sponsor.name||"Sponsor"} logo`;logo.onerror=()=>{if(generation!==state.sponsorRenderGeneration)return;markSponsorArtworkFailed(sponsor);syncSponsorRotation();};zone.classList.remove("is-fallback");fallback.classList.add("hidden");stage.classList.remove("hidden");requestAnimationFrame(()=>{if(generation===state.sponsorRenderGeneration)logo.classList.remove("sponsor-fading");});};if(!animate||!logo.getAttribute("src")){apply();return;}logo.classList.add("sponsor-fading");state.sponsorSwapTimeout=window.setTimeout(()=>{state.sponsorSwapTimeout=null;apply();},SPONSOR_FADE_MS);}
+function syncSponsorRotation(){stopSponsorRotation();const generation=++state.sponsorRenderGeneration,zone=byId("sponsor-zone"),sponsors=usableSponsors(),p=state.sponsorPresentation;if(zone)zone.classList.toggle("hidden",p?.visible===false);if(p?.visible===false)return;if(!sponsors.length){showSponsorFallback();return;}const base=sponsorBaseIndex(sponsors),timing=sponsorTiming(p,sponsors.length),rotating=p?.rotation_enabled!==false&&sponsors.length>1,index=rotating?(base+timing.position)%sponsors.length:base;void displaySponsorAt(index,false,generation);if(rotating)state.sponsorRotationTimer=window.setTimeout(()=>{if(generation===state.sponsorRenderGeneration)syncSponsorRotation();},timing.remainingMs);}
 
 function applyOverlayTeamBrand(side, team) {
   const prefix = side === "home" ? "home" : "away";

@@ -28,7 +28,8 @@ COPY --chown=appuser:appuser templates/ ./templates/
 # Prepare writable persistent asset storage before switching to non-root runtime.
 RUN mkdir -p \
       ./static/uploads/team-logos \
-      ./static/uploads/club-branding && \
+      ./static/uploads/club-branding \
+      ./static/uploads/sponsor-artwork && \
     chown -R appuser:appuser ./static/uploads
 
 # Make entrypoint executable
