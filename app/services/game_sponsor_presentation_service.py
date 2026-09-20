@@ -45,6 +45,8 @@ async def serialize_presentation(db,game_id):
 
 async def update_presentation(db,game_id,data):
     game,row=await ensure_presentation(db,game_id)
+    from app.services.sponsor_impression_service import reconcile_sponsor_tracking
+    now=_now(); await reconcile_sponsor_tracking(db,game_id,at=now,trigger=data.action,commit=True)
     if game.archived_at is not None: raise HTTPException(status_code=409,detail="Archived Games are read-only")
     if row.version!=data.expected_version: raise HTTPException(status_code=409,detail="Sponsor presentation changed; refetch current state")
     sponsors=await get_effective_game_sponsors(db,game.id,game.club_id); ids=[s["id"] for s in sponsors]
@@ -60,4 +62,6 @@ async def update_presentation(db,game_id,data):
         if data.rotation_interval_seconds not in ALLOWED_INTERVALS: raise HTTPException(status_code=422,detail="Unsupported rotation interval")
         row.rotation_interval_seconds=data.rotation_interval_seconds
     if row.current_sponsor_id is None and ids: row.current_sponsor_id=ids[0]
-    row.version+=1; row.updated_at=_now(); await db.commit(); await db.refresh(row); return await serialize_presentation(db,game_id)
+    row.version+=1; row.updated_at=now; await db.commit(); await db.refresh(row)
+    await reconcile_sponsor_tracking(db,game_id,at=now,trigger=data.action,commit=True)
+    return await serialize_presentation(db,game_id)

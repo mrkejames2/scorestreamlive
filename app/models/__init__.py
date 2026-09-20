@@ -17,6 +17,8 @@ from app.models.player import Player
 from app.models.game import Game
 from app.models.game_sponsor import GameSponsor
 from app.models.game_sponsor_presentation import GameSponsorPresentation
+from app.models.sponsor_impression import SponsorImpression
+from app.models.game_sponsor_tracking_state import GameSponsorTrackingState
 from app.models.scoring_event import ScoringEvent
 from app.models.game_clock import GameClock
 from app.models.game_lifecycle import GameLifecycle
@@ -44,6 +46,8 @@ __all__ = [
     "Game",
     "GameSponsor",
     "GameSponsorPresentation",
+    "SponsorImpression",
+    "GameSponsorTrackingState",
     "ScoringEvent",
     "GameClock",
     "GameLifecycle",

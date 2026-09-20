@@ -251,6 +251,8 @@ async def transition_lifecycle(
         )
 
     now = _utc_now()
+    from app.services.sponsor_impression_service import reconcile_sponsor_tracking
+    await reconcile_sponsor_tracking(db, game_id, at=now, trigger="lifecycle", commit=False)
     clock_values, clock_status_rule = _build_clock_values(
         data.action,
         clock,
@@ -302,6 +304,8 @@ async def transition_lifecycle(
         )
 
     await db.commit()
+
+    await reconcile_sponsor_tracking(db, game_id, at=now, trigger="game_start" if next_phase=="first_half" else ("second_half_start" if next_phase=="second_half" else "lifecycle"), commit=True)
 
     committed_lifecycle = await _reload_lifecycle(db, game_id)
     committed_clock = await _reload_clock(db, game_id)
