@@ -39,3 +39,6 @@ class Game(Base):
     home_score: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     away_score: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     broadcast_message: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    intro_image_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    intro_enabled: Mapped[bool] = mapped_column(nullable=False, default=False)
+    intro_updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)

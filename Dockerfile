@@ -29,7 +29,8 @@ COPY --chown=appuser:appuser templates/ ./templates/
 RUN mkdir -p \
       ./static/uploads/team-logos \
       ./static/uploads/club-branding \
-      ./static/uploads/sponsor-artwork && \
+      ./static/uploads/sponsor-artwork \
+      ./static/uploads/game-intros && \
     chown -R appuser:appuser ./static/uploads
 
 # Make entrypoint executable

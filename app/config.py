@@ -57,6 +57,8 @@ class Settings:
     CLUB_BRANDING_MAX_BYTES: int=_get_club_branding_max_bytes()
     SPONSOR_ARTWORK_STORAGE_DIR: str=os.getenv("SPONSOR_ARTWORK_STORAGE_DIR","static/uploads/sponsor-artwork")
     SPONSOR_ARTWORK_MAX_BYTES: int=_get_sponsor_artwork_max_bytes()
+    GAME_INTRO_STORAGE_DIR: str=os.getenv("GAME_INTRO_STORAGE_DIR","static/uploads/game-intros")
+    GAME_INTRO_MAX_BYTES: int=_get_positive_int("GAME_INTRO_MAX_BYTES",5*1024*1024)
     AUTH_SESSION_COOKIE_NAME: str=os.getenv("AUTH_SESSION_COOKIE_NAME","scorestreamlive_session")
     AUTH_SESSION_DAYS: int=_get_auth_session_days()
     AUTH_SESSION_COOKIE_SECURE: bool=_get_bool("AUTH_SESSION_COOKIE_SECURE",os.getenv("APP_ENV","development")=="production")

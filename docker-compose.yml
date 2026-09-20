@@ -30,10 +30,12 @@ services:
       - TEAM_LOGO_STORAGE_DIR=/home/appuser/app/static/uploads/team-logos
       - CLUB_BRANDING_STORAGE_DIR=/home/appuser/app/static/uploads/club-branding
       - SPONSOR_ARTWORK_STORAGE_DIR=/home/appuser/app/static/uploads/sponsor-artwork
+      - GAME_INTRO_STORAGE_DIR=/home/appuser/app/static/uploads/game-intros
     volumes:
       - team_logo_data:/home/appuser/app/static/uploads/team-logos
       - branding_data:/home/appuser/app/static/uploads/club-branding
       - sponsor_artwork_data:/home/appuser/app/static/uploads/sponsor-artwork
+      - game_intro_data:/home/appuser/app/static/uploads/game-intros
     depends_on:
       postgres:
         condition: service_healthy
@@ -43,3 +45,4 @@ volumes:
   team_logo_data:
   branding_data:
   sponsor_artwork_data:
+  game_intro_data:

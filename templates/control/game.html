@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="/static/css/m14-hf2.css">
   <link rel="stylesheet" href="/static/css/control-m17f.css">
   <link rel="stylesheet" href="/static/css/control-sponsors-m19e.css?v=m19e-1">
+  <link rel="stylesheet" href="/static/css/control-broadcast-m19h.css?v=m19h-1">
   <link rel="stylesheet" href="/static/css/account-nav.css">
   <link rel="stylesheet" href="/static/css/product-theme-m17h.css?v=m18g3-branding1">
   <link rel="icon" href="/static/brand/scorestreamlive-mark.svg?v=m17h-1" type="image/svg+xml">
@@ -186,6 +187,7 @@
       </section>
 
       <section class="operator-grid">
+        <article id="m19h-broadcast-controls" class="card operator-card"><div class="card-header"><h2>Broadcast Scene</h2><span id="m19h-scene-state" class="command-status">LOADING</span></div><p class="muted">Switch the stable Broadcast URL between the Welcome Screen and Live Game.</p><div class="m19h-broadcast-actions"><button id="m19h-show-intro" class="secondary-button" type="button">Show Welcome</button><button id="m19h-go-live" class="primary-action" type="button">Go Live</button></div><div id="m19h-broadcast-message" class="m19h-broadcast-message muted" role="status"></div></article>
         <article id="m19e-sponsor-controls" class="card operator-card sponsor-live-card">
           <div class="card-header"><h2>Live Sponsor Controls</h2><span id="m19e-zone-state" class="command-status">LOADING</span></div>
           <p class="muted">Control the Sponsor Zone currently shown on the public broadcast overlay.</p>
@@ -334,5 +336,6 @@
   <script type="module" src="/static/js/control/m17f-workflow.js"></script>
   <script type="module" src="/static/js/control/sponsors-m19e.js?v=m19e-1"></script>
   <script src="/static/js/account-nav.js?v=m18g3-branding1"></script>
+<script type="module">import {initBroadcastPresentation} from "/static/js/control/broadcast-presentation-m19h.js?v=m19h-1"; initBroadcastPresentation(document.body.dataset.gameId);</script>
 </body>
 </html>

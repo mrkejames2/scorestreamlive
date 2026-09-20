@@ -23,6 +23,8 @@ from app.api.game_lifecycle import router as game_lifecycle_router
 from app.api.game_sponsors import router as game_sponsors_router
 from app.api.game_sponsor_presentation import router as game_sponsor_presentation_router
 from app.api.sponsor_reports import router as sponsor_reports_router
+from app.api.game_intro import router as game_intro_router
+from app.api.game_broadcast_presentation import router as game_broadcast_presentation_router
 from app.api.games import router as games_router
 from app.api.invitations import router as invitations_router
 from app.api.players import router as players_router
@@ -41,6 +43,7 @@ from app.logging_config import configure_logging, reset_request_id, set_request_
 from app.services.team_logo_storage import ensure_storage_dir
 from app.services.club_branding_storage import ensure_storage_dir as ensure_club_branding_storage_dir
 from app.services.sponsor_artwork_storage import ensure_storage_dir as ensure_sponsor_artwork_storage_dir
+from app.services.game_intro_artwork_storage import ensure_storage_dir as ensure_game_intro_storage_dir
 from app.sockets import sio
 from app.web.auth import router as auth_web_router
 from app.web.account import router as account_web_router
@@ -53,6 +56,7 @@ from app.web.password_recovery import router as password_recovery_web_router
 from app.web.games import router as games_web_router
 from app.web.game_setup import router as game_setup_web_router
 from app.web.game_detail import router as game_detail_web_router
+from app.web.stream import router as stream_web_router
 from app.web.teams import router as teams_web_router
 from app.web.signup import router as signup_web_router
 from app.web.checkout import router as checkout_web_router
@@ -104,6 +108,9 @@ async def lifespan(app: FastAPI):
         extra={"event": "club_branding.storage.ready"},
     )
 
+    intro_dir = ensure_game_intro_storage_dir()
+    logger.info("Game intro storage ready — path=%s max_bytes=%s", intro_dir, settings.GAME_INTRO_MAX_BYTES, extra={"event":"game_intro.storage.ready"})
+
     sponsor_dir = ensure_sponsor_artwork_storage_dir()
     logger.info("Sponsor artwork storage ready — path=%s max_bytes=%s", sponsor_dir, settings.SPONSOR_ARTWORK_MAX_BYTES, extra={"event":"sponsor_artwork.storage.ready"})
 
@@ -146,6 +153,8 @@ app.include_router(game_lifecycle_router)
 app.include_router(game_sponsors_router)
 app.include_router(game_sponsor_presentation_router)
 app.include_router(sponsor_reports_router)
+app.include_router(game_intro_router)
+app.include_router(game_broadcast_presentation_router)
 app.include_router(game_clock_router)
 app.include_router(scoring_events_router)
 app.include_router(games_router)
@@ -171,6 +180,7 @@ app.include_router(password_recovery_web_router)
 app.include_router(games_web_router)
 app.include_router(game_setup_web_router)
 app.include_router(game_detail_web_router)
+app.include_router(stream_web_router)
 app.include_router(teams_web_router)
 app.include_router(signup_web_router)
 app.include_router(checkout_web_router)

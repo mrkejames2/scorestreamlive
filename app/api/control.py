@@ -19,6 +19,7 @@ from app.services.entitlement_service import BROADCAST_OVERLAY, effective_club_h
 from app.services.effective_branding_service import get_effective_club_branding
 from app.services.effective_game_sponsor_service import get_effective_game_sponsors
 from app.services.game_sponsor_presentation_service import serialize_public_presentation
+from app.services.game_broadcast_presentation_service import serialize_broadcast_state
 from app.services.game_lifecycle_service import get_lifecycle, serialize_lifecycle_state
 from app.services.game_service import get_game
 from app.services.player_service import get_team_players
@@ -145,3 +146,9 @@ async def public_overlay_state(
         "sponsor_presentation": await serialize_public_presentation(db, game.id),
     }
     return jsonable_encoder(snapshot)
+
+@router.get("/api/public/games/{game_id}/broadcast-state",include_in_schema=False)
+async def public_broadcast_state(game_id:uuid.UUID,db:AsyncSession=Depends(get_session)):
+    game=await get_game(db,game_id)
+    if not game or not await effective_club_has_entitlement(db,game.club_id,BROADCAST_OVERLAY): deny_not_found("Game")
+    return jsonable_encoder(await serialize_broadcast_state(db,game_id))

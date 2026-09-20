@@ -183,7 +183,8 @@ function render() {
   byId("control-link").href = `/control/games/${game.id}`;
   byId("control-link").querySelector("strong").textContent =
     isResumableGame() ? "Resume Control Center" : "Open Control Center";
-  byId("overlay-link").href = `/overlay/games/${game.id}`;
+  byId("overlay-link").href = `/stream/games/${game.id}`;
+  byId("overlay-link").querySelector("strong").textContent = "Open Stream";
   byId("roster-link").href = `/games/${game.id}/setup`;
 
   byId("match-hero").classList.remove("hidden");
@@ -227,7 +228,7 @@ async function loadState() {
 async function copyOverlayUrl() {
   if (!state.game) return;
 
-  const overlayUrl = `${window.location.origin}/overlay/games/${state.game.id}`;
+  const overlayUrl = `${window.location.origin}/stream/games/${state.game.id}`;
 
   try {
     await navigator.clipboard.writeText(overlayUrl);
@@ -244,7 +245,7 @@ async function copyOverlayUrl() {
   }
 
   const notice = byId("copy-notice");
-  notice.textContent = "Overlay URL copied to clipboard.";
+  notice.textContent = "Stream URL copied to clipboard.";
   notice.classList.remove("hidden");
 
   window.setTimeout(() => {
