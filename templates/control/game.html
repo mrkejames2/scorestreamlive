@@ -187,7 +187,25 @@
       </section>
 
       <section class="operator-grid">
-        <article id="m19h-broadcast-controls" class="card operator-card"><div class="card-header"><h2>Broadcast Scene</h2><span id="m19h-scene-state" class="command-status">LOADING</span></div><p class="muted">Control what viewers see on the stable Broadcast URL.</p><div class="m19h-broadcast-actions"><button id="m19h-show-intro" class="secondary-button" type="button">Intro</button><button id="m19h-go-live" class="primary-action" type="button">Live</button><button id="m19hf1b-show-summary" class="secondary-button" type="button">Summary</button><button id="m19hf1b-show-thank-you" class="secondary-button" type="button">Thank You</button></div><div id="m19h-broadcast-message" class="m19h-broadcast-message muted" role="status"></div></article>
+        <article id="m19h-broadcast-controls" class="card operator-card">
+          <div class="card-header">
+            <h2>Broadcast Scene</h2>
+            <span id="m19h-scene-state" class="command-status">LOADING</span>
+          </div>
+          <p class="muted">Control what viewers see on the stable Stream URL.</p>
+          <div class="m19h-broadcast-actions">
+            <button id="m19h-show-intro" class="secondary-button" type="button">Intro</button>
+            <button id="m19h-go-live" class="primary-action" type="button">Live</button>
+            <button id="m19hf1b-show-summary" class="secondary-button" type="button">Summary</button>
+            <button id="m19hf1b-show-thank-you" class="secondary-button" type="button">Thank You</button>
+          </div>
+          <div id="m19h-broadcast-message" class="m19h-broadcast-message muted" role="status"></div>
+          <div class="m19h-stream-url">
+            <span class="muted">Stream URL</span>
+            <code id="m19hf1b-stream-url">/stream/games/{{ game_id }}</code>
+            <button id="m19hf1b-copy-stream-url" class="secondary-button" type="button">Copy Stream URL</button>
+          </div>
+        </article>
         <article id="m19e-sponsor-controls" class="card operator-card sponsor-live-card">
           <div class="card-header"><h2>Live Sponsor Controls</h2><span id="m19e-zone-state" class="command-status">LOADING</span></div>
           <p class="muted">Control the Sponsor Zone currently shown on the public broadcast overlay.</p>
@@ -265,20 +283,7 @@
         </article>
       </section>
 
-      <section class="card m17f-postgame-actions" aria-label="Stream and broadcast links">
-        <div class="card-header"><h2>Stream / Broadcast Links</h2></div>
-        <p class="muted">Use these links to configure Streamlabs before or during the match.</p>
 
-        <div class="m17f-postgame-links">
-          <a id="m17f-summary-link" class="secondary-button" href="#" target="_blank" rel="noopener">View Match Summary</a>
-          <button id="m17f-copy-summary-url" class="secondary-button" type="button" data-copy-target="m17f-summary-link">Copy URL</button>
-        </div>
-
-        <div class="m17f-postgame-links">
-          <a id="m17f-broadcast-link" class="secondary-button" href="#" target="_blank" rel="noopener">View Broadcast Scene</a>
-          <button id="m17f-copy-broadcast-url" class="secondary-button" type="button" data-copy-target="m17f-broadcast-link">Copy URL</button>
-        </div>
-      </section>
 
       <section id="m17f-postgame-actions" class="card m17f-postgame-actions hidden">
         <div class="card-header"><h2>Full Time</h2></div>
@@ -336,6 +341,6 @@
   <script type="module" src="/static/js/control/m17f-workflow.js"></script>
   <script type="module" src="/static/js/control/sponsors-m19e.js?v=m19e-1"></script>
   <script src="/static/js/account-nav.js?v=m18g3-branding1"></script>
-<script type="module">import {initBroadcastPresentation} from "/static/js/control/broadcast-presentation-m19h.js?v=m19hf1b-1"; initBroadcastPresentation(document.body.dataset.gameId);</script>
+<script type="module">import {initBroadcastPresentation} from "/static/js/control/broadcast-presentation-m19h.js?v=m19hf1b-2"; initBroadcastPresentation(document.body.dataset.gameId);</script>
 </body>
 </html>
