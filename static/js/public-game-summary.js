@@ -29,6 +29,16 @@ function teamInitials(team, fallback) {
   return source.slice(0, 3).toUpperCase() || fallback;
 }
 
+function versionedAssetUrl(rawUrl, version) {
+  const url = String(rawUrl || "").trim();
+  const token = String(version || "").trim();
+
+  if (!url || !token) return url;
+
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}v=${encodeURIComponent(token)}`;
+}
+
 function applyTeam(side, team) {
   const card = byId(`${side}-team-card`);
   const logo = byId(`${side}-logo`);
@@ -48,7 +58,10 @@ function applyTeam(side, team) {
   if (name) name.textContent = team?.short_name || team?.name || label;
   if (fallback) fallback.textContent = teamInitials(team, label);
 
-  const logoUrl = String(team?.logo_url || "").trim();
+  const logoUrl = versionedAssetUrl(
+    team?.logo_url,
+    team?.updated_at,
+  );
   if (!logo || !fallback) return;
   if (!logoUrl) {
     logo.removeAttribute("src");

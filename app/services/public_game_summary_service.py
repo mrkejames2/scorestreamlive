@@ -28,6 +28,7 @@ def _team_payload(team: Team | None) -> dict[str, Any] | None:
         "logo_url": team.logo_url,
         "primary_color": team.primary_color,
         "secondary_color": team.secondary_color,
+        "updated_at": team.updated_at.isoformat(),
     }
 
 
