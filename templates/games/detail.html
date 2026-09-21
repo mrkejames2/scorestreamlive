@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/static/css/game-detail-g.css">
   <link rel="stylesheet" href="/static/css/game-sponsors-m19c.css?v=m19c-3">
   <link rel="stylesheet" href="/static/css/sponsor-report-m19g.css?v=m19g-1">
-  <link rel="stylesheet" href="/static/css/game-intro-m19h.css?v=m19h-1">
+  <link rel="stylesheet" href="/static/css/game-intro-m19h.css?v=m19hf1b-1">
   <link rel="stylesheet" href="/static/css/account-nav.css">
   <link rel="stylesheet" href="/static/css/product-theme-m17h.css?v=m18g3-branding1">
   <link rel="icon" href="/static/brand/scorestreamlive-mark.svg?v=m17h-1" type="image/svg+xml">
@@ -111,6 +111,11 @@
       <div class="game-intro-grid"><img id="m19h-intro-preview" class="game-intro-preview" alt="Welcome Screen preview" hidden><div class="game-intro-actions"><label class="button button-secondary">Upload / Replace Image<input id="m19h-intro-upload" type="file" accept="image/png,image/jpeg,image/webp" hidden></label><label><input id="m19h-intro-enabled" type="checkbox"> Enable Welcome Screen</label><button id="m19h-intro-remove" class="button button-secondary" type="button">Remove Image</button><span id="m19h-intro-message" class="game-intro-message" role="status"></span></div></div>
     </section>
 
+    <section id="m19hf1b-thank-you-panel" class="game-intro-panel hidden">
+      <div><span class="eyebrow">STREAM THANK YOU SCREEN</span><h2>Per-Game Broadcast Closing Screen</h2><p>Recommended 16:9 artwork, 1280×720 or higher.</p></div>
+      <div class="game-intro-grid"><img id="m19hf1b-thank-you-preview" class="game-intro-preview" alt="Thank You Screen preview" hidden><div class="game-intro-actions"><label class="button button-secondary">Upload / Replace Image<input id="m19hf1b-thank-you-upload" type="file" accept="image/png,image/jpeg,image/webp" hidden></label><label><input id="m19hf1b-thank-you-enabled" type="checkbox"> Enable Thank You Screen</label><button id="m19hf1b-thank-you-remove" class="button button-secondary" type="button">Remove Image</button><span id="m19hf1b-thank-you-message" class="game-intro-message" role="status"></span></div></div>
+    </section>
+
     <section id="game-sponsors-panel" class="game-sponsors-panel hidden">
       <div class="game-sponsors-heading"><div><span class="eyebrow">GAME SPONSORS</span><h2>Sponsor Assignments</h2><p id="game-sponsors-summary">Loading Sponsor Library…</p></div><a class="button button-secondary" href="/account/sponsors">Sponsor Library</a></div>
       <div id="sponsor-assignment-list" class="sponsor-assignment-list" aria-live="polite"></div>
@@ -154,6 +159,7 @@
   <script type="module" src="/static/js/games/detail.js"></script>
   <script type="module">import {loadSponsorReport} from "/static/js/games/sponsor-report-m19g.js?v=m19g-1"; loadSponsorReport(document.body.dataset.gameId);</script>
   <script type="module">import {loadGameIntro} from "/static/js/games/game-intro-m19h.js?v=m19h-1"; loadGameIntro(document.body.dataset.gameId);</script>
+  <script type="module">import {loadGameThankYou} from "/static/js/games/game-thank-you-m19hf1b.js?v=m19hf1b-1"; loadGameThankYou(document.body.dataset.gameId);</script>
   <script src="/static/js/account-nav.js?v=m18g3-branding1"></script>
 </body>
 </html>

@@ -535,3 +535,19 @@ body[data-overlay-layout="standard"] .phase-display {
   .goal-banner-logo-shell { width: 32px; height: 32px; }
   .goal-scorer-name { font-size: 13px; }
 }
+
+/* M19 production hotfix: stronger team-logo presentation.
+ *
+ * Keep the existing scoreboard and logo-shell dimensions unchanged.
+ * Only scale uploaded team artwork inside its existing clipped shell so
+ * logos read larger on the broadcast overlay.
+ */
+.overlay-team-logo-shell {
+  overflow: hidden;
+}
+
+.overlay-team-logo {
+  padding: 0;
+  transform: scale(1.28);
+  transform-origin: center;
+}

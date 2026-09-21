@@ -42,3 +42,6 @@ class Game(Base):
     intro_image_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     intro_enabled: Mapped[bool] = mapped_column(nullable=False, default=False)
     intro_updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    thank_you_image_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    thank_you_enabled: Mapped[bool] = mapped_column(nullable=False, default=False)
+    thank_you_updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)

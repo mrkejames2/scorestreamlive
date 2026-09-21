@@ -4,22 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>ScoreStreamLive — Stream</title>
-  <link rel="stylesheet" href="/static/css/broadcast-m19h.css?v=m19h-2">
+  <link rel="stylesheet" href="/static/css/broadcast-m19h.css?v=m19hf1b-1">
   <link rel="icon" href="/static/brand/scorestreamlive-mark.svg?v=m17h-1" type="image/svg+xml">
 </head>
 <body data-game-id="{{ game_id }}">
   <main id="broadcast-root">
-    <div id="intro-scene" class="scene hidden">
-      <img id="intro-image" alt="Game welcome screen">
-    </div>
-    <iframe
-      id="live-scene"
-      class="scene"
-      title="ScoreStreamLive live game"
-      src="/overlay/games/{{ game_id }}">
-    </iframe>
+    <div id="intro-scene" class="scene hidden"><img id="intro-image" alt="Game welcome screen"></div>
+    <iframe id="live-scene" class="scene" title="ScoreStreamLive live game" src="/overlay/games/{{ game_id }}"></iframe>
+    <iframe id="summary-scene" class="scene hidden" title="ScoreStreamLive game summary" src="/broadcast/games/{{ game_id }}"></iframe>
+    <div id="thank-you-scene" class="scene hidden"><img id="thank-you-image" alt="Game thank you screen"></div>
   </main>
   <script src="/static/vendor/socket.io.min.js"></script>
-  <script type="module" src="/static/js/broadcast/game-m19h.js?v=m19h-2"></script>
+  <script type="module" src="/static/js/broadcast/game-m19h.js?v=m19hf1b-1"></script>
 </body>
 </html>
