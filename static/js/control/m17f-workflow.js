@@ -85,52 +85,6 @@ function lifecycleTargetForPhase() {
   return targets[state.lifecycle?.phase] || null;
 }
 
-function renderPrimaryAction() {
-  const button = byId("m17f-primary-action");
-  const note = byId("m17f-primary-note");
-  if (!button || !note) return;
-  delete button.dataset.proxyTarget;
-
-  if (isReadOnly()) {
-    button.disabled = true;
-    button.textContent = state.game?.archived_at ? "Archived Game" : "Game Complete";
-    note.textContent = "No match-day mutation is available.";
-    return;
-  }
-  if (!authoritativeReady()) {
-    button.disabled = true;
-    button.textContent = "Waiting for Live State";
-    note.textContent = "Controls remain paused until authoritative state is confirmed.";
-    return;
-  }
-
-  const phase = state.lifecycle?.phase || "pregame";
-  if (["first_half", "second_half"].includes(phase) && ["running", "paused"].includes(state.clock?.status)) {
-    const target = byId("clock-pause-resume-button");
-    button.disabled = Boolean(target?.disabled);
-    button.textContent = state.clock?.status === "paused" ? "Resume Clock" : "Pause Clock";
-    note.textContent = state.clock?.status === "paused"
-      ? "Primary action: resume match time when play restarts."
-      : "Primary action: pause match time for a stoppage.";
-    button.dataset.proxyTarget = "clock-pause-resume-button";
-    return;
-  }
-
-  const targetId = lifecycleTargetForPhase();
-  const target = targetId ? byId(targetId) : null;
-  if (target) {
-    button.disabled = Boolean(target.disabled);
-    button.textContent = target.textContent;
-    note.textContent = "Primary action follows the current authoritative match phase.";
-    button.dataset.proxyTarget = target.id;
-    return;
-  }
-
-  button.disabled = true;
-  button.textContent = "No Action Available";
-  note.textContent = "Refresh authoritative state if this is unexpected.";
-}
-
 function renderActivity() {
   const container = byId("m17f-recent-activity");
   if (!container) return;
@@ -202,25 +156,12 @@ function enforceReadOnlyControls() {
 
 function render() {
   renderReadiness();
-  renderPrimaryAction();
   renderActivity();
   renderPostgame();
   enforceReadOnlyControls();
 }
 
-function installPrimaryActionProxy() {
-  const button = byId("m17f-primary-action");
-  if (!button) return;
-  button.addEventListener("click", () => {
-    if (button.disabled) return;
-    const targetId = button.dataset.proxyTarget;
-    const target = targetId ? byId(targetId) : null;
-    if (target && !target.disabled) target.click();
-  });
-}
-
 function start() {
-  installPrimaryActionProxy();
   render();
   window.setInterval(render, 400);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) render(); });
