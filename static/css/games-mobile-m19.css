@@ -1,0 +1,74 @@
+/*
+ * M19 production hotfix: Game Library mobile containment.
+ *
+ * Presentation only. Keep game data, lifecycle behavior, desktop layout,
+ * and dashboard actions unchanged.
+ */
+
+@media (max-width: 560px) {
+  .games-panel,
+  .games-list,
+  .game-card,
+  .game-card-top,
+  .game-card-bottom,
+  .game-identity,
+  .game-scoreline,
+  .score-team,
+  .game-team-brand,
+  .game-detail {
+    min-width: 0 !important;
+    max-width: 100%;
+  }
+
+  .game-card {
+    overflow: hidden;
+  }
+
+  .game-scoreline {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100%;
+    grid-template-columns:
+      minmax(0, 1fr)
+      18px
+      minmax(0, 1fr) !important;
+  }
+
+  .score-team {
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) 40px !important;
+    gap: 6px !important;
+    padding: 8px 5px !important;
+  }
+
+  .score-team-away {
+    grid-template-columns: 40px minmax(0, 1fr) !important;
+  }
+
+  .game-team-brand {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .score-team-name {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .score-value {
+    min-width: 0;
+    font-size: 28px !important;
+  }
+
+  .game-id {
+    max-width: 100% !important;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    text-overflow: clip;
+    white-space: normal;
+  }
+}
