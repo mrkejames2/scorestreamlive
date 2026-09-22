@@ -9,6 +9,7 @@ export async function initBroadcastPresentation(gameId) {
 
   const intro = document.getElementById("m19h-show-intro");
   const live = document.getElementById("m19h-go-live");
+  const advertisement = document.getElementById("m19hf2-show-advertisement");
   const summary = document.getElementById("m19hf1b-show-summary");
   const thankYou = document.getElementById("m19hf1b-show-thank-you");
 
@@ -21,11 +22,13 @@ export async function initBroadcastPresentation(gameId) {
     label.textContent = scene.toUpperCase().replace("_", " ");
 
     intro.disabled = !state?.intro?.image_url;
+    advertisement.disabled = !state?.advertisement?.image_url;
     thankYou.disabled = !state?.thank_you?.image_url;
 
     for (const [name, button] of [
       ["intro", intro],
       ["live", live],
+      ["advertisement", advertisement],
       ["summary", summary],
       ["thank_you", thankYou],
     ]) {
@@ -67,6 +70,7 @@ export async function initBroadcastPresentation(gameId) {
       message.textContent = {
         intro: "Welcome Screen is live.",
         live: "Live Game scene is active.",
+        advertisement: "Advertisement is live.",
         summary: "Game Summary is live.",
         thank_you: "Thank You Screen is live.",
       }[scene];
@@ -118,6 +122,7 @@ export async function initBroadcastPresentation(gameId) {
 
   intro.onclick = () => setScene("intro");
   live.onclick = () => setScene("live");
+  advertisement.onclick = () => setScene("advertisement");
   summary.onclick = () => setScene("summary");
   thankYou.onclick = () => setScene("thank_you");
 
