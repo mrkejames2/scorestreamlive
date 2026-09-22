@@ -17,6 +17,7 @@
   <link rel="icon" href="/static/brand/scorestreamlive-mark.svg?v=m17h-1" type="image/svg+xml">
   <link rel="stylesheet" href="/static/css/product-theme-m17h-r2.css?v=m17h-r2">
   <link rel="stylesheet" href="/static/css/product-theme-m17h-r4.css?v=m17h-r4">
+  <link rel="stylesheet" href="/static/css/control-m19-hf2-pause-clock.css?v=m19hf2-1">
 </head>
 <body class="m10e-matchday" data-game-id="{{ game_id }}">
   <main class="control-shell">
@@ -137,6 +138,7 @@
             are committed atomically by the existing M9 transition endpoint.
           </p>
           <div class="lifecycle-actions">
+            <button id="clock-pause-resume-button" class="lifecycle-clock-button primary-action" type="button" disabled>Pause Clock</button>
             <button id="start-first-half-button" class="lifecycle-button primary-action" type="button" data-action="start_first_half" disabled>Start First Half</button>
             <button id="end-first-half-button" class="lifecycle-button warning-action" type="button" data-action="end_first_half" disabled>End First Half</button>
             <button id="start-second-half-button" class="lifecycle-button primary-action" type="button" data-action="start_second_half" disabled>Start Second Half</button>
@@ -156,10 +158,7 @@
             <span class="muted">Current Half Length</span>
             <strong id="clock-duration-current">—</strong>
           </div>
-          <div class="match-clock-actions">
-            <button id="clock-pause-resume-button" class="primary-action match-clock-command" type="button" disabled>Pause Clock</button>
-            <span id="clock-pause-resume-note" class="muted">Available during the first and second half.</span>
-          </div>
+          <span id="clock-pause-resume-note" class="hidden" aria-hidden="true"></span>
           <form id="clock-duration-form">
             <div class="clock-duration-options" role="radiogroup" aria-label="Half length">
               <label class="clock-duration-option clock-duration-test-option"><input type="radio" name="clock-duration-minutes" value="1"><span>1 min (Test)</span></label>

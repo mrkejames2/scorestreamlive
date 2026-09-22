@@ -202,6 +202,7 @@ body[data-overlay-layout="standard"] .phase-display {
 
 .goal-banner {
   position: absolute;
+  z-index: 100;
   top: 18px;
   right: 18px;
   bottom: auto;
