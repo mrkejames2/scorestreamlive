@@ -39,6 +39,7 @@ def _public_team(team):
         "logo_url": team.logo_url,
         "primary_color": team.primary_color,
         "secondary_color": team.secondary_color,
+        "updated_at": team.updated_at,
     }
 
 

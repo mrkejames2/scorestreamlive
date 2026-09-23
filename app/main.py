@@ -59,6 +59,7 @@ from app.web.games import router as games_web_router
 from app.web.game_setup import router as game_setup_web_router
 from app.web.game_detail import router as game_detail_web_router
 from app.web.stream import router as stream_web_router
+from app.web.scoreboard import router as scoreboard_web_router
 from app.web.teams import router as teams_web_router
 from app.web.signup import router as signup_web_router
 from app.web.checkout import router as checkout_web_router
@@ -185,6 +186,7 @@ app.include_router(games_web_router)
 app.include_router(game_setup_web_router)
 app.include_router(game_detail_web_router)
 app.include_router(stream_web_router)
+app.include_router(scoreboard_web_router)
 app.include_router(teams_web_router)
 app.include_router(signup_web_router)
 app.include_router(checkout_web_router)

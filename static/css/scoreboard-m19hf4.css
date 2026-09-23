@@ -1,0 +1,609 @@
+/*
+ * ScoreStreamLive
+ * M19 HF4 — Venue Scoreboard Display
+ *
+ * Purpose-built full-screen venue scoreboard.
+ * Presentation only — game state remains authoritative on the server.
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  color: #ffffff;
+  background: #020914;
+}
+
+
+/* ============================================================
+   PAGE
+   ============================================================ */
+
+.venue-scoreboard {
+  --home: #2a77ff;
+  --away: #6b7280;
+
+  width: 100vw;
+  height: 100vh;
+
+  display: grid;
+  grid-template-rows:
+    clamp(42px, 5vh, 64px)
+    minmax(0, 1fr)
+    clamp(38px, 4.5vh, 56px);
+
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      circle at 50% 35%,
+      rgba(23, 48, 78, 0.35),
+      transparent 48%
+    ),
+    linear-gradient(
+      180deg,
+      #07182a 0%,
+      #030c17 55%,
+      #02070e 100%
+    );
+}
+
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+
+.venue-topbar {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 5px 12px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  background: rgba(2, 9, 20, 0.78);
+}
+
+#venue-connection {
+  font-size: clamp(14px, 1.2vw, 21px);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+#venue-connection::before {
+  content: "";
+  display: inline-block;
+
+  width: 0.55em;
+  height: 0.55em;
+
+  margin-right: 0.45em;
+
+  border-radius: 50%;
+
+  background: #35d07f;
+
+  vertical-align: 0.05em;
+}
+
+#venue-fullscreen {
+  appearance: none;
+
+  padding: 7px 14px;
+
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 10px;
+
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+
+  font: inherit;
+  font-size: clamp(13px, 1vw, 18px);
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+#venue-fullscreen:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+
+/* ============================================================
+   MAIN SCOREBOARD GRID
+   ============================================================ */
+
+.venue-grid {
+  min-width: 0;
+  min-height: 0;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 36fr)
+    minmax(260px, 28fr)
+    minmax(0, 36fr);
+
+  gap: clamp(12px, 1.5vw, 28px);
+
+  padding:
+    clamp(10px, 1.5vh, 20px)
+    clamp(16px, 2vw, 34px);
+
+  overflow: hidden;
+}
+
+
+/* ============================================================
+   TEAM PANELS
+   ============================================================ */
+
+.venue-team {
+  position: relative;
+
+  min-width: 0;
+  min-height: 0;
+
+  display: grid;
+
+  /*
+   * Logo receives the largest upper region.
+   * Team name stays compact.
+   * Score owns the lower scoreboard region.
+   */
+  grid-template-rows:
+    minmax(0, 48fr)
+    minmax(44px, 10fr)
+    minmax(0, 42fr);
+
+  align-items: stretch;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: clamp(16px, 1.6vw, 28px);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.055),
+      rgba(255, 255, 255, 0.018)
+    );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 18px 50px rgba(0, 0, 0, 0.18);
+}
+
+.venue-team::before {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: clamp(5px, 0.65vh, 9px);
+
+  z-index: 2;
+}
+
+.venue-home::before {
+  background: var(--home);
+}
+
+.venue-away::before {
+  background: var(--away);
+}
+
+
+/* ============================================================
+   TEAM LOGOS
+   ============================================================ */
+
+.venue-logo-shell {
+  min-width: 0;
+  min-height: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  padding:
+    clamp(14px, 2vh, 28px)
+    clamp(16px, 2vw, 32px)
+    clamp(6px, 1vh, 14px);
+}
+
+.venue-logo {
+  display: block;
+
+  /*
+   * Keep the logo prominent without allowing it to consume
+   * the entire team panel.
+   */
+  width: 78%;
+  height: 78%;
+
+  max-width: 78%;
+  max-height: 78%;
+
+  object-fit: contain;
+
+  transform: none;
+}
+
+.venue-logo-fallback {
+  width: clamp(120px, 13vw, 230px);
+  height: clamp(120px, 13vw, 230px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 3px solid rgba(255, 255, 255, 0.26);
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.06);
+
+  font-size: clamp(36px, 4vw, 74px);
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+
+/* ============================================================
+   TEAM NAME
+   ============================================================ */
+
+.venue-team-name {
+  min-width: 0;
+  min-height: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 12px;
+
+  overflow: hidden;
+
+  font-size: clamp(24px, 2.7vw, 50px);
+  font-weight: 900;
+  line-height: 1;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  text-align: center;
+}
+
+
+/* ============================================================
+   SCORE
+   ============================================================ */
+
+.venue-score {
+  min-width: 0;
+  min-height: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  padding: 0 8px clamp(4px, 1vh, 12px);
+
+  font-size: clamp(110px, 15vw, 270px);
+  font-weight: 950;
+  line-height: 0.8;
+  letter-spacing: -0.06em;
+
+  font-variant-numeric: tabular-nums;
+
+  text-align: center;
+}
+
+
+/* ============================================================
+   CENTER CLOCK / PHASE
+   ============================================================ */
+
+.venue-center {
+  min-width: 0;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  padding: clamp(10px, 1.4vw, 24px);
+
+  text-align: center;
+}
+
+.venue-clock {
+  width: 100%;
+
+  font-size: clamp(70px, 8.2vw, 155px);
+  font-weight: 950;
+  line-height: 0.92;
+  letter-spacing: -0.065em;
+
+  font-variant-numeric: tabular-nums;
+
+  white-space: nowrap;
+}
+
+.venue-added-time {
+  min-height: 1.25em;
+
+  margin-top: 8px;
+
+  font-size: clamp(18px, 1.7vw, 30px);
+  font-weight: 800;
+
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.venue-phase {
+  margin-top: clamp(10px, 2vh, 24px);
+
+  padding:
+    clamp(7px, 0.8vh, 11px)
+    clamp(14px, 1.4vw, 24px);
+
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.06);
+
+  font-size: clamp(19px, 1.8vw, 34px);
+  font-weight: 900;
+  line-height: 1;
+
+  letter-spacing: 0.025em;
+
+  white-space: nowrap;
+}
+
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+.venue-footer {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding: 4px clamp(14px, 2vw, 32px);
+
+  overflow: hidden;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+  background: rgba(2, 9, 20, 0.82);
+
+  font-size: clamp(12px, 1vw, 18px);
+  font-weight: 700;
+
+  color: rgba(255, 255, 255, 0.72);
+}
+
+#venue-game-name {
+  min-width: 0;
+
+  overflow: hidden;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+
+/* ============================================================
+   ERROR STATE
+   ============================================================ */
+
+.venue-error {
+  position: fixed;
+
+  left: 50%;
+  bottom: 8vh;
+
+  z-index: 100;
+
+  transform: translateX(-50%);
+
+  padding: 14px 22px;
+
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+
+  background: rgba(120, 20, 20, 0.94);
+
+  font-size: clamp(16px, 1.5vw, 26px);
+  font-weight: 900;
+
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+}
+
+
+/* ============================================================
+   UTILITY
+   ============================================================ */
+
+.hidden {
+  display: none !important;
+}
+
+
+/* ============================================================
+   COMPACT / SMALL DISPLAY
+   ============================================================ */
+
+@media (max-width: 1000px), (max-height: 650px) {
+
+  .venue-scoreboard {
+    grid-template-rows:
+      42px
+      minmax(0, 1fr)
+      36px;
+  }
+
+  .venue-grid {
+    grid-template-columns:
+      minmax(0, 36fr)
+      minmax(180px, 28fr)
+      minmax(0, 36fr);
+
+    gap: 8px;
+
+    padding: 8px 10px;
+  }
+
+  .venue-team {
+    grid-template-rows:
+      minmax(0, 46fr)
+      minmax(34px, 11fr)
+      minmax(0, 43fr);
+
+    border-radius: 14px;
+  }
+
+  .venue-logo-shell {
+    padding: 8px 10px 3px;
+  }
+
+  .venue-logo {
+    width: 74%;
+    height: 74%;
+
+    max-width: 74%;
+    max-height: 74%;
+  }
+
+  .venue-team-name {
+    padding: 0 6px;
+
+    font-size: clamp(18px, 2.5vw, 32px);
+  }
+
+  .venue-score {
+    padding-bottom: 3px;
+
+    font-size: clamp(80px, 14vw, 170px);
+  }
+
+  .venue-center {
+    padding: 6px;
+  }
+
+  .venue-clock {
+    font-size: clamp(48px, 7.7vw, 100px);
+  }
+
+  .venue-added-time {
+    margin-top: 4px;
+
+    font-size: clamp(14px, 1.6vw, 22px);
+  }
+
+  .venue-phase {
+    margin-top: 8px;
+
+    padding: 6px 10px;
+
+    font-size: clamp(14px, 1.7vw, 22px);
+  }
+
+  .venue-footer {
+    padding: 3px 10px;
+
+    font-size: 12px;
+  }
+}
+
+
+/* ============================================================
+   CLUB BRANDING — VENUE DISPLAY
+   ============================================================ */
+
+/*
+ * Reuses the Club branding logo already provided by the
+ * authoritative public game state.
+ *
+ * Team-logo presentation is intentionally unaffected.
+ */
+
+.venue-branding {
+  width: 100%;
+  height: clamp(120px, 23vh, 250px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: clamp(12px, 2vh, 24px);
+
+  overflow: hidden;
+}
+
+.venue-branding-logo {
+  display: block;
+
+  width: 75%;
+  height: 75%;
+
+  max-width: 75%;
+  max-height: 75%;
+
+  object-fit: contain;
+}
+
+@media (max-width: 1000px), (max-height: 650px) {
+
+  .venue-branding {
+    height: clamp(70px, 18vh, 130px);
+    margin-bottom: 6px;
+  }
+
+  .venue-branding-logo {
+    width: 72%;
+    height: 72%;
+
+    max-width: 72%;
+    max-height: 72%;
+  }
+}

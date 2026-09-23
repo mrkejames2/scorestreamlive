@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,viewport-fit=cover"
+  >
+
+  <title>ScoreStreamLive Venue Scoreboard</title>
+
+  <link
+    rel="stylesheet"
+    href="/static/css/scoreboard-m19hf4.css?v=m19hf4-3"
+  >
+</head>
+
+<body data-game-id="{{ game_id }}">
+
+  <main
+    id="venue-scoreboard"
+    class="venue-scoreboard"
+  >
+
+    <header class="venue-topbar">
+
+      <span
+        id="venue-connection"
+        data-state="connecting"
+      >
+        CONNECTING
+      </span>
+
+      <button
+        id="venue-fullscreen"
+        type="button"
+      >
+        Enter Full Screen
+      </button>
+
+    </header>
+
+
+    <section class="venue-grid">
+
+      <!-- HOME TEAM -->
+      <article class="venue-team venue-home">
+
+        <div class="venue-logo-shell">
+
+          <span
+            id="venue-home-logo-fallback"
+            class="venue-logo-fallback"
+          >
+            H
+          </span>
+
+          <img
+            id="venue-home-logo"
+            class="venue-logo hidden"
+            alt=""
+          >
+
+        </div>
+
+        <div
+          id="venue-home-name"
+          class="venue-team-name"
+        >
+          HOME
+        </div>
+
+        <div
+          id="venue-home-score"
+          class="venue-score"
+        >
+          0
+        </div>
+
+      </article>
+
+
+      <!-- CLOCK / MATCH STATE -->
+      <section class="venue-center">
+
+        <div
+          id="venue-branding"
+          class="venue-branding hidden"
+        >
+          <img
+            id="venue-branding-logo"
+            class="venue-branding-logo"
+            alt=""
+          >
+        </div>
+
+        <div
+          id="venue-clock"
+          class="venue-clock"
+        >
+          00:00
+        </div>
+
+        <div
+          id="venue-added-time"
+          class="venue-added-time"
+        ></div>
+
+        <div
+          id="venue-phase"
+          class="venue-phase"
+        >
+          PREGAME
+        </div>
+
+      </section>
+
+
+      <!-- AWAY TEAM -->
+      <article class="venue-team venue-away">
+
+        <div class="venue-logo-shell">
+
+          <span
+            id="venue-away-logo-fallback"
+            class="venue-logo-fallback"
+          >
+            A
+          </span>
+
+          <img
+            id="venue-away-logo"
+            class="venue-logo hidden"
+            alt=""
+          >
+
+        </div>
+
+        <div
+          id="venue-away-name"
+          class="venue-team-name"
+        >
+          AWAY
+        </div>
+
+        <div
+          id="venue-away-score"
+          class="venue-score"
+        >
+          0
+        </div>
+
+      </article>
+
+    </section>
+
+
+    <footer class="venue-footer">
+
+      <span id="venue-game-name"></span>
+
+      <span>
+        Powered by ScoreStreamLive
+      </span>
+
+    </footer>
+
+
+    <div
+      id="venue-error"
+      class="venue-error hidden"
+    >
+      SCOREBOARD DATA UNAVAILABLE
+    </div>
+
+  </main>
+
+
+  <script src="/static/vendor/socket.io.min.js"></script>
+  <script src="/static/js/overlay/socket-context.js"></script>
+
+  <script
+    type="module"
+    src="/static/js/scoreboard/scoreboard-m19hf4.js?v=m19hf4-3"
+  ></script>
+
+</body>
+</html>

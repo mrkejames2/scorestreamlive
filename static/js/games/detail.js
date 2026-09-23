@@ -184,6 +184,7 @@ function render() {
   byId("control-link").querySelector("strong").textContent =
     isResumableGame() ? "Resume Control Center" : "Open Control Center";
   byId("overlay-link").href = `/stream/games/${game.id}`;
+  byId("venue-scoreboard-link").href = `/scoreboard/games/${game.id}`;
   byId("overlay-link").querySelector("strong").textContent = "Open Stream";
   byId("roster-link").href = `/games/${game.id}/setup`;
 
