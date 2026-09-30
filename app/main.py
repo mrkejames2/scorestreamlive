@@ -24,6 +24,7 @@ from app.api.game_sponsors import router as game_sponsors_router
 from app.api.game_sponsor_presentation import router as game_sponsor_presentation_router
 from app.api.sponsor_reports import router as sponsor_reports_router
 from app.api.game_intro import router as game_intro_router
+from app.api.broadcast_artwork import router as broadcast_artwork_router
 from app.api.game_thank_you import router as game_thank_you_router
 from app.api.game_advertisement import router as game_advertisement_router
 from app.api.game_broadcast_presentation import router as game_broadcast_presentation_router
@@ -157,6 +158,7 @@ app.include_router(game_sponsors_router)
 app.include_router(game_sponsor_presentation_router)
 app.include_router(sponsor_reports_router)
 app.include_router(game_intro_router)
+app.include_router(broadcast_artwork_router)
 app.include_router(game_thank_you_router)
 app.include_router(game_advertisement_router)
 app.include_router(game_broadcast_presentation_router)
