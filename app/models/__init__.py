@@ -21,6 +21,7 @@ from app.models.game_sponsor_presentation import GameSponsorPresentation
 from app.models.sponsor_impression import SponsorImpression
 from app.models.game_sponsor_tracking_state import GameSponsorTrackingState
 from app.models.game_broadcast_presentation import GameBroadcastPresentation
+from app.models.game_halftime_slideshow import GameHalftimeSlideshow, GameHalftimeSlideshowSlide
 from app.models.scoring_event import ScoringEvent
 from app.models.game_clock import GameClock
 from app.models.game_lifecycle import GameLifecycle
@@ -52,6 +53,8 @@ __all__ = [
     "SponsorImpression",
     "GameSponsorTrackingState",
     "GameBroadcastPresentation",
+    "GameHalftimeSlideshow",
+    "GameHalftimeSlideshowSlide",
     "ScoringEvent",
     "GameClock",
     "GameLifecycle",

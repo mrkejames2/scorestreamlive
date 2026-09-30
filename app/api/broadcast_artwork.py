@@ -9,6 +9,7 @@ from app.auth.security import require_same_origin_mutation
 from app.database import get_session
 from app.models.broadcast_artwork import BroadcastArtwork
 from app.models.game import Game
+from app.models.game_halftime_slideshow import GameHalftimeSlideshowSlide
 from app.models.user import User
 from app.services.broadcast_artwork_storage import *
 router=APIRouter(tags=["broadcast-artwork"])
@@ -52,6 +53,8 @@ async def remove(artwork_id:uuid.UUID,request:Request,current_user:User=Depends(
     require_same_origin_mutation(request);c=director(current_user);a=await owned(db,c,artwork_id)
     used=(await db.execute(select(Game.id).where(Game.club_id==c,or_(Game.intro_artwork_id==a.id,Game.thank_you_artwork_id==a.id)).limit(1))).scalar_one_or_none()
     if used is not None:raise HTTPException(409,"Artwork is currently assigned to one or more games")
+    slide_used=(await db.execute(select(GameHalftimeSlideshowSlide.id).where(GameHalftimeSlideshowSlide.artwork_id==a.id).limit(1))).scalar_one_or_none()
+    if slide_used is not None:raise HTTPException(409,"Artwork is currently assigned to a Halftime Slideshow")
     n=filename_from_url(a.image_url);await db.delete(a);await db.commit();delete_filename(n);return Response(status_code=204)
 @router.get("/api/broadcast-artwork-assets/{filename}")
 async def asset(filename:str):

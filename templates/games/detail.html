@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/static/css/sponsor-report-m19g.css?v=m19g-1">
   <link rel="stylesheet" href="/static/css/game-intro-m19h.css?v=m19hf1b-1">
   <link rel="stylesheet" href="/static/css/broadcast-artwork-m19hf6.css?v=m19hf6-2">
+  <link rel="stylesheet" href="/static/css/halftime-slideshow-m19hf7.css?v=m19hf7-2">
   <link rel="stylesheet" href="/static/css/account-nav.css">
   <link rel="stylesheet" href="/static/css/product-theme-m17h.css?v=m18g3-branding1">
   <link rel="icon" href="/static/brand/scorestreamlive-mark.svg?v=m17h-1" type="image/svg+xml">
@@ -123,6 +124,32 @@
       <div class="game-intro-grid"><img id="m19hf2-advertisement-preview" class="game-intro-preview" alt="Advertisement preview" hidden><div class="game-intro-actions"><label class="button button-secondary">Upload / Replace Image<input id="m19hf2-advertisement-upload" type="file" accept="image/png,image/jpeg,image/webp" hidden></label><label><input id="m19hf2-advertisement-enabled" type="checkbox"> Enable Advertisement</label><button id="m19hf2-advertisement-remove" class="button button-secondary" type="button">Remove Image</button><span id="m19hf2-advertisement-message" class="game-intro-message" role="status"></span></div></div>
     </section>
 
+    <section id="m19hf7-halftime-panel" class="game-intro-panel hidden">
+      <div><span class="eyebrow">HALFTIME PRESENTATION</span><h2>Halftime Slideshow</h2><p>Select reusable Broadcast Artwork, arrange the order, and choose how long each image stays on screen.</p></div>
+      <div id="m19hf7-upload-area" class="m19hf7-upload-area">
+        <label class="button button-secondary m19hf7-upload-button">
+          Upload Slideshow Images
+          <input id="m19hf7-upload" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden>
+        </label>
+        <span class="m19hf7-upload-hint">PNG, JPG or WebP · Select multiple images</span>
+      </div>
+
+      <div class="m19hf7-existing-heading">OR ADD EXISTING ARTWORK</div>
+      <div class="m19hf7-add-row">
+        <select id="m19hf7-artwork"></select>
+        <button id="m19hf7-add" class="button button-secondary" type="button">Add to Slideshow</button>
+      </div>
+
+      <div class="m19hf7-controls">
+        <label><input id="m19hf7-enabled" type="checkbox"> Enable Halftime Slideshow</label>
+        <label>Slide Interval <select id="m19hf7-interval"><option value="5">5 seconds</option><option value="10">10 seconds</option><option value="15">15 seconds</option><option value="20">20 seconds</option><option value="30">30 seconds</option></select></label>
+        <button id="m19hf7-save" class="button button-secondary" type="button">Save Slideshow Settings</button>
+      </div>
+
+      <div id="m19hf7-slide-list" class="m19hf7-slide-list"></div>
+      <span id="m19hf7-message" class="game-intro-message" role="status"></span>
+    </section>
+
     <section id="m19hf1b-thank-you-panel" class="game-intro-panel hidden">
       <div><span class="eyebrow">STREAM THANK YOU SCREEN</span><h2>Broadcast Thank You Screen</h2><p>Select reusable artwork from your club library. Recommended 16:9 artwork, 1280×720 or higher.</p></div>
       <div class="game-intro-grid"><img id="m19hf1b-thank-you-preview" class="game-intro-preview" alt="Thank You Screen preview" hidden><div class="game-intro-actions"><label class="button button-secondary">Upload / Replace Image<input id="m19hf1b-thank-you-upload" type="file" accept="image/png,image/jpeg,image/webp" hidden></label><label><input id="m19hf1b-thank-you-enabled" type="checkbox"> Enable Thank You Screen</label><button id="m19hf1b-thank-you-remove" class="button button-secondary" type="button">Remove Image</button><span id="m19hf1b-thank-you-message" class="game-intro-message" role="status"></span></div></div>
@@ -173,6 +200,7 @@
   <script type="module">import {loadGameIntro} from "/static/js/games/game-intro-m19h.js?v=m19hf6-3"; loadGameIntro(document.body.dataset.gameId);</script>
   <script type="module">import {loadGameThankYou} from "/static/js/games/game-thank-you-m19hf1b.js?v=m19hf6-3"; loadGameThankYou(document.body.dataset.gameId);</script>
   <script type="module">import {loadGameAdvertisement} from "/static/js/games/game-advertisement-m19hf2.js?v=m19hf2-1"; loadGameAdvertisement(document.body.dataset.gameId);</script>
+  <script type="module">import {loadHalftimeSlideshow} from "/static/js/games/halftime-slideshow-m19hf7.js?v=m19hf7-2"; loadHalftimeSlideshow(document.body.dataset.gameId);</script>
   <script src="/static/js/account-nav.js?v=m18g3-branding1"></script>
 </body>
 </html>

@@ -1,10 +1,10 @@
 /* M19 Sponsor Zone — Broadcast Glass Presentation */
 .sponsor-zone{--club-primary:#2A77FF;--club-secondary:#FFF;position:absolute;top:22px;right:28px;z-index:30;width:176px;box-sizing:border-box;overflow:hidden;border:1px solid rgba(255,255,255,.30);border-left:3px solid var(--club-primary);border-radius:9px;background:linear-gradient(145deg,rgba(13,30,47,.42),rgba(4,13,23,.24));box-shadow:0 8px 24px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.14);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
-.sponsor-stage{display:grid;place-items:center;min-height:66px;padding:6px 8px 4px}
-.sponsor-logo{display:block;max-width:156px;max-height:56px;width:auto;height:auto;object-fit:contain;opacity:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.28));transition:opacity .3s ease}
+.sponsor-stage{display:grid;place-items:center;height:62px;padding:4px 6px;background:rgba(255,255,255,.90);box-sizing:border-box}
+.sponsor-logo{display:block;max-width:164px;max-height:54px;width:auto;height:auto;object-fit:contain;opacity:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.28));transition:opacity .3s ease}
 .sponsor-logo.sponsor-fading{opacity:0}
 .sponsor-fallback{display:flex;min-height:54px;align-items:center;justify-content:center;gap:9px;padding:7px 10px;background:linear-gradient(135deg,color-mix(in srgb,var(--club-primary) 34%,rgba(5,11,20,.88)),rgba(5,11,20,.82))}
 .sponsor-fallback-logo{width:31px;height:31px;object-fit:contain}.sponsor-fallback-copy{display:grid;gap:1px;line-height:1}.sponsor-fallback-copy span{color:var(--club-secondary);opacity:.72;font-size:7px;font-weight:800;letter-spacing:.10em;text-transform:uppercase}.sponsor-fallback-copy strong{color:#fff;font-size:11px;font-weight:900}
 .sponsor-powered-by{padding:3px 7px 4px;border-top:1px solid rgba(255,255,255,.16);background:rgba(5,15,26,.30);color:rgba(255,255,255,.78);font-size:6px;font-weight:850;letter-spacing:.09em;text-align:center;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,.42)}
 .sponsor-zone.is-fallback{border-left-width:5px;background:rgba(5,15,26,.86);backdrop-filter:none;-webkit-backdrop-filter:none}.sponsor-zone.is-fallback .sponsor-powered-by{display:none}
-@media(max-width:800px){.sponsor-zone{top:10px;right:10px;width:164px}.sponsor-stage{min-height:62px;padding:5px 7px 3px}.sponsor-logo{max-width:146px;max-height:52px}}
+@media(max-width:800px){.sponsor-zone{top:10px;right:10px;width:164px}.sponsor-stage{height:58px;min-height:0;padding:4px 6px}.sponsor-logo{max-width:152px;max-height:50px}}

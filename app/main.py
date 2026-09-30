@@ -28,6 +28,7 @@ from app.api.broadcast_artwork import router as broadcast_artwork_router
 from app.api.game_thank_you import router as game_thank_you_router
 from app.api.game_advertisement import router as game_advertisement_router
 from app.api.game_broadcast_presentation import router as game_broadcast_presentation_router
+from app.api.game_halftime_slideshow import router as game_halftime_slideshow_router
 from app.api.games import router as games_router
 from app.api.invitations import router as invitations_router
 from app.api.players import router as players_router
@@ -162,6 +163,7 @@ app.include_router(broadcast_artwork_router)
 app.include_router(game_thank_you_router)
 app.include_router(game_advertisement_router)
 app.include_router(game_broadcast_presentation_router)
+app.include_router(game_halftime_slideshow_router)
 app.include_router(game_clock_router)
 app.include_router(scoring_events_router)
 app.include_router(games_router)

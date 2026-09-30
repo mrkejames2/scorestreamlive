@@ -10,6 +10,7 @@ export async function initBroadcastPresentation(gameId) {
   const intro = document.getElementById("m19h-show-intro");
   const live = document.getElementById("m19h-go-live");
   const advertisement = document.getElementById("m19hf2-show-advertisement");
+  const halftime = document.getElementById("m19hf7-show-halftime");
   const summary = document.getElementById("m19hf1b-show-summary");
   const thankYou = document.getElementById("m19hf1b-show-thank-you");
 
@@ -23,12 +24,14 @@ export async function initBroadcastPresentation(gameId) {
 
     intro.disabled = !state?.intro?.image_url;
     advertisement.disabled = !state?.advertisement?.image_url;
+    halftime.disabled = !(state?.halftime_slideshow?.enabled && state?.halftime_slideshow?.slides?.length);
     thankYou.disabled = !state?.thank_you?.image_url;
 
     for (const [name, button] of [
       ["intro", intro],
       ["live", live],
       ["advertisement", advertisement],
+      ["halftime_slideshow", halftime],
       ["summary", summary],
       ["thank_you", thankYou],
     ]) {
@@ -71,6 +74,7 @@ export async function initBroadcastPresentation(gameId) {
         intro: "Welcome Screen is live.",
         live: "Live Game scene is active.",
         advertisement: "Advertisement is live.",
+        halftime_slideshow: "Halftime Slideshow is live.",
         summary: "Game Summary is live.",
         thank_you: "Thank You Screen is live.",
       }[scene];
@@ -123,12 +127,16 @@ export async function initBroadcastPresentation(gameId) {
   intro.onclick = () => setScene("intro");
   live.onclick = () => setScene("live");
   advertisement.onclick = () => setScene("advertisement");
+  halftime.onclick = () => setScene("halftime_slideshow");
   summary.onclick = () => setScene("summary");
   thankYou.onclick = () => setScene("thank_you");
 
   if (copyStreamUrl) {
     copyStreamUrl.addEventListener("click", copyCanonicalStreamUrl);
   }
+
+  // Refresh scene availability when returning from Game Detail or another tab.
+  window.addEventListener("focus", recover);
 
   await recover();
 }
