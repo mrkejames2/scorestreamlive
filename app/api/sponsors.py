@@ -15,10 +15,14 @@ def _require_director_club(user:User)->uuid.UUID:
     if user.club_id is None: raise HTTPException(status_code=409,detail="User is not assigned to a Club")
     if user.club_role!="DIRECTOR": raise HTTPException(status_code=403,detail="Director access required.")
     return user.club_id
+def _require_manager_club(user:User)->uuid.UUID:
+    if user.club_id is None: raise HTTPException(status_code=409,detail="User is not assigned to a Club")
+    if user.club_role not in {"DIRECTOR","MANAGER"}: raise HTTPException(status_code=403,detail="Director or Manager access required.")
+    return user.club_id
 
 @router.get("/api/account/sponsors",response_model=list[SponsorResponse])
 async def sponsors(current_user:User=Depends(require_current_user),db:AsyncSession=Depends(get_session)):
-    return await list_sponsors(db,_require_director_club(current_user))
+    return await list_sponsors(db,_require_manager_club(current_user))
 
 @router.post("/api/account/sponsors",response_model=SponsorResponse,status_code=201)
 async def create(data:SponsorCreate,current_user:User=Depends(require_current_user),db:AsyncSession=Depends(get_session)):

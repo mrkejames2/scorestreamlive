@@ -23,7 +23,6 @@ from app.auth.authorization import (
 from app.auth.dependencies import require_current_user
 from app.auth.roles import ClubRole
 from app.database import get_session
-from app.models.team_manager import TeamManager
 from app.models.user import User
 from app.schemas.player import PlayerResponse
 from app.schemas.team import (
@@ -79,22 +78,11 @@ async def create(
             detail="Insufficient permission",
         )
 
-    team = await create_team(
+    return await create_team(
         db,
         data,
         _require_club(current_user),
     )
-
-    if current_user.club_role == ClubRole.MANAGER.value:
-        db.add(
-            TeamManager(
-                team_id=team.id,
-                user_id=current_user.id,
-            )
-        )
-        await db.commit()
-
-    return team
 
 
 @router.get("", response_model=list[TeamResponse])
