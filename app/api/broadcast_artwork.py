@@ -51,7 +51,7 @@ async def rename(artwork_id:uuid.UUID,data:dict,request:Request,current_user:Use
 @router.delete("/api/account/broadcast-artwork/{artwork_id}",status_code=204)
 async def remove(artwork_id:uuid.UUID,request:Request,current_user:User=Depends(require_current_user),db:AsyncSession=Depends(get_session)):
     require_same_origin_mutation(request);c=director(current_user);a=await owned(db,c,artwork_id)
-    used=(await db.execute(select(Game.id).where(Game.club_id==c,or_(Game.intro_artwork_id==a.id,Game.thank_you_artwork_id==a.id)).limit(1))).scalar_one_or_none()
+    used=(await db.execute(select(Game.id).where(Game.club_id==c,or_(Game.intro_artwork_id==a.id,Game.thank_you_artwork_id==a.id,Game.advertisement_artwork_id==a.id)).limit(1))).scalar_one_or_none()
     if used is not None:raise HTTPException(409,"Artwork is currently assigned to one or more games")
     slide_used=(await db.execute(select(GameHalftimeSlideshowSlide.id).where(GameHalftimeSlideshowSlide.artwork_id==a.id).limit(1))).scalar_one_or_none()
     if slide_used is not None:raise HTTPException(409,"Artwork is currently assigned to a Halftime Slideshow")

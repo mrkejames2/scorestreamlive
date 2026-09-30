@@ -50,5 +50,7 @@ class Game(Base):
     thank_you_enabled: Mapped[bool] = mapped_column(nullable=False, default=False)
     thank_you_updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     advertisement_image_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    advertisement_artwork_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("broadcast_artworks.id", ondelete="RESTRICT"), nullable=True)
+    advertisement_artwork: Mapped[Optional["BroadcastArtwork"]] = relationship("BroadcastArtwork", foreign_keys=[advertisement_artwork_id])
     advertisement_enabled: Mapped[bool] = mapped_column(nullable=False, default=False)
     advertisement_updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
