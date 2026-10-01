@@ -21,8 +21,16 @@ need_text static/css/product-theme-m17h-r6.css \
   'Roster player rows have explicit contrast'
 
 need_text static/css/product-theme-m17h-r6.css \
-  '.player-name' \
+  '.roster-card .player-name' \
   'Roster player names have explicit readable contrast'
+
+need_text static/css/product-theme-m17h-r6.css \
+  'color: #eef4ff !important;' \
+  'Roster text has explicit high-contrast color'
+
+need_text static/css/product-theme-m17h-r6.css \
+  '.roster-card .jersey-number' \
+  'Roster jersey numbers have explicit readable contrast'
 
 need_text templates/games/setup.html \
   '/static/css/product-theme-m17h-r6.css?v=m17h-r6' \

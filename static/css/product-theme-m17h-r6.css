@@ -225,3 +225,32 @@
   }
 
 }
+
+
+/* ============================================================
+   M17-HF9 GAME SETUP ROSTER CONTRAST HOTFIX
+   ============================================================ */
+
+/*
+ * Game Setup uses the dark roster surface from game-setup.css.
+ * Later product-theme layers can override inherited text colors,
+ * so explicitly preserve readable roster contrast here.
+ */
+
+.roster-card .player-row {
+  color: #eef4ff !important;
+}
+
+.roster-card .player-name {
+  color: #eef4ff !important;
+  font-weight: 780 !important;
+}
+
+.roster-card .jersey-number {
+  background: rgba(255, 255, 255, .10) !important;
+  color: #ffffff !important;
+}
+
+.roster-card .roster-empty {
+  color: rgba(238, 244, 255, .62) !important;
+}
