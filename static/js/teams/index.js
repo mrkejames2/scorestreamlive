@@ -103,7 +103,21 @@ async function saveTeam(e){
     if(editingTeam){team=await json(`/api/teams/${editingTeam.id}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});}
     else{team=await json("/api/teams",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});}
     if(logoInput.files[0]){const fd=new FormData();fd.append("logo",logoInput.files[0]);team=await json(`/api/teams/${team.id}/logo`,{method:"POST",body:fd});}
-    const wasEditing=Boolean(editingTeam);closeModal({restoreFocus:false});await /* M19-HF9: TEAM LIST FILTER */
+    const wasEditing=Boolean(editingTeam);closeModal({restoreFocus:false});await loadTeams();notice(successEl,`${team.name} ${wasEditing?"updated":"created"} successfully.`);setTimeout(()=>notice(successEl,""),5000);
+  }catch(e){notice(formError,e.message||"Unable to save Team.");setStatus("error","ERROR");}
+  finally{save.disabled=false;save.textContent=originalLabel;if(!modal.classList.contains("hidden"))setStatus("ready","READY");}
+}
+$("#create-team").onclick=(event)=>openModal(null,event.currentTarget);
+document.querySelector(".empty-create-team").onclick=(event)=>openModal(null,event.currentTarget);
+refreshButton.onclick=loadTeams;form.onsubmit=saveTeam;
+document.querySelectorAll("[data-close-modal]").forEach(x=>x.onclick=()=>closeModal());
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!modal.classList.contains("hidden"))closeModal();});
+[nameInput,shortInput,primaryInput,secondaryInput].forEach(x=>x.addEventListener("input",syncPreview));
+primaryInput.addEventListener("input",()=>syncPicker(primaryInput,primaryPicker));secondaryInput.addEventListener("input",()=>syncPicker(secondaryInput,secondaryPicker));
+primaryPicker.addEventListener("input",()=>{primaryInput.value=primaryPicker.value.toUpperCase();syncPreview();});
+secondaryPicker.addEventListener("input",()=>{secondaryInput.value=secondaryPicker.value.toUpperCase();syncPreview();});
+logoInput.addEventListener("change",()=>{const f=logoInput.files[0];if(!f)return;const img=$("#preview-logo");img.src=URL.createObjectURL(f);img.classList.remove("hidden");$("#preview-letter").classList.add("hidden");});
+/* M19-HF9: TEAM LIST FILTER */
 if(teamFilterInput){
   teamFilterInput.addEventListener("input",render);
 
@@ -123,18 +137,4 @@ if(clearTeamFilter){
   });
 }
 
-loadTeams();notice(successEl,`${team.name} ${wasEditing?"updated":"created"} successfully.`);setTimeout(()=>notice(successEl,""),5000);
-  }catch(e){notice(formError,e.message||"Unable to save Team.");setStatus("error","ERROR");}
-  finally{save.disabled=false;save.textContent=originalLabel;if(!modal.classList.contains("hidden"))setStatus("ready","READY");}
-}
-$("#create-team").onclick=(event)=>openModal(null,event.currentTarget);
-document.querySelector(".empty-create-team").onclick=(event)=>openModal(null,event.currentTarget);
-refreshButton.onclick=loadTeams;form.onsubmit=saveTeam;
-document.querySelectorAll("[data-close-modal]").forEach(x=>x.onclick=()=>closeModal());
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!modal.classList.contains("hidden"))closeModal();});
-[nameInput,shortInput,primaryInput,secondaryInput].forEach(x=>x.addEventListener("input",syncPreview));
-primaryInput.addEventListener("input",()=>syncPicker(primaryInput,primaryPicker));secondaryInput.addEventListener("input",()=>syncPicker(secondaryInput,secondaryPicker));
-primaryPicker.addEventListener("input",()=>{primaryInput.value=primaryPicker.value.toUpperCase();syncPreview();});
-secondaryPicker.addEventListener("input",()=>{secondaryInput.value=secondaryPicker.value.toUpperCase();syncPreview();});
-logoInput.addEventListener("change",()=>{const f=logoInput.files[0];if(!f)return;const img=$("#preview-logo");img.src=URL.createObjectURL(f);img.classList.remove("hidden");$("#preview-letter").classList.add("hidden");});
 loadTeams();
