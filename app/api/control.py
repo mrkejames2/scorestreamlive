@@ -135,6 +135,7 @@ async def public_overlay_state(
             "home_score": game.home_score,
             "away_score": game.away_score,
             "broadcast_message": game.broadcast_message,
+            "overlay_theme": game.overlay_theme or "standard",
         },
         "home_team": _public_team(game.home_team),
         "away_team": _public_team(game.away_team),

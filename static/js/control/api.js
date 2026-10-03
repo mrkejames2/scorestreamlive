@@ -145,3 +145,7 @@ export function updateScoringEventScorer(eventId, playerId = null) {
 export function deleteScoringEvent(eventId) {
   return requestJson(`/api/scoring-events/${encodeURIComponent(eventId)}`, { method: "DELETE" });
 }
+
+export function updateOverlayTheme(gameId, overlayTheme) {
+  return requestJson(`/api/games/${encodeURIComponent(gameId)}/overlay-theme`, {method:"PATCH",payload:{overlay_theme:overlayTheme}});
+}

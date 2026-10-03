@@ -43,6 +43,27 @@
       </div>
     </div>
 
+    <!-- M19-HF9: TEAM LIST FILTER -->
+    <div class="team-filter">
+      <label for="team-filter-input">Find a team</label>
+      <div class="team-filter-input-row">
+        <input
+          id="team-filter-input"
+          type="search"
+          placeholder="Search teams..."
+          autocomplete="off"
+          spellcheck="false"
+          aria-controls="teams-list"
+        >
+        <button
+          id="clear-team-filter"
+          class="button button-secondary team-filter-clear hidden"
+          type="button"
+        >Clear</button>
+      </div>
+      <div id="team-filter-status" class="team-filter-status" aria-live="polite"></div>
+    </div>
+
     <div id="teams-error" class="notice notice-error hidden" role="alert"></div>
     <div id="teams-success" class="notice notice-success hidden" role="status" aria-live="polite"></div>
 

@@ -25,3 +25,70 @@
 #team-modal .preview-logo-shell {
   color: #f4f7fb !important;
 }
+
+/* M19-HF9: TEAM LIST FILTER */
+
+.team-filter {
+  padding: 16px 22px 0;
+}
+
+.team-filter > label {
+  display: block;
+  margin-bottom: 7px;
+  color: rgba(238,244,255,.72);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.team-filter-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.team-filter input[type="search"] {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--tap);
+  padding: 10px 13px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 10px;
+  background: #07111f;
+  color: #eef4ff;
+  font: inherit;
+}
+
+.team-filter input[type="search"]::placeholder {
+  color: rgba(238,244,255,.38);
+}
+
+.team-filter input[type="search"]:focus-visible {
+  outline: 3px solid #9bc0ff;
+  outline-offset: 3px;
+}
+
+.team-filter-clear {
+  flex: 0 0 auto;
+}
+
+.team-filter-status {
+  min-height: 18px;
+  padding-top: 6px;
+  color: rgba(238,244,255,.52);
+  font-size: 11px;
+}
+
+@media(max-width:560px) {
+  .team-filter {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+
+  .team-filter-input-row {
+    align-items: stretch;
+  }
+}
+
+/* END M19-HF9 TEAM LIST FILTER */

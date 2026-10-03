@@ -444,3 +444,78 @@ body {
       minmax(44px, 20%);
   }
 }
+
+/* M19-HF9: TEAM-GROUPED BROADCAST SCORING SUMMARY */
+
+.broadcast-scoring-events {
+  display: block;
+}
+
+.broadcast-team-scoring-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(12px, 2vw, 28px);
+}
+
+.broadcast-team-scoring-column {
+  min-width: 0;
+}
+
+.broadcast-team-scoring-column.scoring-column-home {
+  border-right: 1px solid #e2e8f0;
+  padding-right: clamp(6px, 1vw, 14px);
+}
+
+.broadcast-team-scoring-column.scoring-column-away {
+  padding-left: clamp(6px, 1vw, 14px);
+}
+
+.broadcast-team-scoring-columns .scoring-column-heading {
+  text-align: center;
+  font-weight: 900;
+  font-size: clamp(11px, 1.3vw, 17px);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 5px 4px 7px;
+  color: #12283a;
+}
+
+.broadcast-team-scoring-columns
+.scoring-column-home
+.scoring-column-heading {
+  border-bottom: 3px solid var(--home-primary, #2A77FF);
+}
+
+.broadcast-team-scoring-columns
+.scoring-column-away
+.scoring-column-heading {
+  border-bottom: 3px solid var(--away-primary, #2A77FF);
+}
+
+.broadcast-team-scoring-columns .broadcast-scoring-row {
+  grid-template-columns:
+    clamp(28px, 3.6vw, 46px)
+    minmax(0, 1fr);
+
+  gap: clamp(4px, .8vw, 10px);
+}
+
+.broadcast-team-scoring-columns
+.broadcast-scoring-row
+.scoring-team {
+  grid-column: 2;
+  text-align: left;
+  font-size: .82em;
+  color: #64748b;
+  margin-top: -3px;
+}
+
+.broadcast-team-scoring-columns .scoring-column-empty {
+  text-align: center;
+  padding: clamp(8px, 1.5vh, 16px);
+  color: #94a3b8;
+  font-size: clamp(10px, 1.2vw, 15px);
+  font-style: italic;
+}
+
+/* END M19-HF9 TEAM-GROUPED BROADCAST SCORING SUMMARY */

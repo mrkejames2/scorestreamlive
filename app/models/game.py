@@ -39,6 +39,7 @@ class Game(Base):
     home_score: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     away_score: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     broadcast_message: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    overlay_theme: Mapped[str] = mapped_column(String(32), nullable=False, default="standard")
     intro_image_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     intro_artwork_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("broadcast_artworks.id", ondelete="RESTRICT"), nullable=True)
     intro_artwork: Mapped[Optional["BroadcastArtwork"]] = relationship("BroadcastArtwork", foreign_keys=[intro_artwork_id])

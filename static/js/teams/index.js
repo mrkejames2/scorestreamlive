@@ -1,6 +1,7 @@
 const $ = (s) => document.querySelector(s);
 const statusEl=$("#teams-status"), listEl=$("#teams-list"), emptyEl=$("#teams-empty");
 const errorEl=$("#teams-error"), successEl=$("#teams-success"), refreshButton=$("#refresh-teams");
+const teamFilterInput=$("#team-filter-input"), clearTeamFilter=$("#clear-team-filter"), teamFilterStatus=$("#team-filter-status");
 const template=$("#team-card-template"), modal=$("#team-modal"), form=$("#team-form"), formError=$("#form-error");
 const summaryTotal=$("#summary-total"), summaryLogos=$("#summary-logos"), summaryBranded=$("#summary-branded");
 const nameInput=$("#team-name"), shortInput=$("#team-short-name"), logoInput=$("#team-logo");
@@ -34,11 +35,37 @@ function renderTeam(t){
   card.dataset.teamId=t.id;listEl.appendChild(n);
 }
 function render(){
-  listEl.replaceChildren();emptyEl.classList.toggle("hidden",teams.length!==0);
+  listEl.replaceChildren();
+
+  const query=String(teamFilterInput?.value||"").trim().toLowerCase();
+
+  const filteredTeams=query
+    ? teams.filter(t=>{
+        const name=String(t?.name||"").toLowerCase();
+        const shortName=String(t?.short_name||"").toLowerCase();
+        return name.includes(query)||shortName.includes(query);
+      })
+    : teams;
+
+  emptyEl.classList.toggle("hidden",teams.length!==0);
+
   summaryTotal.textContent=teams.length;
   summaryLogos.textContent=teams.filter(t=>t.logo_url).length;
   summaryBranded.textContent=teams.filter(t=>t.logo_url||color(t.primary_color)||color(t.secondary_color)).length;
-  teams.forEach(renderTeam);
+
+  filteredTeams.forEach(renderTeam);
+
+  if(teamFilterStatus){
+    if(!query){
+      teamFilterStatus.textContent="";
+    }else if(filteredTeams.length===0){
+      teamFilterStatus.textContent="No teams match your search.";
+    }else{
+      teamFilterStatus.textContent=`${filteredTeams.length} team${filteredTeams.length===1?"":"s"} found`;
+    }
+  }
+
+  clearTeamFilter?.classList.toggle("hidden",!query);
 }
 async function loadTeams(){
   const g=++generation;setStatus("loading","LOADING");refreshButton.disabled=true;notice(errorEl,"");listEl.setAttribute("aria-busy","true");
@@ -76,7 +103,27 @@ async function saveTeam(e){
     if(editingTeam){team=await json(`/api/teams/${editingTeam.id}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});}
     else{team=await json("/api/teams",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});}
     if(logoInput.files[0]){const fd=new FormData();fd.append("logo",logoInput.files[0]);team=await json(`/api/teams/${team.id}/logo`,{method:"POST",body:fd});}
-    const wasEditing=Boolean(editingTeam);closeModal({restoreFocus:false});await loadTeams();notice(successEl,`${team.name} ${wasEditing?"updated":"created"} successfully.`);setTimeout(()=>notice(successEl,""),5000);
+    const wasEditing=Boolean(editingTeam);closeModal({restoreFocus:false});await /* M19-HF9: TEAM LIST FILTER */
+if(teamFilterInput){
+  teamFilterInput.addEventListener("input",render);
+
+  teamFilterInput.addEventListener("keydown",event=>{
+    if(event.key==="Escape" && teamFilterInput.value){
+      teamFilterInput.value="";
+      render();
+    }
+  });
+}
+
+if(clearTeamFilter){
+  clearTeamFilter.addEventListener("click",()=>{
+    teamFilterInput.value="";
+    render();
+    teamFilterInput.focus();
+  });
+}
+
+loadTeams();notice(successEl,`${team.name} ${wasEditing?"updated":"created"} successfully.`);setTimeout(()=>notice(successEl,""),5000);
   }catch(e){notice(formError,e.message||"Unable to save Team.");setStatus("error","ERROR");}
   finally{save.disabled=false;save.textContent=originalLabel;if(!modal.classList.contains("hidden"))setStatus("ready","READY");}
 }

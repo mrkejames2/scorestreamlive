@@ -172,3 +172,83 @@ body[data-summary-surface="summary"] .scoring-row-away .scoring-team {
   color: var(--away-primary);
   font-weight: 800;
 }
+
+/* M19-HF9: TEAM-GROUPED SCORING SUMMARY */
+
+.team-scoring-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 28px;
+}
+
+.team-scoring-column {
+  min-width: 0;
+}
+
+.scoring-column-home {
+  border-right: 1px solid #e5e7eb;
+  padding-right: 14px;
+}
+
+.scoring-column-away {
+  padding-left: 14px;
+}
+
+.scoring-column-heading {
+  text-align: center;
+  font-weight: 900;
+  font-size: 1rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 8px 6px 10px;
+  margin-bottom: 2px;
+  color: #14293a;
+}
+
+.scoring-column-home .scoring-column-heading {
+  border-bottom: 4px solid var(--home-primary, #2A77FF);
+}
+
+.scoring-column-away .scoring-column-heading {
+  border-bottom: 4px solid var(--away-primary, #2A77FF);
+}
+
+.scoring-column-events .scoring-row {
+  grid-template-columns: 55px minmax(0, 1fr);
+  column-gap: 12px;
+}
+
+.scoring-column-events .scoring-row .scoring-team {
+  grid-column: 2;
+  text-align: left;
+  font-size: .85em;
+  margin-top: -8px;
+}
+
+.scoring-column-empty {
+  text-align: center;
+  padding: 18px 8px;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+@media(max-width:640px) {
+  .team-scoring-columns {
+    gap: 12px;
+  }
+
+  .scoring-column-home {
+    padding-right: 6px;
+  }
+
+  .scoring-column-away {
+    padding-left: 6px;
+  }
+
+  .scoring-column-events .scoring-row {
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 6px;
+  }
+}
+
+/* END M19-HF9 TEAM-GROUPED SCORING SUMMARY */

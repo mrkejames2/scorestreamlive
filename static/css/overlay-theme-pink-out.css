@@ -1,0 +1,92 @@
+/* M19-HF9 Pink Out — presentation only */
+body[data-overlay-theme="pink_out"] .overlay-scoreboard{border:2px solid rgba(255,255,255,.92);border-radius:10px;background:#fff7fb;box-shadow:0 14px 38px rgba(76,5,39,.46)}
+body[data-overlay-theme="pink_out"] .brand-rail{border-right:2px solid #fff;background:linear-gradient(180deg,#f7a8cb,#e83e8c 52%,#bd165e)}
+body[data-overlay-theme="pink_out"] .team-panel{position:relative;background:linear-gradient(105deg,rgba(255,255,255,.96),rgba(255,231,242,.94)),url("/static/brand/themes/pink-out/brush-texture.svg") center/cover no-repeat;color:#16131a}
+body[data-overlay-theme="pink_out"] .team-panel::after{content:"";position:absolute;width:28px;height:42px;top:8px;opacity:.95;background:url("/static/brand/themes/pink-out/ribbon.svg") center/contain no-repeat}
+body[data-overlay-theme="pink_out"] .team-home::after{right:96px} body[data-overlay-theme="pink_out"] .team-away::after{left:96px}
+body[data-overlay-theme="pink_out"] .team-label{color:#a91658;opacity:.72} body[data-overlay-theme="pink_out"] .team-name{color:#17121a;text-shadow:0 1px #fff}
+body[data-overlay-theme="pink_out"] .team-score{border-color:#fff;color:#fff;background:linear-gradient(180deg,#ef5a9d,#c61f69);box-shadow:inset 0 1px rgba(255,255,255,.4),0 3px 10px rgba(139,13,70,.28)}
+body[data-overlay-theme="pink_out"] .match-center{border-color:#fff;color:#fff;background:radial-gradient(circle at top,rgba(255,255,255,.20),transparent 55%),linear-gradient(180deg,#d52a76,#a90f55)}
+body[data-overlay-theme="pink_out"] .status-badge{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28)}
+body[data-overlay-theme="pink_out"] .phase-display{opacity:.92}
+body[data-overlay-theme="pink_out"] .overlay-scoreboard::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:linear-gradient(90deg,#f7a8cb,#e83e8c,#a90f55,#e83e8c,#f7a8cb);pointer-events:none}
+@media(max-width:900px){body[data-overlay-theme="pink_out"] .team-panel::after{width:20px;height:30px;top:5px}body[data-overlay-theme="pink_out"] .team-home::after{right:70px}body[data-overlay-theme="pink_out"] .team-away::after{left:70px}}
+
+/* M19-HF9-VISUAL-1: SCORE-SIDE AWARENESS RIBBONS */
+
+/* Remove the original ribbons from the team/logo areas. */
+body[data-overlay-theme="pink_out"] .team-panel::before,
+body[data-overlay-theme="pink_out"] .team-panel::after {
+    content: none !important;
+    display: none !important;
+}
+
+/* Scores become positioning anchors for the ribbons. */
+body[data-overlay-theme="pink_out"] .team-score {
+    position: relative !important;
+    overflow: visible !important;
+    z-index: 3;
+}
+
+/* HOME: pink ribbon immediately LEFT of the home score. */
+body[data-overlay-theme="pink_out"] .team-home .team-score::before {
+    content: "" !important;
+    display: block !important;
+    position: absolute !important;
+
+    top: 50% !important;
+    right: calc(100% + 12px) !important;
+    transform: translateY(-50%) !important;
+
+    width: 32px !important;
+    height: 51px !important;
+
+    background-image: url("/static/brand/themes/pink-out/ribbon.svg") !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-size: contain !important;
+
+    pointer-events: none !important;
+    z-index: 5 !important;
+}
+
+/* AWAY: teal ribbon immediately RIGHT of the away score. */
+body[data-overlay-theme="pink_out"] .team-away .team-score::after {
+    content: "" !important;
+    display: block !important;
+    position: absolute !important;
+
+    top: 50% !important;
+    left: calc(100% + 12px) !important;
+    transform: translateY(-50%) !important;
+
+    width: 32px !important;
+    height: 51px !important;
+
+    background: #009C95 !important;
+
+    -webkit-mask-image: url("/static/brand/themes/pink-out/ribbon.svg") !important;
+    mask-image: url("/static/brand/themes/pink-out/ribbon.svg") !important;
+
+    -webkit-mask-repeat: no-repeat !important;
+    mask-repeat: no-repeat !important;
+
+    -webkit-mask-position: center !important;
+    mask-position: center !important;
+
+    -webkit-mask-size: contain !important;
+    mask-size: contain !important;
+
+    pointer-events: none !important;
+    z-index: 5 !important;
+}
+
+/* Prevent opposite-side pseudo elements from appearing. */
+body[data-overlay-theme="pink_out"] .team-home .team-score::after,
+body[data-overlay-theme="pink_out"] .team-away .team-score::before {
+    content: none !important;
+    display: none !important;
+}
+
+/* END M19-HF9-VISUAL-1 */
+

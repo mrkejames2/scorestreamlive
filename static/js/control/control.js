@@ -13,6 +13,7 @@ import {
   getTeam,
   transitionLifecycle,
   createScoringEvent,
+  updateOverlayTheme,
 } from "./api.js";
 
 import {
@@ -454,7 +455,25 @@ function renderLiveMetadata() {
   );
 }
 
+function renderOverlayThemeControl() {
+  const select=byId("m19hf9-theme-select"), current=byId("m19hf9-theme-current"), badge=byId("m19hf9-theme-state");
+  if(!select||!current||!badge)return;
+  const theme=state.game?.overlay_theme==="pink_out"?"pink_out":"standard";
+  if(document.activeElement!==select)select.value=theme;
+  current.textContent=theme==="pink_out"?"Pink Out":"Standard";
+  badge.textContent="READY";
+}
+async function saveOverlayTheme(value) {
+  const select=byId("m19hf9-theme-select"), badge=byId("m19hf9-theme-state");
+  if(!select||!badge||!state.stateAuthoritative)return;
+  select.disabled=true; badge.textContent="SAVING...";
+  try { state.game=await updateOverlayTheme(gameIdFromPage(),value); renderOverlayThemeControl(); showOperatorMessage(`Scoreboard style changed to ${value==="pink_out"?"Pink Out":"Standard"}.`,"success",3500); }
+  catch(error){ showOperatorMessage(`Scoreboard style was not changed: ${error?.message||error}`,"error",7000); renderOverlayThemeControl(); }
+  finally{select.disabled=false;}
+}
+
 function renderStaticState() {
+  renderOverlayThemeControl();
   text("home-team-name", state.homeTeam?.name);
   text("away-team-name", state.awayTeam?.name);
   text("home-roster-team-name", state.homeTeam?.name || "Home");
@@ -1159,3 +1178,6 @@ try {
 
 // M10-F initial connection/UX synchronization
 syncMatchDayUx();
+
+const m19hf9ThemeSelect=byId("m19hf9-theme-select");
+if(m19hf9ThemeSelect)m19hf9ThemeSelect.addEventListener("change",event=>void saveOverlayTheme(event.target.value));

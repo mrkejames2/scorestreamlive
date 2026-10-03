@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="/static/css/product-theme-m17h-r2.css?v=m17h-r2">
   <link rel="stylesheet" href="/static/css/product-theme-m17h-r4.css?v=m17h-r4">
   <link rel="stylesheet" href="/static/css/control-m19-hf2-pause-clock.css?v=m19hf2-1">
+  <link rel="stylesheet" href="/static/css/control-pink-out-hf9.css?v=m19hf9-1">
 </head>
 <body class="m10e-matchday" data-game-id="{{ game_id }}">
   <main class="control-shell">
@@ -134,6 +135,17 @@
             <span class="muted">Stream URL</span>
             <code id="m19hf1b-stream-url">/stream/games/{{ game_id }}</code>
             <button id="m19hf1b-copy-stream-url" class="secondary-button" type="button">Copy Stream URL</button>
+          </div>
+        </article>
+      </section>
+
+      <section class="operator-grid">
+        <article id="m19hf9-theme-controls" class="card operator-card">
+          <div class="card-header"><h2>Scoreboard Style</h2><span id="m19hf9-theme-state" class="command-status">LOADING</span></div>
+          <p class="muted">Choose the presentation skin used by the live broadcast scoreboard. Game state and scoring are unaffected.</p>
+          <div class="m19hf9-theme-grid">
+            <div class="m19hf9-theme-field"><label for="m19hf9-theme-select">Style</label><select id="m19hf9-theme-select"><option value="standard">Standard</option><option value="pink_out">Pink Out - Breast Cancer Awareness</option></select></div>
+            <div class="m19hf9-theme-status"><span class="muted">Currently on air:</span><strong id="m19hf9-theme-current">Standard</strong></div>
           </div>
         </article>
       </section>

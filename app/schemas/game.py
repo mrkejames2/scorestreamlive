@@ -35,6 +35,13 @@ class GameCreate(GameBase):
     pass
 
 
+class GameOverlayTheme(str, Enum):
+    STANDARD = "standard"
+    PINK_OUT = "pink_out"
+
+class GameOverlayThemeUpdate(BaseModel):
+    overlay_theme: GameOverlayTheme
+
 class GameBroadcastMessageUpdate(BaseModel):
     """Operator-controlled persistent broadcast message."""
 
@@ -65,3 +72,4 @@ class GameResponse(GameBase):
     home_score: int
     away_score: int
     broadcast_message: Optional[str] = None
+    overlay_theme: GameOverlayTheme = GameOverlayTheme.STANDARD

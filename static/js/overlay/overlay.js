@@ -300,8 +300,14 @@ function renderBroadcastMessage() {
   banner.classList.toggle("hidden", !message);
 }
 
+function applyOverlayTheme(value) {
+  const normalized = ["standard","pink_out"].includes(String(value || "")) ? String(value) : "standard";
+  document.body.dataset.overlayTheme = normalized;
+}
+
 function render() {
   if (!state.game) return;
+  applyOverlayTheme(state.game?.overlay_theme);
 
   byId("home-team-name").textContent =
     state.homeTeam?.short_name || state.homeTeam?.name || "HOME";

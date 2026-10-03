@@ -20,6 +20,7 @@ from app.database import get_session
 from app.models.user import User
 from app.schemas.game import (
     GameBroadcastMessageUpdate,
+    GameOverlayThemeUpdate,
     GameCreate,
     GameResponse,
     GameUpdate,
@@ -30,6 +31,7 @@ from app.services.game_service import (
     get_game,
     list_games,
     update_broadcast_message,
+    update_overlay_theme,
     update_game,
 )
 from app.services.resource_lifecycle_service import LifecycleConflict, archive_game, hard_delete_game, restore_game
@@ -194,6 +196,16 @@ async def update_game_broadcast_message(
         deny_not_found("Game")
     return updated
 
+
+@router.patch("/{game_id}/overlay-theme", response_model=GameResponse)
+async def update_game_overlay_theme(game_id: uuid.UUID, data: GameOverlayThemeUpdate, current_user: User = Depends(require_current_user), db: AsyncSession = Depends(get_session)):
+    game = await get_game(db, game_id)
+    if not game or not await can_operate_game(db, current_user, game): deny_not_found("Game")
+    if game.archived_at is not None: raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Archived Games are read-only")
+    await require_entitlement(db, _require_club(current_user), BROADCAST_OVERLAY)
+    updated = await update_overlay_theme(db, game_id, data.overlay_theme)
+    if not updated: deny_not_found("Game")
+    return updated
 
 @router.patch("/{game_id}", response_model=GameResponse)
 async def update(

@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.game import Game
 from app.models.team import Team
-from app.schemas.game import GameCreate, GameUpdate
+from app.schemas.game import GameCreate, GameUpdate, GameOverlayTheme
 from app.sockets import sio
 
 
@@ -37,6 +37,7 @@ def _serialize_game(game: Game) -> dict:
         "created_at": game.created_at.isoformat(),
         "updated_at": game.updated_at.isoformat(),
         "broadcast_message": game.broadcast_message,
+        "overlay_theme": game.overlay_theme or "standard",
     }
 
 
@@ -212,6 +213,18 @@ async def update_broadcast_message(
         .options(selectinload(Game.home_team), selectinload(Game.away_team))
         .where(Game.id == game.id)
     )
+    game = result.scalar_one()
+    await sio.emit("game:updated", _serialize_game(game))
+    return game
+
+async def update_overlay_theme(db: AsyncSession, game_id: uuid.UUID, overlay_theme: GameOverlayTheme) -> Optional[Game]:
+    result = await db.execute(select(Game).options(selectinload(Game.home_team),selectinload(Game.away_team)).where(Game.id == game_id))
+    game = result.scalar_one_or_none()
+    if not game: return None
+    game.overlay_theme = overlay_theme.value
+    game.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+    result = await db.execute(select(Game).options(selectinload(Game.home_team),selectinload(Game.away_team)).where(Game.id == game.id))
     game = result.scalar_one()
     await sio.emit("game:updated", _serialize_game(game))
     return game

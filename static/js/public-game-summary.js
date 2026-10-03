@@ -175,11 +175,65 @@ function renderScoringEvents(data) {
   if (!host || !empty) return;
 
   host.replaceChildren();
-  const events = Array.isArray(data?.scoring_events) ? data.scoring_events : [];
+
+  const events = Array.isArray(data?.scoring_events)
+    ? data.scoring_events
+    : [];
+
   empty.classList.toggle("hidden", events.length !== 0);
-  for (const event of events) {
-    host.appendChild(buildEventRow(event, data));
-  }
+
+  if (events.length === 0) return;
+
+  const homeEvents = events.filter(
+    (event) => String(event?.team_side || "") === "home"
+  );
+
+  const awayEvents = events.filter(
+    (event) => String(event?.team_side || "") === "away"
+  );
+
+  const columns = document.createElement("div");
+  columns.className = surface === "broadcast"
+    ? "broadcast-team-scoring-columns"
+    : "team-scoring-columns";
+
+  const buildColumn = (side, team, teamEvents) => {
+    const column = document.createElement("section");
+    column.className = surface === "broadcast"
+      ? `broadcast-team-scoring-column scoring-column-${side}`
+      : `team-scoring-column scoring-column-${side}`;
+
+    const heading = document.createElement("div");
+    heading.className = "scoring-column-heading";
+    heading.textContent =
+      team?.short_name ||
+      team?.name ||
+      (side === "home" ? "HOME" : "AWAY");
+
+    const eventHost = document.createElement("div");
+    eventHost.className = "scoring-column-events";
+
+    if (teamEvents.length === 0) {
+      const noGoals = document.createElement("div");
+      noGoals.className = "scoring-column-empty";
+      noGoals.textContent = "No goals";
+      eventHost.appendChild(noGoals);
+    } else {
+      for (const event of teamEvents) {
+        eventHost.appendChild(buildEventRow(event, data));
+      }
+    }
+
+    column.append(heading, eventHost);
+    return column;
+  };
+
+  columns.append(
+    buildColumn("home", data.home_team, homeEvents),
+    buildColumn("away", data.away_team, awayEvents),
+  );
+
+  host.appendChild(columns);
 }
 
 /*
