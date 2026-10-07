@@ -252,3 +252,42 @@ body[data-summary-surface="summary"] .scoring-row-away .scoring-team {
 }
 
 /* END M19-HF9 TEAM-GROUPED SCORING SUMMARY */
+
+
+/* M19-HF9: FIVE-GOAL SCORING SUBCOLUMNS */
+
+.scoring-goal-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 12px;
+  min-width: 0;
+}
+
+.scoring-goal-column {
+  min-width: 0;
+}
+
+.scoring-goal-column + .scoring-goal-column {
+  border-left: 1px solid #e5e7eb;
+  padding-left: 12px;
+}
+
+.scoring-goal-column .scoring-row:first-child {
+  border-top: 0;
+}
+
+.scoring-goal-column .scoring-row {
+  min-width: 0;
+}
+
+@media(max-width:640px) {
+  .scoring-goal-columns {
+    gap: 6px;
+  }
+
+  .scoring-goal-column + .scoring-goal-column {
+    padding-left: 6px;
+  }
+}
+
+/* END M19-HF9 FIVE-GOAL SCORING SUBCOLUMNS */

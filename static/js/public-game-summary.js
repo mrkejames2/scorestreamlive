@@ -219,9 +219,22 @@ function renderScoringEvents(data) {
       noGoals.textContent = "No goals";
       eventHost.appendChild(noGoals);
     } else {
-      for (const event of teamEvents) {
-        eventHost.appendChild(buildEventRow(event, data));
+      const GOALS_PER_SUBCOLUMN = 5;
+      const goalColumns = document.createElement("div");
+      goalColumns.className = "scoring-goal-columns";
+
+      for (let start = 0; start < teamEvents.length; start += GOALS_PER_SUBCOLUMN) {
+        const goalColumn = document.createElement("div");
+        goalColumn.className = "scoring-goal-column";
+
+        for (const event of teamEvents.slice(start, start + GOALS_PER_SUBCOLUMN)) {
+          goalColumn.appendChild(buildEventRow(event, data));
+        }
+
+        goalColumns.appendChild(goalColumn);
       }
+
+      eventHost.appendChild(goalColumns);
     }
 
     column.append(heading, eventHost);

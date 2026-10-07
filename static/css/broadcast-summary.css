@@ -519,3 +519,37 @@ body {
 }
 
 /* END M19-HF9 TEAM-GROUPED BROADCAST SCORING SUMMARY */
+
+
+/* M19-HF9: FIVE-GOAL BROADCAST SCORING SUBCOLUMNS */
+
+.broadcast-team-scoring-columns .scoring-goal-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: clamp(5px, .8vw, 10px);
+  min-width: 0;
+}
+
+.broadcast-team-scoring-columns .scoring-goal-column {
+  min-width: 0;
+}
+
+.broadcast-team-scoring-columns
+.scoring-goal-column + .scoring-goal-column {
+  border-left: 1px solid #e2e8f0;
+  padding-left: clamp(5px, .8vw, 10px);
+}
+
+.broadcast-team-scoring-columns
+.scoring-goal-column
+.broadcast-scoring-row {
+  min-width: 0;
+}
+
+.broadcast-team-scoring-columns
+.scoring-goal-column
+.broadcast-scoring-row:first-child {
+  border-top: 0;
+}
+
+/* END M19-HF9 FIVE-GOAL BROADCAST SCORING SUBCOLUMNS */
