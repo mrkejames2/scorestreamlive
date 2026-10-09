@@ -1,1 +1,55 @@
 .sponsor-report-panel{margin-top:1.25rem;padding:1.25rem;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(10,24,38,.72)}.sponsor-report-heading{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start}.sponsor-report-heading h2{margin:.2rem 0}.sponsor-report-heading p{margin:0;opacity:.78}.sponsor-report-body{margin-top:1rem;display:grid;gap:.55rem}.sponsor-report-row{display:grid;grid-template-columns:minmax(180px,1fr) auto auto;gap:1rem;align-items:center;padding:.75rem .9rem;border-radius:10px;background:rgba(255,255,255,.055)}.sponsor-report-row span{opacity:.82}.sponsor-report-empty{padding:.8rem 0;opacity:.72}@media(max-width:720px){.sponsor-report-row{grid-template-columns:1fr}.sponsor-report-heading{display:block}}
+
+/* M19-HF10 Sponsor Report Readability */
+
+/* Explicitly establish readable colors inside the dark report. */
+.sponsor-report-panel {
+    color: #f8fafc;
+}
+
+/* Preserve the existing orange section label. */
+.sponsor-report-panel .eyebrow {
+    color: #ff8739;
+}
+
+/* Report heading */
+.sponsor-report-heading h2 {
+    color: #f8fafc;
+}
+
+/* Tracking status and total tracked game time */
+.sponsor-report-heading p {
+    color: #cbd5e1;
+    opacity: 1;
+}
+
+/* Improve separation between individual sponsors. */
+.sponsor-report-row {
+    background: rgba(255, 255, 255, 0.10);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Sponsor name */
+.sponsor-report-row strong {
+    color: #ffffff;
+    font-weight: 750;
+}
+
+/* Appearance counts and screen time */
+.sponsor-report-row span {
+    color: #e2e8f0;
+    opacity: 1;
+}
+
+/* Ensure empty reports remain readable. */
+.sponsor-report-empty {
+    color: #cbd5e1;
+    opacity: 1;
+}
+
+/* Preserve the existing layout on smaller screens. */
+@media (max-width: 720px) {
+    .sponsor-report-row {
+        row-gap: 0.4rem;
+    }
+}
