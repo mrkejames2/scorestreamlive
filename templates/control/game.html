@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="/static/css/product-theme-m17h-r4.css?v=m17h-r4">
   <link rel="stylesheet" href="/static/css/control-m19-hf2-pause-clock.css?v=m19hf2-1">
   <link rel="stylesheet" href="/static/css/control-pink-out-hf9.css?v=m19hf9-1">
+  <link rel="stylesheet" href="/static/css/control-announcements-hf11.css?v=hf11-1">
 </head>
 <body class="m10e-matchday" data-game-id="{{ game_id }}">
   <main class="control-shell">
@@ -139,16 +140,7 @@
         </article>
       </section>
 
-      <section class="operator-grid">
-        <article id="m19hf9-theme-controls" class="card operator-card">
-          <div class="card-header"><h2>Scoreboard Style</h2><span id="m19hf9-theme-state" class="command-status">LOADING</span></div>
-          <p class="muted">Choose the presentation skin used by the live broadcast scoreboard. Game state and scoring are unaffected.</p>
-          <div class="m19hf9-theme-grid">
-            <div class="m19hf9-theme-field"><label for="m19hf9-theme-select">Style</label><select id="m19hf9-theme-select"><option value="standard">Standard</option><option value="pink_out">Pink Out - Breast Cancer Awareness</option></select></div>
-            <div class="m19hf9-theme-status"><span class="muted">Currently on air:</span><strong id="m19hf9-theme-current">Standard</strong></div>
-          </div>
-        </article>
-      </section>
+
 
       <section class="operator-grid">
         <article class="card operator-card game-day-action-card">
@@ -272,6 +264,43 @@
       </section>
 
       <section class="operator-grid">
+        <article id="m19hf9-theme-controls" class="card operator-card">
+          <div class="card-header"><h2>Scoreboard Style</h2><span id="m19hf9-theme-state" class="command-status">LOADING</span></div>
+          <p class="muted">Choose the presentation skin used by the live broadcast scoreboard. Game state and scoring are unaffected.</p>
+          <div class="m19hf9-theme-grid">
+            <div class="m19hf9-theme-field"><label for="m19hf9-theme-select">Style</label><select id="m19hf9-theme-select"><option value="standard">Standard</option><option value="pink_out">Pink Out - Breast Cancer Awareness</option></select></div>
+            <div class="m19hf9-theme-status"><span class="muted">Currently on air:</span><strong id="m19hf9-theme-current">Standard</strong></div>
+          </div>
+        </article>
+      </section>
+
+<section class="operator-grid">
+  <article id="hf11-panel" class="card operator-card">
+    <div class="card-header"><h2>Live Announcements</h2><span id="hf11-onair" class="command-status">Off air</span></div>
+    <p class="muted">Save introductions, then trigger each one during the event.</p>
+    <label for="hf11-title">Event headline</label>
+    <input id="hf11-title" maxlength="100" value="SENIOR NIGHT">
+    <p class="muted">One per line: Number | Name | Subtitle (number optional).</p>
+    <textarea id="hf11-editor" aria-label="Announcement list" placeholder="17 | Jackson Smith | Class of 2027"></textarea>
+    <div class="hf11-actions">
+      <button id="hf11-save" class="primary-action" type="button">Save List</button>
+      <button id="hf11-load-editor" class="secondary-button" type="button">Load Saved List</button>
+      <button id="hf11-refresh" class="secondary-button" type="button">Refresh</button>
+    </div>
+    <div id="hf11-list" aria-label="Saved introductions"></div>
+    <div class="hf11-actions">
+      <button id="hf11-previous" class="secondary-button" type="button">Previous</button>
+      <button id="hf11-next" class="primary-action" type="button">Next / Show</button>
+      <button id="hf11-hide" class="secondary-button" type="button">Hide</button>
+    </div>
+    <div id="hf11-status" class="muted" role="status">Loading...</div>
+  </article>
+</section>
+
+
+
+
+      <section class="operator-grid">
         <article class="card operator-card">
           <div class="card-header"><h2>Recent Match Activity</h2><span id="m17f-activity-phase" class="command-status">PREGAME</span></div>
           <div id="m17f-recent-activity" class="m17f-activity-list"><div class="m17f-empty">No scoring activity yet.</div></div>
@@ -337,5 +366,6 @@
   <script type="module" src="/static/js/control/sponsors-m19e.js?v=m19e-1"></script>
   <script src="/static/js/account-nav.js?v=m18g3-branding1"></script>
 <script type="module">import {initBroadcastPresentation} from "/static/js/control/broadcast-presentation-m19h.js?v=m19hf7-2"; initBroadcastPresentation(document.body.dataset.gameId);</script>
+  <script type="module" src="/static/js/control/announcements-hf11.js?v=hf11-1"></script>
 </body>
 </html>

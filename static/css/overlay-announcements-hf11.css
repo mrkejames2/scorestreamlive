@@ -1,0 +1,25 @@
+#hf11-lower-third {
+  position: fixed; z-index: 75; left: 50%; bottom: 4.5%;
+  width: min(67vw, 1000px); max-width: calc(100vw - 36px);
+  transform: translate(-50%, 145%); opacity: 0; pointer-events: none;
+  transition: transform .45s cubic-bezier(.2,.8,.2,1), opacity .3s ease;
+  font-family: system-ui, Arial, sans-serif; color: #fff;
+}
+#hf11-lower-third.hf11-visible { transform: translate(-50%,0); opacity: 1; }
+.hf11-shell { display:flex; align-items:stretch; overflow:hidden; border-radius:12px;
+  background:linear-gradient(105deg,#102a47,#071321); box-shadow:0 10px 28px #0009;
+  border-bottom:4px solid #35a86a; min-height:108px; }
+#hf11-number { background:#1c6d47; display:flex; align-items:center; justify-content:center;
+  min-width:115px; padding:12px 20px; font-size:clamp(24px,3vw,52px); font-weight:900; }
+.hf11-copy {padding:13px 26px; min-width:0; display:flex; flex-direction:column; justify-content:center}
+#hf11-kicker {font-size:clamp(10px,1vw,16px);letter-spacing:.15em;color:#8de0b1;font-weight:800}
+#hf11-name {font-size:clamp(23px,3vw,48px);line-height:1.13;font-weight:900;text-transform:uppercase;overflow-wrap:anywhere}
+#hf11-subtitle {font-size:clamp(12px,1.3vw,20px);color:#d6e2ed}
+@media(max-width:650px){#hf11-lower-third{width:90vw;bottom:3%}#hf11-number{min-width:65px;padding:8px}.hf11-copy{padding:10px 14px}}
+@media(prefers-reduced-motion:reduce){#hf11-lower-third{transition:none}}
+/* Goal and score correction banners are more important than ceremonial graphics. */
+body:has(#goal-banner:not(.hidden)) #hf11-lower-third,
+body:has(#score-correction-banner:not(.hidden)) #hf11-lower-third,
+body:has(#match-state-banner:not(.hidden)) #hf11-lower-third {
+  opacity:0; transform:translate(-50%,145%);
+}

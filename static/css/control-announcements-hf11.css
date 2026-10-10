@@ -1,0 +1,8 @@
+#hf11-panel .hf11-fields{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}
+#hf11-panel input,#hf11-panel textarea{width:100%;padding:10px;border:1px solid #8793a5;border-radius:6px;background:var(--surface,#fff);color:inherit}
+#hf11-panel textarea{min-height:135px;font:inherit}
+#hf11-panel .hf11-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+#hf11-panel .hf11-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #8893a544}
+#hf11-panel .hf11-item span{overflow-wrap:anywhere}
+#hf11-panel .hf11-item button{flex-shrink:0}
+#hf11-status{min-height:22px}
