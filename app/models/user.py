@@ -1,4 +1,4 @@
-"""User authentication and club-membership model."""
+"""User authentication, club membership and preferred sport model."""
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
@@ -14,6 +14,7 @@ class User(Base):
     __tablename__ = "users"
     __table_args__ = (
         CheckConstraint("club_role IS NULL OR club_role IN ('DIRECTOR', 'MANAGER', 'OPERATOR')", name="ck_users_club_role"),
+        CheckConstraint("last_used_sport IN ('soccer', 'futsal')", name="ck_users_last_used_sport"),
     )
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     email: Mapped[str] = mapped_column(String(320), nullable=False, unique=True, index=True)
@@ -22,6 +23,7 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     club_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("clubs.id", ondelete="RESTRICT"), nullable=True, index=True)
     club_role: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    last_used_sport: Mapped[str] = mapped_column(String(20), nullable=False, default="soccer", server_default="soccer")
     club: Mapped[Optional["Club"]] = relationship("Club")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now)
