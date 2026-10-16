@@ -95,6 +95,7 @@ async def create(
 async def list_all(
     limit: Optional[int] = Query(default=None, ge=1, le=100),
     archived: bool = Query(default=False),
+    sport: Optional[str] = Query(default=None, pattern="^(soccer|futsal)$"),
     current_user: User = Depends(require_current_user),
     db: AsyncSession = Depends(get_session),
 ):
@@ -112,6 +113,9 @@ async def list_all(
             for game in games
             if game.id in visible_ids
         ]
+
+    if sport is not None:
+        games = [game for game in games if game.sport == sport]
 
     if limit is not None:
         return games[:limit]

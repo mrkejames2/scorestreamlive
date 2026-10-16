@@ -12,7 +12,7 @@ from app.models.user import User
 router = APIRouter()
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 templates = Jinja2Templates(directory=str(PROJECT_ROOT / "templates"))
-SPORT_URLS = {"soccer": "/games", "futsal": "/sports/futsal"}
+SPORT_URLS = {"soccer": "/games", "futsal": "/futsal/games"}
 
 @router.get("/sports/home")
 async def sport_home(current_user: User = Depends(require_current_user)):
@@ -53,3 +53,8 @@ async def game_management_home(request: Request) -> HTMLResponse:
         # Fallback remains visible if template formatting changes.
         html = html.replace('</body>', '<nav style="padding:1rem"><a href="/sports">Switch Sport</a></nav></body>', 1)
     return HTMLResponse(content=html, status_code=response.status_code)
+
+
+@router.get("/futsal/games", response_class=HTMLResponse)
+async def futsal_games(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse(request=request, name="sports/futsal_games.html", context={"page_title": "Futsal Games"})

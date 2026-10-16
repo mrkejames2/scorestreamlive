@@ -23,6 +23,8 @@ class Game(Base):
     )
     club: Mapped[Optional["Club"]] = relationship("Club")
 
+    sport: Mapped[str] = mapped_column(String(20), nullable=False, default="soccer")
+
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="scheduled")
     scheduled_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)

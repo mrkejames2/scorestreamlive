@@ -6,6 +6,7 @@ from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
+from typing import Literal
 
 from app.schemas.team import TeamBrief
 
@@ -22,6 +23,7 @@ class GameStatus(str, Enum):
 class GameBase(BaseModel):
     """Shared Game fields."""
 
+    sport: Literal["soccer", "futsal"] = "soccer"
     name: str = Field(..., min_length=1, max_length=255)
     status: GameStatus = GameStatus.SCHEDULED
     scheduled_at: Optional[datetime] = None

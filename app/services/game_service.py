@@ -19,6 +19,7 @@ def _serialize_game(game: Game) -> dict:
     return {
         "id": str(game.id),
         "name": game.name,
+        "sport": game.sport,
         "status": game.status,
         "scheduled_at": game.scheduled_at.isoformat() if game.scheduled_at else None,
         "home_team_id": str(game.home_team_id) if game.home_team_id else None,
@@ -46,6 +47,7 @@ async def _validate_game_teams(
     club_id: uuid.UUID,
     home_team_id: Optional[uuid.UUID],
     away_team_id: Optional[uuid.UUID],
+    sport: str = "soccer",
 ) -> None:
     """Validate Game Team references and enforce same-Club isolation."""
     if home_team_id and away_team_id and home_team_id == away_team_id:
@@ -53,12 +55,12 @@ async def _validate_game_teams(
 
     if home_team_id:
         team = await db.get(Team, home_team_id)
-        if not team or team.club_id != club_id or team.archived_at is not None:
+        if not team or team.club_id != club_id or team.archived_at is not None or team.sport != sport:
             raise ValueError("Home team not found")
 
     if away_team_id:
         team = await db.get(Team, away_team_id)
-        if not team or team.club_id != club_id or team.archived_at is not None:
+        if not team or team.club_id != club_id or team.archived_at is not None or team.sport != sport:
             raise ValueError("Away team not found")
 
 
@@ -68,11 +70,12 @@ async def create_game(
     club_id: uuid.UUID,
 ) -> Game:
     """Create and persist a Club-scoped Game, then broadcast committed state."""
-    await _validate_game_teams(db, club_id, data.home_team_id, data.away_team_id)
+    await _validate_game_teams(db, club_id, data.home_team_id, data.away_team_id, data.sport)
 
     now = datetime.now(timezone.utc)
     game = Game(
         club_id=club_id,
+        sport=data.sport,
         name=data.name,
         status=data.status.value,
         scheduled_at=data.scheduled_at,
@@ -161,7 +164,7 @@ async def update_game(
 
     final_home = data.home_team_id if data.home_team_id is not None else game.home_team_id
     final_away = data.away_team_id if data.away_team_id is not None else game.away_team_id
-    await _validate_game_teams(db, game.club_id, final_home, final_away)
+    await _validate_game_teams(db, game.club_id, final_home, final_away, game.sport)
 
     if data.name is not None:
         game.name = data.name
