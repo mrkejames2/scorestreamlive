@@ -61,6 +61,7 @@ from app.web.activation import router as activation_web_router
 from app.web.account_activation import router as account_activation_web_router
 from app.web.password_recovery import router as password_recovery_web_router
 from app.web.games import router as games_web_router
+from app.web.sport_routes_m21ga import router as sport_routes_m21ga_router
 from app.web.futsal_clock import router as futsal_clock_web_router
 from app.web.futsal_controls import router as futsal_controls_web_router
 from app.web.futsal_overlay import router as futsal_overlay_web_router
@@ -196,6 +197,7 @@ app.include_router(activation_web_router)
 app.include_router(account_activation_web_router)
 app.include_router(password_recovery_web_router)
 app.include_router(games_web_router)
+app.include_router(sport_routes_m21ga_router)
 app.include_router(futsal_clock_web_router)
 app.include_router(futsal_controls_web_router)
 app.include_router(futsal_overlay_web_router)

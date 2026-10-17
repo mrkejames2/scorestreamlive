@@ -20,6 +20,7 @@ def _serialize_game(game: Game) -> dict:
         "id": str(game.id),
         "name": game.name,
         "sport": game.sport,
+        "my_team_id": str(game.my_team_id) if game.my_team_id else None,
         "status": game.status,
         "scheduled_at": game.scheduled_at.isoformat() if game.scheduled_at else None,
         "home_team_id": str(game.home_team_id) if game.home_team_id else None,
@@ -72,10 +73,18 @@ async def create_game(
     """Create and persist a Club-scoped Game, then broadcast committed state."""
     await _validate_game_teams(db, club_id, data.home_team_id, data.away_team_id, data.sport)
 
+    # M21-F R4: My Team is a participant, not a separate opponent roster.
+    if data.sport == "futsal":
+        if data.my_team_id is None or data.my_team_id not in (data.home_team_id, data.away_team_id):
+            raise ValueError("Select My Team as Home or Away for Futsal")
+    elif data.my_team_id is not None:
+        raise ValueError("My Team selection is only supported for Futsal")
+
     now = datetime.now(timezone.utc)
     game = Game(
         club_id=club_id,
         sport=data.sport,
+        my_team_id=data.my_team_id if data.sport == "futsal" else None,
         name=data.name,
         status=data.status.value,
         scheduled_at=data.scheduled_at,
@@ -165,7 +174,17 @@ async def update_game(
     final_home = data.home_team_id if data.home_team_id is not None else game.home_team_id
     final_away = data.away_team_id if data.away_team_id is not None else game.away_team_id
     await _validate_game_teams(db, game.club_id, final_home, final_away, game.sport)
+    # Preserve explicit selection when editing participants; allow assigning
+    # My Team to older Futsal games that predate this revision.
+    final_my_team = data.my_team_id if data.my_team_id is not None else game.my_team_id
+    if game.sport == "futsal":
+        if final_my_team is not None and final_my_team not in (final_home, final_away):
+            raise ValueError("My Team must be Home or Away in this Futsal game")
+    elif data.my_team_id is not None:
+        raise ValueError("My Team selection is only supported for Futsal")
 
+    if data.my_team_id is not None and game.sport == "futsal":
+        game.my_team_id = data.my_team_id
     if data.name is not None:
         game.name = data.name
     if data.status is not None:

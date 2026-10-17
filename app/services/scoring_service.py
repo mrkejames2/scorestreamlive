@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.game import Game
 from app.models.game_clock import GameClock
+from app.models.futsal_clock_config import FutsalClockConfig
 from app.models.player import Player
 from app.models.scoring_event import ScoringEvent
 from app.schemas.scoring_event import ScoringEventCreate
@@ -26,6 +27,8 @@ def _serialize_scoring_event(event: ScoringEvent) -> dict:
         "event_type": event.event_type,
         "request_id": str(event.request_id) if event.request_id else None,
         "game_elapsed_seconds": event.game_elapsed_seconds,
+        "futsal_period": event.futsal_period,
+        "futsal_remaining_seconds": event.futsal_remaining_seconds,
         "created_at": event.created_at.isoformat(),
     }
 
@@ -152,6 +155,17 @@ async def create_scoring_event(
         now,
     )
 
+    # M21-F R3: snapshot the Futsal half and countdown *in this transaction*.
+    # The shared clock remains authoritative. Never derive the half later from
+    # mutable FutsalClockConfig.updated_at.
+    futsal_period = None
+    futsal_remaining_seconds = None
+    if game.sport == "futsal":
+        cfg = await db.get(FutsalClockConfig, data.game_id)
+        if cfg is not None and game_elapsed_seconds is not None:
+            futsal_period = int(cfg.period)
+            futsal_remaining_seconds = max(0, int(cfg.period_seconds) - game_elapsed_seconds)
+
     # 6. Create ScoringEvent. request_id is caller-generated but is only a
     # command identity; score, event time, and all domain validation remain
     # server authoritative.
@@ -162,6 +176,8 @@ async def create_scoring_event(
         event_type=data.event_type,
         request_id=data.request_id,
         game_elapsed_seconds=game_elapsed_seconds,
+        futsal_period=futsal_period,
+        futsal_remaining_seconds=futsal_remaining_seconds,
         created_at=now,
     )
     db.add(scoring_event)

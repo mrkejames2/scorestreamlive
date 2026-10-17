@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Futsal Games — ScoreStreamLive</title>
+<link rel="icon" href="/static/brand/scorestreamlive-mark.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/css/games.css">
+<link rel="stylesheet" href="/static/css/product-theme-m17h.css">
+<link rel="stylesheet" href="/static/css/futsal-games-m21gb.css?v=m21gb1">
+</head><body>
+<main class="games-shell futsal-shell">
+<header class="games-header">
+<div><div class="eyebrow">SCORESTREAMLIVE <span class="sport-dot">· FUTSAL</span></div><h1>Futsal Games</h1>
+<p class="subhead">Manage matches, choose your team, and launch your live broadcast.</p>
+<nav class="sport-nav" aria-label="Sport navigation"><a class="nav-current" aria-current="page" href="/futsal/games">Games</a><a href="/futsal/teams">Teams</a><a href="/sports">Switch Sport</a></nav></div>
+<div class="header-actions"><span id="games-status" class="status-chip" data-state="loading">LOADING</span>
+<button type="button" id="new-game-button" class="button button-primary">+ New Game</button>
+<button type="button" id="refresh-games" class="button button-secondary">Refresh</button></div>
+</header>
+<section class="summary-grid" aria-label="Game summary">
+<article class="summary-card"><span class="summary-label">Live</span><strong id="count-live" class="summary-value">—</strong></article>
+<article class="summary-card"><span class="summary-label">Upcoming</span><strong id="count-upcoming" class="summary-value">—</strong></article>
+<article class="summary-card"><span class="summary-label">Completed</span><strong id="count-completed" class="summary-value">—</strong></article>
+</section>
+<section id="new-game-panel" class="new-game-panel hidden" aria-labelledby="new-game-title">
+<div class="new-game-heading"><div><div class="eyebrow">MATCH SETUP</div><h2 id="new-game-title">Create Futsal Game</h2><p>Select My Team, choose an opponent, and set Home or Away.</p></div><button type="button" id="cancel-new-game" class="button button-secondary">Cancel</button></div>
+<form id="game-form" class="new-game-form"><div class="fields">
+<label class="form-field"><span class="field-label">Game name</span><input id="game-name" class="text-input" required maxlength="255" placeholder="Example: Nationals vs City FC"></label>
+<label class="form-field legacy-choice"><span class="field-label">Home team</span><select id="home-team" class="text-input"></select></label>
+<label class="form-field legacy-choice"><span class="field-label">Away team</span><select id="away-team" class="text-input"></select></label>
+</div><div class="form-footer"><button type="submit" class="button button-primary">Create Futsal Game</button></div></form>
+</section>
+<section class="match-section"><div class="section-heading"><div><div class="eyebrow">MATCH CENTER</div><h2>Your Futsal Games</h2></div><label class="filter-label">Filter <select id="game-filter" class="text-input"><option value="all">All games</option><option value="live">Live</option><option value="scheduled">Upcoming</option><option value="completed">Completed</option></select></label></div>
+<div id="games" class="match-grid" aria-live="polite"></div><p id="empty-games" class="empty-games hidden">No matches found. Create a game to get started.</p></section>
+<section class="support-section"><div><div class="eyebrow">TEAM SETUP</div><h2>Create a Futsal Team</h2><p>Set up a reusable team identity. Player rosters are only needed for My Team.</p></div>
+<form id="team-form" class="team-form"><label class="form-field"><span class="field-label">Team name</span><input id="team-name" class="text-input" required maxlength="255" placeholder="Team name"></label><label class="form-field"><span class="field-label">Short name (optional)</span><input id="team-short" class="text-input" maxlength="100" placeholder="Short name"></label><button class="button button-secondary" type="submit">Create Team</button></form></section>
+<p id="message" class="feedback" role="status" aria-live="polite"></p>
+</main>
+<script src="/static/js/sports/futsal_games_m21gb.js?v=m21gb1" defer></script>
+<script src="/static/js/sports/futsal_games_m21f_r4.js?v=m21fr4" defer></script>
+</body></html>

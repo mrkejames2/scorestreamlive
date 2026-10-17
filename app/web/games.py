@@ -12,7 +12,7 @@ from app.models.user import User
 router = APIRouter()
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 templates = Jinja2Templates(directory=str(PROJECT_ROOT / "templates"))
-SPORT_URLS = {"soccer": "/games", "futsal": "/futsal/games"}
+SPORT_URLS = {"soccer": "/soccer/games", "futsal": "/futsal/games"}
 
 @router.get("/sports/home")
 async def sport_home(current_user: User = Depends(require_current_user)):

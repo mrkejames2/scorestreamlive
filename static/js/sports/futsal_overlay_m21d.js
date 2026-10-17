@@ -25,7 +25,9 @@
     const duration=Number(c.duration_seconds||0);
     el('clock').textContent=format(c.mode==='count_down'?Math.max(0,duration-elapsed):elapsed);
   }
-  function periodLabel(snapshot){
+  function periodLabel(snapshot, futsalPeriod){
+    if(futsalPeriod===2)return '2ND HALF';
+    if(futsalPeriod===1)return '1ST HALF';
     const phase=snapshot?.lifecycle?.phase;
     const phases={pregame:'PREGAME',first_half:'1ST HALF',halftime:'HALFTIME',second_half:'2ND HALF',full_time:'FINAL'};
     if(phases[phase])return phases[phase];
@@ -59,7 +61,12 @@
       team('home',snapshot.home_team);team('away',snapshot.away_team);
       el('home-score').textContent=String(snapshot.game?.home_score??0);
       el('away-score').textContent=String(snapshot.game?.away_score??0);
-      el('period').textContent=periodLabel(snapshot);
+      let futsalPeriod=null;
+      try {
+        const pr=await fetch(`/api/public/futsal/games/${encodeURIComponent(gameId)}/period`,{cache:'no-store'});
+        if(pr.ok){const pd=await pr.json();futsalPeriod=pd.period;}
+      } catch(e) {console.warn('Futsal period refresh:',e);}
+      el('period').textContent=periodLabel(snapshot,futsalPeriod);
       sponsors(snapshot);renderClock();
       el('connection').hidden=true;
     }catch(e){el('connection').textContent='Overlay data unavailable — retrying';el('connection').hidden=false;console.warn('M21-D overlay refresh:',e)}

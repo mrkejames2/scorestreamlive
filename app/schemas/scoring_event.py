@@ -46,5 +46,7 @@ class ScoringEventResponse(BaseModel):
     # from the authoritative GameClock and may be NULL only for historical
     # pre-migration records or legacy games without a clock.
     game_elapsed_seconds: Optional[int] = None
+    futsal_period: Optional[int] = None
+    futsal_remaining_seconds: Optional[int] = None
 
     created_at: datetime
