@@ -19,6 +19,7 @@ from app.api.club_branding import router as club_branding_router
 from app.api.control import router as control_router
 from app.api.entitlements import router as entitlements_router
 from app.api.game_clock import router as game_clock_router
+from app.api.futsal_clock import router as futsal_clock_router
 from app.api.game_lifecycle import router as game_lifecycle_router
 from app.api.game_sponsors import router as game_sponsors_router
 from app.api.game_sponsor_presentation import router as game_sponsor_presentation_router
@@ -59,6 +60,7 @@ from app.web.activation import router as activation_web_router
 from app.web.account_activation import router as account_activation_web_router
 from app.web.password_recovery import router as password_recovery_web_router
 from app.web.games import router as games_web_router
+from app.web.futsal_clock import router as futsal_clock_web_router
 from app.web.game_setup import router as game_setup_web_router
 from app.web.game_detail import router as game_detail_web_router
 from app.web.stream import router as stream_web_router
@@ -167,6 +169,7 @@ app.include_router(game_broadcast_presentation_router)
 app.include_router(game_announcements_router)
 app.include_router(game_halftime_slideshow_router)
 app.include_router(game_clock_router)
+app.include_router(futsal_clock_router)
 app.include_router(scoring_events_router)
 app.include_router(games_router)
 app.include_router(invitations_router)
@@ -189,6 +192,7 @@ app.include_router(activation_web_router)
 app.include_router(account_activation_web_router)
 app.include_router(password_recovery_web_router)
 app.include_router(games_web_router)
+app.include_router(futsal_clock_web_router)
 app.include_router(game_setup_web_router)
 app.include_router(game_detail_web_router)
 app.include_router(stream_web_router)
