@@ -61,6 +61,7 @@ from app.web.account_activation import router as account_activation_web_router
 from app.web.password_recovery import router as password_recovery_web_router
 from app.web.games import router as games_web_router
 from app.web.futsal_clock import router as futsal_clock_web_router
+from app.web.futsal_overlay import router as futsal_overlay_web_router
 from app.web.game_setup import router as game_setup_web_router
 from app.web.game_detail import router as game_detail_web_router
 from app.web.stream import router as stream_web_router
@@ -193,6 +194,7 @@ app.include_router(account_activation_web_router)
 app.include_router(password_recovery_web_router)
 app.include_router(games_web_router)
 app.include_router(futsal_clock_web_router)
+app.include_router(futsal_overlay_web_router)
 app.include_router(game_setup_web_router)
 app.include_router(game_detail_web_router)
 app.include_router(stream_web_router)
