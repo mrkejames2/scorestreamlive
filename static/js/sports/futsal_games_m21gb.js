@@ -20,7 +20,7 @@ function render(){
   const overlay='/futsal/games/'+encodeURIComponent(g.id)+'/overlay';
   card.innerHTML=`<div class="match-top"><span class="match-status">${esc(g.status)}</span><span class="eyebrow">FUTSAL</span></div>
   <h3 class="match-name">${esc(g.name)}</h3><div class="match-teams">${esc(home)} vs ${esc(away)}<div>My Team: ${esc(mine)}</div></div>
-  <div class="match-actions"><a class="button button-primary" href="${control}">Control Center</a><a class="button button-secondary" href="${overlay}" target="_blank" rel="noopener">Overlay ↗</a></div>`;
+  <div class="match-actions">${g.my_team_id?`<a class="button button-secondary" href="/futsal/teams/${encodeURIComponent(g.my_team_id)}?game=${encodeURIComponent(g.id)}">My Team Roster</a>`:""}<a class="button button-primary" href="${control}">Control Center</a><a class="button button-secondary" href="${overlay}" target="_blank" rel="noopener">Overlay ↗</a></div>`;
   wrap.append(card);
  }
 }

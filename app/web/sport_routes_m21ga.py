@@ -48,26 +48,24 @@ async def soccer_games(request: Request, user: User = Depends(require_current_us
 
 @router.get('/soccer/teams', response_class=HTMLResponse, include_in_schema=False)
 async def soccer_teams(request: Request, user: User = Depends(require_current_user)):
-    return templates.TemplateResponse(request=request, name='teams/index.html', context={'page_title':'Soccer Teams','milestone':'M21-G-A'})
+    return templates.TemplateResponse(request=request, name='teams/index.html', context={'page_title':'Soccer Teams','milestone':'M21-G-C','sport':'soccer'})
 
 
 @router.get('/soccer/teams/{team_id}', response_class=HTMLResponse, include_in_schema=False)
 async def soccer_team_detail(request: Request, team_id: UUID, user: User = Depends(require_current_user), db: AsyncSession = Depends(get_session)):
     await _team(db, team_id, 'soccer', user)
-    return templates.TemplateResponse(request=request, name='teams/detail.html', context={'page_title':'Soccer Team','milestone':'M21-G-A','team_id':str(team_id)})
+    return templates.TemplateResponse(request=request, name='teams/detail.html', context={'page_title':'Soccer Team','milestone':'M21-G-C','sport':'soccer','team_id':str(team_id)})
 
 
 @router.get('/futsal/teams', include_in_schema=False)
-async def futsal_teams(user: User = Depends(require_current_user)):
-    # Until M21-G-C ships a sport-aware team index, send operators to
-    # the existing Futsal team creation/selection panel. Never show Soccer teams.
-    return RedirectResponse('/futsal/games#team-form', status_code=303)
+async def futsal_teams(request: Request, user: User = Depends(require_current_user)):
+    return templates.TemplateResponse(request=request, name='teams/index.html', context={'page_title':'Futsal Teams','milestone':'M21-G-C','sport':'futsal'})
 
 
 @router.get('/futsal/teams/{team_id}', response_class=HTMLResponse, include_in_schema=False)
 async def futsal_team_detail(request: Request, team_id: UUID, user: User = Depends(require_current_user), db: AsyncSession = Depends(get_session)):
     await _team(db, team_id, 'futsal', user)
-    return templates.TemplateResponse(request=request, name='teams/detail.html', context={'page_title':'Futsal Team','milestone':'M21-G-A','team_id':str(team_id)})
+    return templates.TemplateResponse(request=request, name='teams/detail.html', context={'page_title':'Futsal Team','milestone':'M21-G-C','sport':'futsal','team_id':str(team_id)})
 
 
 @router.get('/soccer/games/{game_id}', response_class=HTMLResponse, include_in_schema=False)

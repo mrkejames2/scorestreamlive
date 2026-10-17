@@ -30,7 +30,7 @@ function renderTeam(t){
   n.querySelector(".team-id").textContent=t.id;n.querySelector(".team-id").title=t.id;
   applyColor(n.querySelector(".primary-swatch"),n.querySelector(".primary-color"),t.primary_color);
   applyColor(n.querySelector(".secondary-swatch"),n.querySelector(".secondary-color"),t.secondary_color);
-  n.querySelector(".view-team-link").href=`/teams/${t.id}`;
+  n.querySelector(".view-team-link").href=`/${document.body.dataset.sport||"soccer"}/teams/${t.id}`;
   n.querySelector(".manage-team-button").onclick=(event)=>openModal(t,event.currentTarget);
   card.dataset.teamId=t.id;listEl.appendChild(n);
 }
@@ -69,7 +69,7 @@ function render(){
 }
 async function loadTeams(){
   const g=++generation;setStatus("loading","LOADING");refreshButton.disabled=true;notice(errorEl,"");listEl.setAttribute("aria-busy","true");
-  try{const data=await json("/api/teams");if(g!==generation)return;if(!Array.isArray(data))throw new Error("Unexpected Team API response.");teams=data;render();setStatus("ready","READY");}
+  try{const data=await json(`/api/teams?sport=${encodeURIComponent(document.body.dataset.sport||"soccer")}`);if(g!==generation)return;if(!Array.isArray(data))throw new Error("Unexpected Team API response.");teams=data;render();setStatus("ready","READY");}
   catch(e){if(g!==generation)return;notice(errorEl,e.message||"Unable to load Teams.");setStatus("error","ERROR");}
   finally{if(g===generation){refreshButton.disabled=false;listEl.setAttribute("aria-busy","false");}}
 }
@@ -97,6 +97,7 @@ async function saveTeam(e){
   e.preventDefault();notice(formError,"");const save=$("#save-team");const originalLabel=save.textContent;save.disabled=true;save.textContent="Saving…";setStatus("loading","SAVING");
   try{
     const payload={name:nameInput.value.trim(),short_name:shortInput.value.trim()||null,primary_color:primaryInput.value.trim()||null,secondary_color:secondaryInput.value.trim()||null};
+    if(!editingTeam)payload.sport=document.body.dataset.sport||"soccer";
     if(!payload.name)throw new Error("Team name is required.");
     for(const k of ["primary_color","secondary_color"])if(payload[k]&&!color(payload[k]))throw new Error("Colors must use #RRGGBB format.");
     let team;

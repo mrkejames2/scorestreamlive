@@ -5,17 +5,18 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>ScoreStreamLive — Team Detail</title>
   <link rel="stylesheet" href="/static/css/team-detail.css">
+  <link rel="stylesheet" href="/static/css/teams-m21gc.css?v=m21gc1">
   <link rel="stylesheet" href="/static/css/account-nav.css">
   <link rel="stylesheet" href="/static/css/product-theme-m17h.css?v=m18g3-branding1">
   <link rel="icon" href="/static/brand/scorestreamlive-mark.svg?v=m17h-1" type="image/svg+xml">
   <link rel="stylesheet" href="/static/css/product-theme-m17h-r2.css?v=m17h-r2">
   <link rel="stylesheet" href="/static/css/product-theme-m17h-r5.css?v=m17h-r5">
 </head>
-<body>
+<body data-sport="{{ sport | default('soccer') }}">
 <a class="skip-link" href="#roster-list">Skip to roster</a>
-<main class="detail-shell" data-team-id="{{ team_id }}">
+<div class="m21gc-layout"><button class="m21gc-menu" type="button" aria-expanded="false" aria-controls="m21gc-sidebar">☰ Menu</button><aside id="m21gc-sidebar" class="m21gc-sidebar" aria-label="Sport navigation"><a class="m21gc-brand" href="/sports/home">SCORESTREAMLIVE</a><div class="m21gc-label">CURRENT SPORT</div><strong class="m21gc-sport">{{ (sport | default('soccer')) | capitalize }}</strong><nav><a href="/{{ sport | default('soccer') }}/games">Games</a><a class="current" href="/{{ sport | default('soccer') }}/teams">Teams</a><a href="/sports">Switch Sport</a></nav></aside><div class="m21gc-content"><main class="detail-shell" data-team-id="{{ team_id }}">
   <header class="topbar">
-    <a class="back" href="/teams">← Teams</a>
+    <a class="back" href="/{{ sport | default('soccer') }}/teams">← {{ (sport | default('soccer')) | capitalize }} Teams</a>
     <span id="detail-status" class="status" data-state="loading" aria-live="polite">LOADING</span>
   </header>
 
@@ -87,7 +88,7 @@
   </section>
 
   <footer><span>Milestone M13-F</span><span>Management UX / Mobile Polish</span></footer>
-</main>
+</main></div></div>
 
 <template id="player-row-template">
   <article class="player-row">
@@ -125,6 +126,7 @@
 </div>
 
 <script type="module" src="/static/js/teams/detail.js"></script>
-  <script src="/static/js/account-nav.js?v=m18g3-branding1"></script>
+  {% if sport is not defined %}<script src="/static/js/account-nav.js?v=m18g3-branding1"></script>{% endif %}
+<script src="/static/js/teams/teams-m21gc.js?v=m21gc1" defer></script>
 </body>
 </html>
