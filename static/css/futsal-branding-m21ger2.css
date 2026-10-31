@@ -1,0 +1,2 @@
+/* Shared Club branding, not sport-specific data. Top-left to avoid sponsor top-right. */
+#m21ger2-club-brand{position:absolute;top:22px;left:30px;display:flex;align-items:center;gap:9px;max-width:min(300px,45vw);padding:8px 12px;background:rgba(9,22,40,.85);border:1px solid #ffffff2b;border-radius:10px;color:#fff;font-size:13px;font-weight:750;box-shadow:0 4px 12px #0005}#m21ger2-club-brand[hidden]{display:none}#m21ger2-club-brand img{max-height:44px;max-width:85px;object-fit:contain}#m21ger2-club-brand span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

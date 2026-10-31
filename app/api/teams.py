@@ -88,6 +88,7 @@ async def create(
 @router.get("", response_model=list[TeamResponse])
 async def list_all(
     archived: bool = Query(default=False),
+    sport: str = Query(default="soccer", pattern="^(soccer|futsal)$"),
     current_user: User = Depends(require_current_user),
     db: AsyncSession = Depends(get_session),
 ):
@@ -101,6 +102,8 @@ async def list_all(
         db,
         current_user,
     )
+
+    teams = [team for team in teams if team.sport == sport]
 
     if visible_ids is None:
         return teams

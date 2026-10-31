@@ -1,0 +1,29 @@
+/* M21-G-E: broadcast-only presentation refinement. Preserves 1060x106 baseline. */
+.canvas { isolation: isolate; }
+.scoreboard {
+  transform: translateX(-50%) scale(var(--m21ge-scale, 1));
+  transform-origin: center bottom;
+  max-width: none;
+}
+/* Sponsor presentation stays above the scoreboard and away from its clock. */
+.sponsor {
+  top: 22px;
+  right: max(20px, env(safe-area-inset-right, 0px));
+  max-width: calc(100vw - 40px);
+  z-index: 2;
+}
+.connection {
+  top: auto;
+  left: 50%;
+  bottom: calc(146px * var(--m21ge-scale, 1) + 16px);
+  transform: translateX(-50%);
+  max-width: calc(100vw - 24px);
+  text-align: center;
+  z-index: 3;
+}
+.scoreboard .name { min-width: 0; }
+.scoreboard .clock, .scoreboard .score { font-variant-numeric: tabular-nums; }
+@media (max-height: 340px) {
+  .sponsor { top: 6px; right: 8px; min-height: 54px; width: 140px; }
+  .sponsor img { max-height: 35px; max-width: 120px; }
+}

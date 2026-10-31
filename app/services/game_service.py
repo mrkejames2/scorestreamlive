@@ -9,6 +9,8 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.game import Game
+from app.models.game_clock import GameClock
+from app.models.futsal_clock_config import FutsalClockConfig
 from app.models.team import Team
 from app.schemas.game import GameCreate, GameUpdate, GameOverlayTheme
 from app.sockets import sio
@@ -19,6 +21,8 @@ def _serialize_game(game: Game) -> dict:
     return {
         "id": str(game.id),
         "name": game.name,
+        "sport": game.sport,
+        "my_team_id": str(game.my_team_id) if game.my_team_id else None,
         "status": game.status,
         "scheduled_at": game.scheduled_at.isoformat() if game.scheduled_at else None,
         "home_team_id": str(game.home_team_id) if game.home_team_id else None,
@@ -46,6 +50,7 @@ async def _validate_game_teams(
     club_id: uuid.UUID,
     home_team_id: Optional[uuid.UUID],
     away_team_id: Optional[uuid.UUID],
+    sport: str = "soccer",
 ) -> None:
     """Validate Game Team references and enforce same-Club isolation."""
     if home_team_id and away_team_id and home_team_id == away_team_id:
@@ -53,12 +58,12 @@ async def _validate_game_teams(
 
     if home_team_id:
         team = await db.get(Team, home_team_id)
-        if not team or team.club_id != club_id or team.archived_at is not None:
+        if not team or team.club_id != club_id or team.archived_at is not None or team.sport != sport:
             raise ValueError("Home team not found")
 
     if away_team_id:
         team = await db.get(Team, away_team_id)
-        if not team or team.club_id != club_id or team.archived_at is not None:
+        if not team or team.club_id != club_id or team.archived_at is not None or team.sport != sport:
             raise ValueError("Away team not found")
 
 
@@ -68,11 +73,20 @@ async def create_game(
     club_id: uuid.UUID,
 ) -> Game:
     """Create and persist a Club-scoped Game, then broadcast committed state."""
-    await _validate_game_teams(db, club_id, data.home_team_id, data.away_team_id)
+    await _validate_game_teams(db, club_id, data.home_team_id, data.away_team_id, data.sport)
+
+    # M21-F R4: My Team is a participant, not a separate opponent roster.
+    if data.sport == "futsal":
+        if data.my_team_id is None or data.my_team_id not in (data.home_team_id, data.away_team_id):
+            raise ValueError("Select My Team as Home or Away for Futsal")
+    elif data.my_team_id is not None:
+        raise ValueError("My Team selection is only supported for Futsal")
 
     now = datetime.now(timezone.utc)
     game = Game(
         club_id=club_id,
+        sport=data.sport,
+        my_team_id=data.my_team_id if data.sport == "futsal" else None,
         name=data.name,
         status=data.status.value,
         scheduled_at=data.scheduled_at,
@@ -82,6 +96,20 @@ async def create_game(
         updated_at=now,
     )
     db.add(game)
+    # M21-G-VS-R2: initialize futsal clock atomically with game creation
+    # Both records are part of the same transaction, so a failed insert
+    # cannot leave a newly created Futsal game without its clock.
+    if data.sport == "futsal":
+        await db.flush()  # obtain game.id before inserting child rows
+        db.add(GameClock(
+            game_id=game.id, mode="count_down", status="stopped",
+            duration_seconds=1200, elapsed_seconds=0, running_since=None,
+            version=1, created_at=now, updated_at=now,
+        ))
+        db.add(FutsalClockConfig(
+            game_id=game.id, period=1, clock_policy="stop_clock",
+            period_seconds=1200, updated_at=now,
+        ))
     await db.commit()
 
     result = await db.execute(
@@ -161,8 +189,18 @@ async def update_game(
 
     final_home = data.home_team_id if data.home_team_id is not None else game.home_team_id
     final_away = data.away_team_id if data.away_team_id is not None else game.away_team_id
-    await _validate_game_teams(db, game.club_id, final_home, final_away)
+    await _validate_game_teams(db, game.club_id, final_home, final_away, game.sport)
+    # Preserve explicit selection when editing participants; allow assigning
+    # My Team to older Futsal games that predate this revision.
+    final_my_team = data.my_team_id if data.my_team_id is not None else game.my_team_id
+    if game.sport == "futsal":
+        if final_my_team is not None and final_my_team not in (final_home, final_away):
+            raise ValueError("My Team must be Home or Away in this Futsal game")
+    elif data.my_team_id is not None:
+        raise ValueError("My Team selection is only supported for Futsal")
 
+    if data.my_team_id is not None and game.sport == "futsal":
+        game.my_team_id = data.my_team_id
     if data.name is not None:
         game.name = data.name
     if data.status is not None:

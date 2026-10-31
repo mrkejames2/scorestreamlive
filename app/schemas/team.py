@@ -5,6 +5,7 @@ from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
+from typing import Literal
 
 
 HEX_COLOR_PATTERN = r"^#[0-9A-Fa-f]{6}$"
@@ -26,6 +27,7 @@ class TeamBrief(BaseModel):
 class TeamBase(BaseModel):
     """Shared Team fields."""
 
+    sport: Literal["soccer", "futsal"] = "soccer"
     name: str = Field(..., min_length=1, max_length=255)
     short_name: Optional[str] = Field(None, min_length=1, max_length=100)
     logo_url: Optional[str] = Field(None, max_length=500)

@@ -1,0 +1,16 @@
+/* M21-G-C: sport-aware team pages, matching M21-G-B sidebar. */
+.m21gc-layout{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh;background:#f7f9fc}
+.m21gc-sidebar{background:#13243a;color:#e9f2ff;padding:27px 17px;display:flex;flex-direction:column;gap:16px;position:sticky;top:0;height:100vh;z-index:20}
+.m21gc-brand{font-size:15px;font-weight:950;letter-spacing:.04em;color:#ff6b0b;text-decoration:none}
+.m21gc-label{color:#96aec9;font-size:11px;font-weight:850;letter-spacing:.13em;margin-top:22px}
+.m21gc-sport{font-size:20px;color:white;padding:0 10px}
+.m21gc-sidebar nav{display:grid;gap:7px}
+.m21gc-sidebar nav a{display:block;min-height:46px;padding:12px 14px;color:#cbdaf0;text-decoration:none;border-radius:10px;font-size:14px;font-weight:800}
+.m21gc-sidebar nav a:hover,.m21gc-sidebar nav a:focus-visible{background:#263e5d;color:#fff}
+.m21gc-sidebar nav a.current{background:#225eaf;color:#fff}
+.m21gc-content{min-width:0;background:#f7f9fc}
+.m21gc-content .teams-shell,.m21gc-content .detail-shell{width:min(1180px,calc(100% - 40px));margin:0 auto}
+.m21gc-menu{display:none}
+.m21gc-return{display:inline-flex;margin:12px 0;padding:10px 14px;border-radius:9px;background:#225eaf;color:#fff;text-decoration:none;font-weight:800}
+@media(max-width:950px){.m21gc-layout{grid-template-columns:1fr}.m21gc-sidebar{position:fixed;left:0;top:0;width:min(285px,85vw);height:100dvh;transform:translateX(-110%);transition:transform .2s ease;box-shadow:10px 0 35px #0005}.m21gc-layout.menu-open .m21gc-sidebar{transform:translateX(0)}.m21gc-menu{display:inline-flex;position:sticky;top:8px;z-index:30;align-items:center;justify-content:center;min-height:44px;margin:12px 0 0 18px;padding:9px 16px;border:1px solid #c9d7e5;border-radius:10px;background:#fff;color:#17314e;font-weight:850;cursor:pointer}.m21gc-content .teams-shell,.m21gc-content .detail-shell{width:calc(100% - 32px)}}
+@media(prefers-reduced-motion:reduce){.m21gc-sidebar{transition:none}}

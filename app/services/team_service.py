@@ -17,6 +17,7 @@ def _serialize_team(team: Team) -> dict:
     return {
         "id": str(team.id),
         "name": team.name,
+        "sport": team.sport,
         "short_name": team.short_name,
         "logo_url": team.logo_url,
         "primary_color": team.primary_color,
@@ -36,6 +37,7 @@ async def create_team(
     now = datetime.now(timezone.utc)
     team = Team(
         club_id=club_id,
+        sport=data.sport,
         name=data.name,
         short_name=data.short_name,
         logo_url=data.logo_url,

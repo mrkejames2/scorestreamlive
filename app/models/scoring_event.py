@@ -43,6 +43,10 @@ class ScoringEvent(Base):
         nullable=True,
     )
 
+    # M21-F R3: immutable countdown snapshot at goal creation (futsal only).
+    futsal_period: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    futsal_remaining_seconds: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,

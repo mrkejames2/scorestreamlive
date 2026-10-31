@@ -5,7 +5,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -72,6 +72,9 @@ async def game_control_page(
         deny_not_found("Game")
 
     await require_entitlement(db, game.club_id, BROADCAST_OVERLAY)
+
+    if game.sport == "futsal":
+        return RedirectResponse(url=f"/futsal/games/{game_id}/control", status_code=303)
 
     return templates.TemplateResponse(
         request=request,

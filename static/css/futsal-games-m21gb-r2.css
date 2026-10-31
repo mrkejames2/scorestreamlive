@@ -1,0 +1,26 @@
+/* M21-G-B R2: sidebar foundation. Scoped to Futsal Games. */
+.m21gb-app-layout{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh;background:#f7f9fc}
+.m21gb-sidebar{background:#13243a;color:#e9f2ff;padding:27px 17px;display:flex;flex-direction:column;gap:16px;min-width:0;position:sticky;top:0;height:100vh;z-index:20}
+.m21gb-brand{font-size:15px;font-weight:950;letter-spacing:.065em;text-decoration:none;color:#ff6b0b;white-space:nowrap}
+.m21gb-brand span{color:#f2f7ff}
+.m21gb-sidebar-label{color:#96aec9;font-size:11px;font-weight:850;letter-spacing:.13em;margin-top:22px}
+.m21gb-sport{font-size:20px;font-weight:850;color:#fff;padding:0 10px}
+.m21gb-side-links{display:grid;gap:7px}
+.m21gb-side-links a{display:flex;align-items:center;gap:12px;min-height:46px;padding:12px 14px;color:#cbdaf0;text-decoration:none;border-radius:10px;font-size:14px;font-weight:800}
+.m21gb-side-links a:hover,.m21gb-side-links a:focus-visible{background:#263e5d;color:#fff}
+.m21gb-side-links a.is-current{background:#225eaf;color:#fff}
+.m21gb-sidebar-footer{margin-top:auto;color:#829ab9;font-size:11px}
+.m21gb-content{min-width:0;background:#f7f9fc}
+.m21gb-content .games-shell{width:min(1180px,calc(100% - 40px));margin:0 auto}
+.m21gb-content .sport-nav{display:none}
+/* Product-theme CSS makes dark cards inherit navy text: override explicitly. */
+.m21gb-content .match-section,.m21gb-content .match-card,.m21gb-content .new-game-panel,.m21gb-content .support-section,.m21gb-content .r4-assign{color:#f3f7ff}
+.m21gb-content .match-section h2,.m21gb-content .match-section h3,.m21gb-content .match-card .match-name,.m21gb-content .new-game-panel h2,.m21gb-content .support-section h2,.m21gb-content .r4-assign h2{color:#f3f7ff!important}
+.m21gb-content .match-card .match-teams,.m21gb-content .match-card .match-teams div,.m21gb-content .support-section p,.m21gb-content .new-game-panel p{color:#c4d2e7!important}
+.m21gb-content .match-section .eyebrow{color:#ff7417}
+.m21gb-content .match-card .match-status{color:#d5e7ff}
+.m21gb-content .match-section .filter-label{color:#d5e2f5}
+.m21gb-content .match-card a.button-primary{color:#fff}
+.m21gb-menu-toggle{display:none}
+@media(max-width:950px){.m21gb-app-layout{grid-template-columns:1fr}.m21gb-sidebar{position:fixed;left:0;top:0;width:min(285px,85vw);height:100dvh;transform:translateX(-110%);transition:transform .2s ease;box-shadow:10px 0 35px #0005}.m21gb-app-layout.menu-open .m21gb-sidebar{transform:translateX(0)}.m21gb-menu-toggle{display:inline-flex;position:sticky;top:8px;z-index:30;align-items:center;justify-content:center;min-height:44px;margin:12px 0 0 18px;padding:9px 16px;border:1px solid #c9d7e5;border-radius:10px;background:#fff;color:#17314e;font-weight:850;cursor:pointer}.m21gb-app-layout.menu-open .m21gb-menu-toggle{margin-left:min(300px,calc(85vw + 15px))}.m21gb-content .games-shell{width:calc(100% - 32px);padding-top:18px}}
+@media(prefers-reduced-motion:reduce){.m21gb-sidebar{transition:none}}

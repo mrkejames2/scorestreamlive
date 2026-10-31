@@ -1,0 +1,38 @@
+/* M21-G-B: futsal dashboard uses Soccer's games.css design tokens. */
+.futsal-shell{max-width:1180px}
+.sport-dot{color:#c5d9ff}
+.sport-nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
+.sport-nav a{padding:9px 15px;border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#c3d5ee;text-decoration:none;font-weight:750;font-size:13px}
+.sport-nav a:hover,.sport-nav .nav-current{background:rgba(42,119,255,.16);border-color:rgba(119,168,255,.4);color:#fff}
+.summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:24px}
+.summary-card{display:grid;gap:10px;padding:20px;border:1px solid rgba(255,255,255,.1);border-radius:15px;background:linear-gradient(145deg,rgba(28,50,79,.9),rgba(13,25,43,.95))}
+.summary-label{font-size:12px;font-weight:800;color:#a9c5e9;text-transform:uppercase;letter-spacing:.09em}
+.summary-value{font-size:36px;line-height:1;color:#fff}
+.hidden,[hidden]{display:none!important}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.fields>.form-field:first-child{grid-column:1/-1}
+.fields .m21f-r4-form{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.fields .m21f-r4-form label,.r4-assign label{display:grid;gap:7px;color:#b9cbe4;font-size:12px;font-weight:800}
+.fields select,.r4-assign select{width:100%;min-height:46px;padding:10px 12px;background:#101e32;color:#eef4ff;border:1px solid rgba(255,255,255,.2);border-radius:10px;font:inherit}
+.form-footer{display:flex;justify-content:flex-end}
+.match-section,.support-section,.r4-assign{border:1px solid rgba(255,255,255,.10);border-radius:18px;background:linear-gradient(180deg,rgba(18,35,58,.96),rgba(9,18,31,.96));padding:22px;margin:20px 0}
+.section-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+.section-heading h2,.support-section h2{margin:0}
+.filter-label{display:flex;align-items:center;gap:10px;color:#c5d4e8;font-size:13px}
+.filter-label select{min-width:155px}
+.match-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.match-card{border:1px solid rgba(255,255,255,.11);border-radius:14px;padding:18px;background:rgba(255,255,255,.035);min-width:0}
+.match-card[data-status="live"]{border-color:rgba(62,208,140,.5)}
+.match-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}
+.match-status{display:inline-flex;border-radius:99px;padding:5px 10px;background:rgba(119,168,255,.14);color:#bad6ff;font-size:11px;font-weight:850;text-transform:uppercase}
+.match-card[data-status="live"] .match-status{background:rgba(40,170,102,.17);color:#8ce3b2}
+.match-name{font-size:19px;font-weight:800;line-height:1.3;overflow-wrap:anywhere;margin:0 0 8px}
+.match-teams{color:#b6c6db;font-size:13px;margin-bottom:17px}
+.match-actions{display:flex;flex-wrap:wrap;gap:9px}
+.match-actions .button{font-size:13px;min-height:38px;padding:8px 12px}
+.team-form{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;margin-top:16px}
+.feedback{white-space:pre-wrap;min-height:1.5em;color:#a9dbff}
+.r4-assign{margin:20px 0}.r4-assign h2{font-size:19px}.r4-assign p{color:#b7c6da}.r4-assign .m21f-r4-form{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end}
+.r4-assign button{min-height:46px;padding:10px 16px;border:0;border-radius:10px;background:#2364d8;color:white;font-weight:800;cursor:pointer}
+.empty-games{padding:22px;color:#b7c6da}
+@media(max-width:760px){.games-header{align-items:flex-start;flex-direction:column}.header-actions{width:100%;flex-wrap:wrap}.summary-grid{gap:8px}.summary-card{padding:14px}.summary-value{font-size:27px}.match-grid,.team-form,.fields,.fields .m21f-r4-form,.r4-assign .m21f-r4-form{grid-template-columns:minmax(0,1fr)}.fields>.form-field:first-child{grid-column:auto}.section-heading{align-items:flex-start;flex-direction:column}.match-section,.support-section,.r4-assign{padding:16px}}

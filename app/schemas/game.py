@@ -6,6 +6,7 @@ from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
+from typing import Literal
 
 from app.schemas.team import TeamBrief
 
@@ -22,6 +23,7 @@ class GameStatus(str, Enum):
 class GameBase(BaseModel):
     """Shared Game fields."""
 
+    sport: Literal["soccer", "futsal"] = "soccer"
     name: str = Field(..., min_length=1, max_length=255)
     status: GameStatus = GameStatus.SCHEDULED
     scheduled_at: Optional[datetime] = None
@@ -32,7 +34,7 @@ class GameBase(BaseModel):
 class GameCreate(GameBase):
     """Fields required to create a Game."""
 
-    pass
+    my_team_id: Optional[UUID] = None
 
 
 class GameOverlayTheme(str, Enum):
@@ -51,6 +53,8 @@ class GameBroadcastMessageUpdate(BaseModel):
 class GameUpdate(BaseModel):
     """Fields allowed when updating a Game."""
 
+    my_team_id: Optional[UUID] = None
+
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     status: Optional[GameStatus] = None
     scheduled_at: Optional[datetime] = None
@@ -60,6 +64,8 @@ class GameUpdate(BaseModel):
 
 class GameResponse(GameBase):
     """Full Game representation returned by the API."""
+
+    my_team_id: Optional[UUID] = None
 
     model_config = ConfigDict(from_attributes=True)
 

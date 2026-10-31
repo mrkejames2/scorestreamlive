@@ -1,0 +1,19 @@
+(() => {
+'use strict';
+const id=document.body.dataset.gameId, $=x=>document.getElementById(x);
+const base=`/api/futsal/games/${encodeURIComponent(id)}/clock`;
+let clock=null, snapshot=null, anchor=0, busy=false;
+const fmt=s=>{const n=Math.max(0,Math.ceil(s));return `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`};
+async function api(path,method='GET',body){const r=await fetch(path,{method,cache:'no-store',credentials:'same-origin',headers:{Accept:'application/json',...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined});if(!r.ok){let msg=`HTTP ${r.status}`;try{msg=(await r.json()).detail||msg}catch{}throw Error(msg)}return r.status===204?null:r.json()}
+function render(){if(clock){const elapsed=Number(clock.authoritative_elapsed_seconds??clock.elapsed_seconds??0)+(clock.status==='running'?Math.max(0,(performance.now()-anchor)/1000):0);$('clock').textContent=fmt(Math.max(0,Number(clock.duration_seconds||0)-elapsed));$('period').textContent=clock.period===2?'SECOND HALF':'FIRST HALF';
+const halfLabel=document.getElementById('clock-half-label');
+if(halfLabel)halfLabel.textContent=clock.period===2?'2ND HALF':'1ST HALF';$('policy').textContent=`${clock.clock_policy?.replace('_',' ')||'Clock'} · ${clock.status}`;}else{$('clock').textContent='--:--';$('period').textContent='CLOCK NOT INITIALIZED';}
+for(const b of document.querySelectorAll('[data-clock]')){const a=b.dataset.clock,s=clock?.status;b.disabled=busy||!clock||(a==='start'?s!=='stopped':a==='pause'?s!=='running':a==='resume'?s!=='paused':s==='running');}
+$('next-half').disabled=busy||!clock||clock.period!==1||clock.status==='running';for(const b of document.querySelectorAll('[data-goal]'))b.disabled=busy||!snapshot?.game?.home_team_id||!snapshot?.game?.away_team_id;}
+async function refresh(){if(busy)return;try{const [s,c]=await Promise.all([api(`/api/public/games/${encodeURIComponent(id)}/overlay-state`),api(base).catch(e=>e.message==='Futsal clock is not initialized'?null:Promise.reject(e))]);if(s?.game?.id!==id)throw Error('Wrong game');snapshot=s;clock=c;anchor=performance.now();$('game-name').textContent=s.game.name||'Futsal';$('home-name').textContent=s.home_team?.name||'Home';$('away-name').textContent=s.away_team?.name||'Away';$('home-score').textContent=s.game.home_score??0;$('away-score').textContent=s.game.away_score??0;render();}catch(e){$('notice').textContent=`Refresh failed: ${e.message}`;}}
+async function mutate(fn){if(busy)return;busy=true;render();try{await fn();$('notice').textContent='Updated successfully';}catch(e){$('notice').textContent=`Action failed: ${e.message}`;}finally{busy=false;await refresh();render();}}
+for(const b of document.querySelectorAll('[data-clock]'))b.addEventListener('click',()=>mutate(async()=>{if(!clock)throw Error('Initialize clock first');await api(`${base}/${b.dataset.clock}`,'POST',{expected_version:clock.version})}));
+$('next-half').addEventListener('click',()=>{if(!confirm('Reset the clock and advance to second half?'))return;mutate(()=>api(`${base}/next-period`,'POST',{expected_version:clock.version}))});
+for(const b of document.querySelectorAll('[data-goal]'))b.addEventListener('click',()=>mutate(async()=>{const team=b.dataset.goal==='home'?snapshot.game.home_team_id:snapshot.game.away_team_id;if(!team)throw Error('Missing team');await api('/api/scoring-events','POST',{game_id:id,team_id:team,player_id:(document.getElementById(`${b.dataset.goal}-scorer`)?.disabled?null:(document.getElementById(`${b.dataset.goal}-scorer`)?.value||null)),event_type:'goal',request_id:crypto.randomUUID()})}));
+setInterval(render,250);setInterval(refresh,4000);refresh();
+})();
