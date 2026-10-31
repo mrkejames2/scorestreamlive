@@ -92,6 +92,12 @@ async def soccer_overlay(request: Request, game_id: UUID, db: AsyncSession = Dep
     return templates.TemplateResponse(request=request, name='scoreboard/game.html', context={'game_id':str(game_id)})
 
 
+@router.get('/futsal/scoreboard/games/{game_id}', response_class=HTMLResponse, include_in_schema=False)
+async def futsal_venue_scoreboard(request: Request, game_id: UUID, db: AsyncSession = Depends(get_session)):
+    await _game(db, game_id, 'futsal')
+    return templates.TemplateResponse(request=request, name='sports/futsal_venue_scoreboard.html', context={'game_id':str(game_id)})
+
+
 @router.get('/futsal/games/{game_id}/overlay', response_class=HTMLResponse, include_in_schema=False)
 async def futsal_overlay(request: Request, game_id: UUID, db: AsyncSession = Depends(get_session)):
     await _game(db, game_id, 'futsal')

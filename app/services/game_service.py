@@ -9,6 +9,8 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.game import Game
+from app.models.game_clock import GameClock
+from app.models.futsal_clock_config import FutsalClockConfig
 from app.models.team import Team
 from app.schemas.game import GameCreate, GameUpdate, GameOverlayTheme
 from app.sockets import sio
@@ -94,6 +96,20 @@ async def create_game(
         updated_at=now,
     )
     db.add(game)
+    # M21-G-VS-R2: initialize futsal clock atomically with game creation
+    # Both records are part of the same transaction, so a failed insert
+    # cannot leave a newly created Futsal game without its clock.
+    if data.sport == "futsal":
+        await db.flush()  # obtain game.id before inserting child rows
+        db.add(GameClock(
+            game_id=game.id, mode="count_down", status="stopped",
+            duration_seconds=1200, elapsed_seconds=0, running_since=None,
+            version=1, created_at=now, updated_at=now,
+        ))
+        db.add(FutsalClockConfig(
+            game_id=game.id, period=1, clock_policy="stop_clock",
+            period_seconds=1200, updated_at=now,
+        ))
     await db.commit()
 
     result = await db.execute(
