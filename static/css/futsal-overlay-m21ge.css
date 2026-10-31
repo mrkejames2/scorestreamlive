@@ -27,3 +27,39 @@
   .sponsor { top: 6px; right: 8px; min-height: 54px; width: 140px; }
   .sponsor img { max-height: 35px; max-width: 120px; }
 }
+/* M21-HF1: Match Soccer overlay scoreboard sizing. */
+.scoreboard {
+  width: min(1160px, calc(100vw - 64px));
+  max-width: none;
+  grid-template-columns: minmax(0, 1fr) 190px minmax(0, 1fr);
+}
+
+@media (max-width: 1280px) {
+  .scoreboard {
+    width: min(1060px, calc(100vw - 52px));
+  }
+}
+
+@media (max-width: 900px) {
+  .scoreboard {
+    width: calc(100vw - 24px);
+    grid-template-columns: minmax(0, 1fr) 160px minmax(0, 1fr);
+  }
+
+  .scoreboard .team {
+    padding: 8px;
+    gap: 5px;
+  }
+
+  .scoreboard .name {
+    font-size: 17px;
+  }
+
+  .scoreboard .score {
+    font-size: 38px;
+  }
+
+  .scoreboard .clock {
+    font-size: 30px;
+  }
+}
