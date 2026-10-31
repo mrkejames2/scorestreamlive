@@ -13,17 +13,17 @@
   <link rel="stylesheet" href="/static/css/product-theme-m17h-r2.css?v=m17h-r2">
   <link rel="stylesheet" href="/static/css/product-theme-m17h-r5.css?v=m17h-r5">
 <link rel="stylesheet" href="/static/css/m21gui-shell.css?v=m21gui1"></head>
-<body data-sport="{{ sport | default('soccer') }}">{% if (sport | default('soccer')) == 'futsal' %}<div class="m21ui-shell"><button class="m21ui-toggle" type="button" aria-expanded="false" aria-controls="m21ui-sidebar">☰ Menu</button><aside class="m21ui-sidebar" id="m21ui-sidebar" aria-label="Futsal navigation">
+<!-- M21-H soccer navigation --><body data-sport="{{ sport | default('soccer') }}">{% if (sport | default('soccer')) in ['futsal', 'soccer'] %}<div class="m21ui-shell"><button class="m21ui-toggle" type="button" aria-expanded="false" aria-controls="m21ui-sidebar">☰ Menu</button><aside class="m21ui-sidebar" id="m21ui-sidebar" aria-label="{{ (sport | default('soccer')) | capitalize }} navigation">
 <a class="m21ui-brand" href="/sports/home">SCORE<span>STREAMLIVE</span></a>
-<div class="m21ui-label">CURRENT SPORT</div><div class="m21ui-sport">⚽ Futsal</div>
+<div class="m21ui-label">CURRENT SPORT</div><div class="m21ui-sport">⚽ {{ (sport | default('soccer')) | capitalize }}</div>
 <nav class="m21ui-nav" aria-label="Main navigation">
-<a href="/futsal/games">▦ <span>Games</span></a>
-<a href="/futsal/teams" aria-current="page">♟ <span>Teams &amp; Rosters</span></a>
-<a href="/account/sponsors?from=futsal">▣ <span>Sponsor Library</span></a>
-<a href="/account/branding?from=futsal">◈ <span>Club Branding</span></a>
+<a href="/{{ sport | default('soccer') }}/games">▦ <span>Games</span></a>
+<a href="/{{ sport | default('soccer') }}/teams" aria-current="page">♟ <span>Teams &amp; Rosters</span></a>
+<a href="/account/sponsors?from={{ sport | default('soccer') }}">▣ <span>Sponsor Library</span></a>
+<a href="/account/branding?from={{ sport | default('soccer') }}">◈ <span>Club Branding</span></a>
 <div class="m21ui-divider" role="separator"></div>
-<a href="/account?from=futsal">⚙ <span>Account Settings</span></a>
-<a href="/account/billing?from=futsal">▤ <span>Billing</span></a>
+<a href="/account?from={{ sport | default('soccer') }}">⚙ <span>Account Settings</span></a>
+<a href="/account/billing?from={{ sport | default('soccer') }}">▤ <span>Billing</span></a>
 </nav><div class="m21ui-switch"><a href="/sports">⇄ <span>Switch Sport</span></a></div></aside><div class="m21ui-content">{% endif %}
 <a class="skip-link" href="#teams-list">Skip to teams</a>
 <div class="m21gc-layout"><button class="m21gc-menu" type="button" aria-expanded="false" aria-controls="m21gc-sidebar">☰ Menu</button><aside id="m21gc-sidebar" class="m21gc-sidebar" aria-label="Sport navigation"><a class="m21gc-brand" href="/sports/home">SCORESTREAMLIVE</a><div class="m21gc-label">CURRENT SPORT</div><strong class="m21gc-sport">{{ (sport | default('soccer')) | capitalize }}</strong><nav><a href="/{{ sport | default('soccer') }}/games">Games</a><a class="current" aria-current="page" href="/{{ sport | default('soccer') }}/teams">Teams</a><a href="/sports">Switch Sport</a></nav></aside><div class="m21gc-content"><main class="teams-shell">
@@ -150,5 +150,5 @@
 <script src="/static/js/teams/teams-m21gc.js?v=m21gc1" defer></script>
   {% if sport is not defined %}<script src="/static/js/account-nav.js?v=m18g3-branding1"></script>{% endif %}
   <script type="module" src="/static/js/m17b-lifecycle.js"></script>
-{% if (sport | default('soccer')) == 'futsal' %}</div></div>{% endif %}<script src="/static/js/m21gui-shell.js?v=m21gui1" defer></script></body>
+{% if (sport | default('soccer')) in ['futsal', 'soccer'] %}</div></div>{% endif %}<script src="/static/js/m21gui-shell.js?v=m21gui1" defer></script></body>
 </html>
