@@ -1,0 +1,17 @@
+/* M21-G-UI: consistent Futsal navigation, additive styling */
+.m21ui-shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh;background:#f7f9fc}
+.m21ui-sidebar{box-sizing:border-box;background:#13243a;color:#e9f2ff;padding:27px 12px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;z-index:60;overflow-y:auto}
+.m21ui-sidebar *{box-sizing:border-box}.m21ui-brand{display:block;padding:0 1px;color:#ff6b0b!important;font-size:15px;font-weight:950;letter-spacing:.045em;text-decoration:none;white-space:nowrap}.m21ui-brand span{color:#f2f7ff}
+.m21ui-label{color:#96aec9;font-size:11px;font-weight:850;letter-spacing:.13em;margin:37px 10px 12px}.m21ui-sport{font-size:20px;font-weight:850;color:#fff;padding:0 10px;margin-bottom:17px}
+.m21ui-nav{display:flex;flex-direction:column;gap:7px}.m21ui-nav a,.m21ui-switch a{display:flex;align-items:center;gap:12px;min-height:46px;padding:12px 14px;border-radius:10px;color:#cbdaf0!important;text-decoration:none;font-size:14px;font-weight:800;line-height:1.25}
+.m21ui-nav a:hover,.m21ui-nav a:focus-visible,.m21ui-switch a:hover{background:#263e5d;color:#fff!important}.m21ui-nav a[aria-current=page]{background:#225eaf;color:#fff!important}
+.m21ui-nav .m21ui-divider{border-top:1px solid #34465d;margin:12px 6px 6px}.m21ui-switch{margin-top:auto;padding-top:24px}.m21ui-switch a{background:#203852}.m21ui-switch a[aria-current=page]{background:#225eaf}
+.m21ui-content{min-width:0}.m21ui-toggle{display:none}.m21ui-content .account-shell{max-width:1200px;width:calc(100% - 48px);margin:0 auto}.m21ui-content .ssl-global-nav{display:none}
+/* Prevent legacy page sidebars from competing with the shared sidebar */
+.m21ui-content .m21gb-sidebar,.m21ui-content .m21gc-sidebar,.m21ui-content .layout>.sidebar{display:none!important}
+.m21ui-content .m21gb-app-layout,.m21ui-content .m21gc-layout,.m21ui-content .layout{display:block!important;min-height:0!important}
+.m21ui-content .m21gb-content,.m21ui-content .m21gc-content,.m21ui-content .layout>.main{width:100%!important;max-width:none!important;margin:0!important}
+.m21ui-content .m21gb-menu-toggle,.m21ui-content .m21gc-menu{display:none!important}
+.m21ui-content .mobile-nav{display:none!important}
+@media(max-width:950px){.m21ui-shell{display:block}.m21ui-sidebar{position:fixed;left:0;top:0;width:min(285px,85vw);height:100dvh;transform:translateX(-110%);transition:transform .2s ease;box-shadow:10px 0 35px #0005}.m21ui-shell.m21ui-open .m21ui-sidebar{transform:translateX(0)}.m21ui-toggle{display:inline-flex;position:sticky;top:8px;z-index:70;align-items:center;min-height:44px;margin:10px 0 0 16px;padding:9px 15px;border:1px solid #c9d7e5;border-radius:10px;background:#fff;color:#17314e;font-weight:850;cursor:pointer}.m21ui-content .account-shell{width:calc(100% - 32px)}.m21ui-content .layout>.main{padding:16px 12px!important}}
+@media(prefers-reduced-motion:reduce){.m21ui-sidebar{transition:none}}
