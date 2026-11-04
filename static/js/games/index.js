@@ -1359,7 +1359,7 @@ async function loadGames(options = {}) {
 
   try {
     const games = await api(
-      `/api/games?limit=${MAX_VISIBLE_GAMES}`,
+      `/api/games?limit=${MAX_VISIBLE_GAMES}&sport=soccer`,
     );
 
     const recentGames = games;
