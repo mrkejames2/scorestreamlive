@@ -1,8 +1,7 @@
 /* M21-G-E: broadcast-only presentation refinement. Preserves 1060x106 baseline. */
 .canvas { isolation: isolate; }
 .scoreboard {
-  transform: translateX(-50%) scale(var(--m21ge-scale, 1));
-  transform-origin: center bottom;
+  transform: translateX(-50%);
   max-width: none;
 }
 /* Sponsor presentation stays above the scoreboard and away from its clock. */
@@ -15,7 +14,7 @@
 .connection {
   top: auto;
   left: 50%;
-  bottom: calc(146px * var(--m21ge-scale, 1) + 16px);
+  bottom: 162px;
   transform: translateX(-50%);
   max-width: calc(100vw - 24px);
   text-align: center;
@@ -62,4 +61,79 @@
   .scoreboard .clock {
     font-size: 30px;
   }
+}
+
+/* M21-HF3: Match Soccer M17-G compact broadcast overlay */
+/* Keep the full-screen transparent canvas, but compact only the scoreboard. */
+.scoreboard {
+  width: min(640px, calc(100vw - 32px));
+  height: 64px;
+  bottom: 10px;
+  transform: translateX(-50%);
+  grid-template-columns: minmax(0, 1fr) 116px minmax(0, 1fr);
+}
+
+.scoreboard .team {
+  padding: 7px 9px;
+  gap: 6px;
+}
+
+.scoreboard .logo-wrap {
+  width: 36px;
+  height: 36px;
+}
+
+.scoreboard .logo-wrap img {
+  max-width: 32px;
+  max-height: 32px;
+}
+
+.scoreboard .identity { gap: 6px; }
+.scoreboard .team-info { gap: 2px; }
+.scoreboard .name { font-size: 15px; max-width: 150px; }
+.scoreboard .score { font-size: 30px; }
+.scoreboard .clock { font-size: 28px; }
+.scoreboard .sport,
+.scoreboard .side { font-size: 8px; letter-spacing: 1px; }
+.scoreboard .period { font-size: 8px; }
+
+@media (max-width: 800px) {
+  .scoreboard {
+    width: calc(100vw - 16px);
+    min-height: 60px;
+    height: 60px;
+    bottom: 8px;
+  }
+}
+/* END M21-HF3 */
+
+
+/* M21-HF3: Futsal Soccer-style score boxes */
+.scoreboard .score {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 48px;
+    min-width: 48px;
+    height: 46px;
+    flex: 0 0 48px;
+
+    padding: 0;
+    border: 1px solid rgba(255,255,255,0.11);
+    border-radius: 8px;
+
+    background: linear-gradient(
+        180deg,
+        rgba(255,255,255,0.12),
+        rgba(255,255,255,0.06)
+    );
+
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+
+    color: #ffffff;
+    font-size: 30px;
+    font-weight: 900;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
 }
