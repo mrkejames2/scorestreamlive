@@ -81,6 +81,8 @@ async def create_game(
             raise ValueError("Select My Team as Home or Away for Futsal")
     elif data.my_team_id is not None:
         raise ValueError("My Team selection is only supported for Futsal")
+    elif data.futsal_period_seconds != 1200 or data.futsal_clock_policy != "stop_clock":
+        raise ValueError("Custom Futsal clock settings require a Futsal game")
 
     now = datetime.now(timezone.utc)
     game = Game(
@@ -103,12 +105,12 @@ async def create_game(
         await db.flush()  # obtain game.id before inserting child rows
         db.add(GameClock(
             game_id=game.id, mode="count_down", status="stopped",
-            duration_seconds=1200, elapsed_seconds=0, running_since=None,
+            duration_seconds=data.futsal_period_seconds, elapsed_seconds=0, running_since=None,
             version=1, created_at=now, updated_at=now,
         ))
         db.add(FutsalClockConfig(
-            game_id=game.id, period=1, clock_policy="stop_clock",
-            period_seconds=1200, updated_at=now,
+            game_id=game.id, period=1, clock_policy=data.futsal_clock_policy,
+            period_seconds=data.futsal_period_seconds, updated_at=now,
         ))
     await db.commit()
 
