@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.authorization import can_operate_game, can_view_game, deny_not_found
 from app.auth.dependencies import require_current_user
@@ -12,10 +13,11 @@ from app.database import get_session
 from app.models.game import Game
 from app.models.user import User
 from app.models.futsal_clock_config import FutsalClockConfig
+from app.models.game_clock import GameClock
 from app.schemas.game_clock import GameClockCreate, GameClockCommand, GameClockUpdate
 from app.services.game_clock_service import (
     get_clock, create_clock, start_clock, pause_clock, resume_clock, reset_clock,
-    update_clock_configuration, serialize_clock_state, ClockConflictError, ClockNotFoundError,
+    serialize_clock_state, ClockConflictError, ClockNotFoundError, _emit_clock_updated,
 )
 
 router = APIRouter(prefix='/api/futsal/games', tags=['futsal-clock'])
@@ -26,6 +28,12 @@ class Configure(BaseModel):
 
 class Command(BaseModel):
     expected_version: int = Field(ge=1)
+
+# M21-HF4: update both clock records in one transaction.
+class ClockSettings(BaseModel):
+    expected_version: int = Field(ge=1)
+    period_seconds: int = Field(ge=60, le=3600)
+    clock_policy: Literal['stop_clock', 'running_clock']
 
 async def access(db, user, game_id, operate=False):
     game = await db.get(Game, game_id)
@@ -71,6 +79,39 @@ async def initialize(game_id: uuid.UUID, data: Configure, request: Request, user
     db.add(cfg)
     await db.commit()
     return state(clock, cfg)
+
+# M21-HF4: authenticated, Futsal-only clock configuration after initialization.
+@router.patch('/{game_id}/clock/settings')
+async def update_settings(game_id: uuid.UUID, data: ClockSettings, request: Request,
+                          user: User = Depends(require_current_user), db: AsyncSession = Depends(get_session)):
+    require_same_origin_mutation(request)
+    await access(db, user, game_id, True)
+    # Serialize concurrent settings changes for this game. Never alter a running clock.
+    result = await db.execute(select(GameClock).where(GameClock.game_id == game_id).with_for_update())
+    clock = result.scalar_one_or_none()
+    cfg = await db.get(FutsalClockConfig, game_id)
+    if not clock or not cfg:
+        raise HTTPException(404, 'Futsal clock is not initialized')
+    if clock.mode != 'count_down':
+        raise HTTPException(409, 'Futsal requires a countdown clock')
+    if clock.status == 'running':
+        raise HTTPException(409, 'Pause the clock before changing its settings')
+    if clock.version != data.expected_version:
+        raise HTTPException(409, 'Clock version conflict; refresh and retry')
+    # Preserve elapsed time; never silently reset scores or match history.
+    now = datetime.now(timezone.utc)
+    clock.duration_seconds = data.period_seconds
+    clock.version += 1
+    clock.updated_at = now
+    cfg.period_seconds = data.period_seconds
+    cfg.clock_policy = data.clock_policy
+    cfg.updated_at = now
+    await db.commit()
+    await db.refresh(clock)
+    await db.refresh(cfg)
+    await _emit_clock_updated(clock, 'configured')
+    return state(clock, cfg)
+
 
 @router.post('/{game_id}/clock/{action}')
 async def command(game_id: uuid.UUID, action: Literal['start','pause','resume','reset','next-period'],

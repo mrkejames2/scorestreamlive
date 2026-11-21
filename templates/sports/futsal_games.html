@@ -52,7 +52,10 @@
 <label class="form-field"><span class="field-label">Game name</span><input id="game-name" class="text-input" required maxlength="255" placeholder="Example: Nationals vs City FC"></label>
 <label class="form-field legacy-choice"><span class="field-label">Home team</span><select id="home-team" class="text-input"></select></label>
 <label class="form-field legacy-choice"><span class="field-label">Away team</span><select id="away-team" class="text-input"></select></label>
-</div><div class="form-footer"><button type="submit" class="button button-primary">Create Futsal Game</button></div></form>
+<fieldset class="form-field" style="border:1px solid #6d8497;border-radius:10px;padding:12px;min-width:0"><legend>Match Clock Settings</legend>
+<label class="form-field"><span class="field-label">Half length (minutes)</span><input id="hf4-new-minutes" class="text-input" type="number" min="1" max="60" step="1" value="20" required></label>
+<label class="form-field"><span class="field-label">Clock mode</span><select id="hf4-new-policy" class="text-input"><option value="stop_clock">Stop clock</option><option value="running_clock">Running clock</option></select></label>
+</fieldset></div><div class="form-footer"><button type="submit" class="button button-primary">Create Futsal Game</button></div></form>
 </section>
 <section class="match-section"><div class="section-heading"><div><div class="eyebrow">MATCH CENTER</div><h2>Your Futsal Games</h2></div><label class="filter-label">Filter <select id="game-filter" class="text-input"><option value="all">All games</option><option value="live">Live</option><option value="scheduled">Upcoming</option><option value="completed">Completed</option></select></label></div>
 <div id="games" class="match-grid" aria-live="polite"></div><p id="empty-games" class="empty-games hidden">No matches found. Create a game to get started.</p></section>
@@ -62,6 +65,6 @@
 </main>
 </div></div>
 <script src="/static/js/sports/futsal_games_m21gb.js?v=m21gb1" defer></script>
-<script src="/static/js/sports/futsal_games_m21f_r4.js?v=m21fr4" defer></script>
+<script src="/static/js/sports/futsal_games_m21f_r4.js?v=m21hf4" defer></script>
 <script src="/static/js/sports/futsal_sidebar_m21gb_r2.js?v=m21gbr2" defer></script>
 </div></div><script src="/static/js/m21gui-shell.js?v=m21gui1" defer></script></body></html>

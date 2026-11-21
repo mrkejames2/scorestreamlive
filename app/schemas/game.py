@@ -35,6 +35,9 @@ class GameCreate(GameBase):
     """Fields required to create a Game."""
 
     my_team_id: Optional[UUID] = None
+    # M21-HF4: Futsal-only, optional on create. Soccer rejects custom clock settings.
+    futsal_period_seconds: int = Field(default=1200, ge=60, le=3600)
+    futsal_clock_policy: Literal["stop_clock", "running_clock"] = "stop_clock"
 
 
 class GameOverlayTheme(str, Enum):
