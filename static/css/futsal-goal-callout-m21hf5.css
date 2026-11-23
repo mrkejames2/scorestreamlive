@@ -1,0 +1,44 @@
+/* M21-HF5: Futsal-only live goal announcement; transparent OBS browser source. */
+.futsal-goal-banner[hidden]{display:none!important}
+.futsal-goal-banner{position:absolute;left:50%;bottom:94px;transform:translateX(-50%);width:min(550px,calc(100vw - 28px));padding:14px 20px;background:linear-gradient(135deg,rgba(7,26,48,.97),rgba(18,63,87,.97));border:1px solid rgba(255,255,255,.36);border-radius:16px;box-shadow:0 12px 42px #000a;text-align:center;z-index:10;display:grid;justify-items:center;gap:5px;pointer-events:none;color:#fff;font-family:Inter,system-ui,Arial,sans-serif;animation:futsal-goal-in .3s ease-out both}
+.futsal-goal-banner-heading{display:flex;align-items:center;gap:8px;font-size:clamp(26px,6vw,45px);font-weight:950;line-height:1;color:#f9e485;letter-spacing:3px;text-shadow:0 2px 10px #000a}
+.futsal-goal-icon{font-size:.7em}
+.futsal-goal-team{display:flex;align-items:center;gap:10px;font-size:clamp(15px,3vw,22px);font-weight:900}
+.futsal-goal-team img{height:38px;width:38px;object-fit:contain}
+#futsal-goal-scorer{font-size:clamp(14px,2.5vw,20px);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#futsal-goal-meta{font-size:12px;font-weight:700;letter-spacing:1px;color:#cfe3f4}
+@keyframes futsal-goal-in{from{opacity:0;transform:translate(-50%,16px) scale(.96)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@media(max-height:340px){.futsal-goal-banner{bottom:72px;padding:7px}.futsal-goal-team img{height:24px;width:24px}}
+
+
+/* M21-HF5-COMPACT */
+.futsal-goal-banner {
+    width: min(360px, calc(100vw - 28px));
+    padding: 9px 14px;
+    gap: 3px;
+    border-radius: 12px;
+    bottom: 86px;
+}
+
+.futsal-goal-banner-heading {
+    font-size: 26px;
+    letter-spacing: 2px;
+}
+
+.futsal-goal-team {
+    font-size: 15px;
+    gap: 6px;
+}
+
+.futsal-goal-team img {
+    width: 26px;
+    height: 26px;
+}
+
+#futsal-goal-scorer {
+    font-size: 14px;
+}
+
+#futsal-goal-meta {
+    font-size: 10px;
+}
